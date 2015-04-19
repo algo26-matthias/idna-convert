@@ -22,9 +22,8 @@ use any of the following notations:
 - xn--brse-5qa.xn--knrz-1ra.info
 
 The methods expect strings as their input and will return you strings. Errors,
-incorrectly encoded or invalid strings are silently ignored. That means, if
-you call the methods with invalid strings, these strings will be returned to you
-unchanged.
+incorrectly encoded or invalid strings will lead to a FALSE response.
+You can query the occured error by calling the method get_last_error().
 
 
 Examples:
@@ -37,7 +36,7 @@ include_once('idna_convert.class.php');
 // Instantiate it
 $IDN = new idna_convert();
 // The input string
-$input = 'nörgler.com';
+$input = utf8_encode('nörgler.com');
 // Encode it to its punycode presentation
 $output = $IDN->encode($input);
 // Output, what we got now
@@ -56,13 +55,13 @@ $input = 'andre@xn--brse-5qa.xn--knrz-1ra.info';
 // Encode it to its punycode presentation
 $output = $IDN->decode($input);
 // Output, what we got now
-echo $output; // This will read: andre@börse.knürz.info
+echo utf8_decode($output); // This will read: andre@börse.knürz.info
 
 
 We wish you much fun with that class and look forward to feedback from you,
 wether this class is useful.
 In case of errors, bugs, questions, wishes, please don't hesitate to contact us
-unser the email address above.
+under the email address above.
 
 The team of
 phlymail.de

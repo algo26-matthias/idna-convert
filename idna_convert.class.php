@@ -3,7 +3,7 @@
 /* idna_convert.class.php - Encode / Decode punycode based domain names      */
 /* (c) 2004 blue birdy, Berlin (http://bluebirdy.de)                         */
 /* All rights reserved                                                       */
-/* v0.2.1                                                                    */
+/* v0.2.3                                                                    */
 /* ------------------------------------------------------------------------- */
 
 /*
@@ -73,6 +73,7 @@ class idna_convert
     // The constructor
     function idna_convert()
     {
+        include(dirname(__FILE__).'/idna_convert.npdata.php');
         return TRUE;
     }
 
@@ -99,8 +100,12 @@ class idna_convert
         return TRUE;
     }
 
-    // Decode a given Domain name
-    // Your input is expected to be 7bit only
+    /**
+    * Decode a given ACE domain name
+    * @param    string   Domain name (ACE string)
+    * @return   string   Decoded Domain name (UTF-8)
+    * @access   public
+    */
     function decode($encoded)
     {
         // Clean up input
@@ -110,8 +115,12 @@ class idna_convert
         return $decoded;
     }
 
-    // Encode a given Domain name
-    // The output will be - on success - 7bit only
+    /**
+    * Encode a given UTF-8 domain name
+    * @param    string   Domain name (UTF-8)
+    * @return   string   Encoded Domain name (ACE string)
+    * @access   public
+    */
     function encode($decoded)
     {
         // Clean up input (This will be done by nameprep, once it is ready)
@@ -120,14 +129,23 @@ class idna_convert
         return $this->_do_job($decoded, 'encode');
     }
 
-    // Use this method to get the last error ocurred
+
+    /**
+    * Use this method to get the last error ocurred
+    * @param    void
+    * @return   string   The last error, that occured
+    * @access   public
+    */
     function get_last_error()
     {
         return $this->error;
     }
 
-    // Wrapper class to provide extended functionality
-    // This allows for processing complete email addresses and domain names
+    /**
+    * Wrapper method to provide extended functionality
+    * This allows for processing complete email addresses and domain names
+    * @access   private
+    */
     function _do_job($input, $mode)
     {
         $method = '_'.$mode;
@@ -147,7 +165,10 @@ class idna_convert
         return $email_pref . join('.', $arr);
     }
 
-    // The actual decoding algorithm
+    /**
+    * The actual decoding algorithm
+    * @access   private
+    */
     function _decode($encoded)
     {
         // We do need to find the Punycode prefix
@@ -170,7 +191,7 @@ class idna_convert
         } else {
             $decoded = array();
         }
-        $deco_len = count($decoded); echo $deco_len.'<br />';
+        $deco_len = count($decoded);
         $enco_len = strlen($encoded);
 
         // Wandering through the strings; init
@@ -179,7 +200,6 @@ class idna_convert
         $idx      = 0;
         $char     = $this->initial_n;
 
-        //while ($enco_idx < $enco_len) {
         for ($enco_idx = ($delim_pos) ? ($delim_pos + 1) : 0; $enco_idx < $enco_len; ++$deco_len) {
             for ($old_idx = $idx, $w = 1, $k = $this->base; 1 ; $k += $this->base) {
                 $digit = $this->_decode_digit($encoded{$enco_idx++});
@@ -204,7 +224,10 @@ class idna_convert
         return $this->ucs4_to_utf8($decoded);
     }
 
-    // The actual encoding algorithm
+    /**
+    * The actual encoding algorithm
+    * @access   private
+    */
     function _encode($decoded)
     {
         // No empty strings please
@@ -232,8 +255,11 @@ class idna_convert
             }
             $decoded = &$d_s;
         }
+        // Do NAMEPREP
+        $decoded = $this->_nameprep($decoded); 
+
         $deco_len  = count($decoded);
-        if (!$deco_len) return FALSE; // UTF-8 to UCS conversion failed
+        if (!$deco_len) return FALSE; // UTF-8 to UCS conversion or NAMEPREP failed
 
         $codecount = 0; // How many chars have been consumed
 
@@ -291,7 +317,10 @@ class idna_convert
         return $encoded;
     }
 
-    // Adapt the bias according to the current code point and position
+    /**
+    * Adapt the bias according to the current code point and position
+    * @access   private
+    */
     function _adapt($delta, $npoints, $is_first)
     {
         $delta = $is_first ? ($delta / $this->damp) : ($delta / 2);
@@ -302,38 +331,89 @@ class idna_convert
         return $k + ($this->base - $this->tmin + 1) * $delta / ($delta + $this->skew);
     }
 
-    //
+    /**
+    * Encoding a certain digit
+    * @access   private
+    */
     function _encode_digit($d)
     {
         return chr($d + 22 + 75 * ($d < 26));
     }
 
-    //
+    /**
+    * Decode a certain digit
+    * @access   private
+    */
     function _decode_digit($cp)
     {
         $cp = ord($cp);
         return ($cp - 48 < 10) ? $cp - 22 : (($cp - 65 < 26) ? $cp - 65 : (($cp - 97 < 26) ? $cp - 97 : $this->base));
     }
 
-    // Internal error handling method
+    /**
+    * Internal error handling method
+    * @access   private
+    */
     function _error($error = '')
     {
         $this->error = $error;
     }
 
-    // This converts an UTF-8 encoded string to its UCS-4 representation
-    // By talking about UCS-4 "strings" we mean arrays of 32bit integers representing
-    // each of the "chars". This is due to PHP not being able to handle strings with
-    // bit depth different from 8. This apllies to the reverse method ucs4_to_utf8(), too.
-    // The following UTF-8 encodings are supported:
-    // bytes bits  representation
-    // 1        7  0xxxxxxx
-    // 2       11  110xxxxx 10xxxxxx
-    // 3       16  1110xxxx 10xxxxxx 10xxxxxx
-    // 4       21  11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
-    // 5       26  111110xx 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx
-    // 6       31  1111110x 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx
-    // Each x represents a bit that can be used to store character data.
+    /**
+    * Do Nameprep according to RFC3491 and RFC3454
+    * @param    array    Unicode Characters
+    * @return   string   Unicode Characters, Nameprep'd
+    * @access   private
+    */
+    function _nameprep($input)
+    {
+        $output = array();
+        $out_len = 0;
+        // Walking through the input array, performing the required steps on each of
+        // the input chars and putting the result into the output array
+        foreach ($input as $v) {
+            if (in_array($v, $this->np_map_nothing)) continue;
+            if (isset($this->np_casemap[$v])) {
+                foreach ($this->np_casemap[$v] as $out) {
+                    $output[] = $out;
+                }
+            } else {
+                $output[] = $v;
+            }
+        }
+        // Walking through the effective output trying to find prohibited chars
+        $error = FALSE;
+        foreach ($output as $v) {
+            if (in_array($v, $this->np_prohibit)) {
+                $this->_error('NAMEPREP: Prohibited input U+'.sprintf('%04X', $v));
+                return FALSE;
+            }
+            foreach ($this->np_prohibit_ranges as $range) {
+                if ($range[0] <= $v && $v <= $range[1]) {
+                    $this->_error('NAMEPREP: Prohibited input U+'.sprintf('%04X', $v));
+                    return FALSE;
+                }
+            }
+        }
+        return $output;
+    }
+
+    /**
+    * This converts an UTF-8 encoded string to its UCS-4 representation
+    * By talking about UCS-4 "strings" we mean arrays of 32bit integers representing
+    * each of the "chars". This is due to PHP not being able to handle strings with
+    * bit depth different from 8. This apllies to the reverse method ucs4_to_utf8(), too.
+    * The following UTF-8 encodings are supported:
+    * bytes bits  representation
+    * 1        7  0xxxxxxx
+    * 2       11  110xxxxx 10xxxxxx
+    * 3       16  1110xxxx 10xxxxxx 10xxxxxx
+    * 4       21  11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
+    * 5       26  111110xx 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx
+    * 6       31  1111110x 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx
+    * Each x represents a bit that can be used to store character data.
+    * @access   private
+    */
     function utf8_to_ucs4($input)
     {
         $output = array();
@@ -405,8 +485,11 @@ class idna_convert
         return $output;
     }
 
-    // Convert UCS-4 string into UTF-8 string
-    // See utf8_to_ucs4() for details
+    /**
+    * Convert UCS-4 string into UTF-8 string
+    * See utf8_to_ucs4() for details
+    * @access   private
+    */
     function ucs4_to_utf8($input)
     {
         $output = '';
@@ -434,8 +517,11 @@ class idna_convert
         return $output;
     }
 
-    // Gives you a bit representation of given Byte (8 bits), Word (16 bits) or DWord (32 bits)
-    // Output width is automagically determined
+    /**
+    * Gives you a bit representation of given Byte (8 bits), Word (16 bits) or DWord (32 bits)
+    * Output width is automagically determined
+    * @access   private
+    */
     function show_bitmask ($octet)
     {
         if ($octet >= (1 << 16)) $w = 31;

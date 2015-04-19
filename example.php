@@ -7,35 +7,12 @@ include('idna_convert.class.php');
 $IDN = new idna_convert();
 
 if (isset($_REQUEST['encode'])) {
-    /*
-    echo 'Original UTF8 string: '.$_REQUEST['decoded'].'<br />';
-    echo 'Viewed bytewise:<br />';
-    for ($k = 0; $k < strlen($_REQUEST['decoded']); ++$k) {
-        $v = $_REQUEST['decoded']{$k};
-        echo $k.' '.$v.' => '.ord($v).' => '.$IDN->show_bitmask(ord($v)).'<br />';
-    }
-    $_REQUEST['decoded'] = $IDN->utf8_to_ucs4($_REQUEST['decoded']);
-    if (!$_REQUEST['decoded']) echo $IDN->get_last_error();
-
-    echo 'Converted to UCS-4: '.$_REQUEST['decoded'].'<br />';
-    echo 'Viewed bytewise:<br />';
-    for ($k = 0; $k < strlen($_REQUEST['decoded']); ++$k) {
-        $v = $_REQUEST['decoded']{$k};
-        echo $k.' '.$v.' => '.ord($v).' => '.$IDN->show_bitmask(ord($v)).'<br />';
-    }
-    */
     $decoded = isset($_REQUEST['decoded']) ? $_REQUEST['decoded'] : '';
     $encoded = $IDN->encode($decoded);
 }
 if (isset($_REQUEST['decode'])) {
     $encoded = isset($_REQUEST['encoded']) ? $_REQUEST['encoded'] : '';
     $decoded = $IDN->decode($encoded);
-    /*
-    for ($k = 0; $k < strlen($decoded); ++$k) {
-        $v = $decoded{$k};
-        echo $k.' '.$v.' => '.ord($v).' => '.$IDN->show_bitmask(ord($v)).'<br />';
-    }
-    */
 }
 
 if (!isset($encoded)) $encoded = '';
@@ -116,8 +93,10 @@ input {
    usefulness and correctness. You should always doublecheck the results given here by converting them
    back to the original form.<br />
    <br />
+   Make sure, that your browser is capable of the <strong>UTF-8</strong> character encoding.<br />
+   <br />
    For those of you interested in the PHP source of the underlying class, you might
-   <a href="http://phlymail.de/cgi-bin/dlmanager.cgi?Goodies/idna_convert_012.zip">download it here</a>.<br />
+   <a href="http://phlymail.de/cgi-bin/dlmanager.cgi?Goodies/idna_convert_023.zip">download it here</a>.<br />
    Please be aware, that this class is provided as is and without any liability. Use at your own risk.<br />
    <br />
    Please feel free to report bugs and problems to: <a href="mailto:team@phlymail.de">team@phlymail.de</a><br />
@@ -152,4 +131,3 @@ input {
 </table>
 </body>
 </html>
-
