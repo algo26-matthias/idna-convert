@@ -92,7 +92,7 @@ input {
    <a href="http://phlymail.de/cgi-bin/dlmanager.cgi?Goodies/idna_convert_010.zip">download it here</a>.<br />
    Please be aware, that this class is provided as is and without any liability. Use at your own risk.<br />
    <br />
-   Please feel free to report bugs and problems to: <a href="mailto:team@phlymil.de">team@phlymail.de</a><br />
+   Please feel free to report bugs and problems to: <a href="mailto:team@phlymail.de">team@phlymail.de</a><br />
    <br />
    Have fun! :)<br />
    <br />
@@ -126,6 +126,5 @@ input {
 </table>
 </body>
 </html>
-
 
 
