@@ -109,15 +109,15 @@ h5 {margin:0;font-size:11pt;font-weight:bold;}
   <tbody>
    <tr>
     <td align="right">
-     <form action="<?php echo $_SERVER['PHP_SELF']; ?>" method="get">
-      <input type="text" name="decoded" value="<?php echo htmlentities($decoded, null, 'UTF-8'); ?>" size="48" maxlength="255" /><br />
+     <form action="<?php echo htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8'); ?>" method="get">
+      <input type="text" name="decoded" value="<?php echo htmlspecialchars($decoded, ENT_QUOTES, 'UTF-8'); ?>" size="48" maxlength="255" /><br />
       <?php echo $version_select; ?>
       <input type="submit" name="encode" value="Encode &gt;&gt;" /><?php echo $add; ?>
      </form>
     </td>
     <td align="left">
-     <form action="<?php echo $_SERVER['PHP_SELF']; ?>" method="get">
-      <input type="text" name="encoded" value="<?php echo htmlentities($encoded, null, 'UTF-8'); ?>" size="48" maxlength="255" /><br />
+     <form action="<?php echo htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8'); ?>" method="get">
+      <input type="text" name="encoded" value="<?php echo htmlspecialchars($encoded, ENT_QUOTES, 'UTF-8'); ?>" size="48" maxlength="255" /><br />
       <input type="submit" name="decode" value="&lt;&lt; Decode" /><?php echo $add; ?>
      </form>
     </td>
@@ -125,7 +125,7 @@ h5 {margin:0;font-size:11pt;font-weight:bold;}
   </tbody>
  </table>
  <br />
- <span id="copy">Version used: 0.8.0; &copy; 2004-2011 phlyLabs Berlin; part of <a href="http://phlymail.com/">phlyMail</a></span>
+ <span id="copy">Version used: 0.8.1; &copy; 2004-2013 phlyLabs Berlin; part of <a href="http://phlymail.com/">phlyMail</a></span>
 </div>
 </body>
 </html>
