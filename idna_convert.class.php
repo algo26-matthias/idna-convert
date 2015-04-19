@@ -2,18 +2,15 @@
 /* ------------------------------------------------------------------------- */
 /* idna_convert.class.php - Encode / Decode punycode based domain names      */
 /* (c) 2004 blue birdy, Berlin (http://bluebirdy.de)                         */
-/* The code is based loosely on work of the Japan Network Information Center */
 /* All rights reserved                                                       */
-/* v0.1.2                                                                    */
+/* v0.1.3                                                                    */
 /* ------------------------------------------------------------------------- */
 
 /*
  * C++ Original: Copyright (c) 2001, 2002 Japan Network Information Center.
  * This PHP class is derived work from the IDN extension for PHP, originally
- * written by JPNIC in C++.
- * Since this original work closely implements the algorithms from RFC 3492
- * as this PHP code does, we consider it being just an add on for all of you
- * whose hosting provider refuses to use the original extension.
+ * written by JPNIC in C++ and the ANSI C code from RFC3492, written by
+ * Adam M. Costello.
  * PHP port: Copyright 2004 blue birdy
  * All rights reserved.
  *
@@ -23,8 +20,8 @@
  *                         LICENSE TERMS AND CONDITIONS
  *
  * The following License Terms and Conditions apply, unless a different
- * license is obtained from blue birdy,
- * c/o M. Sommerfeld, Schmidstr. 7, 10179 Berlin, Germany,
+ * license is obtained from
+ * blue birdy, c/o M. Sommerfeld, Schmidstr. 7, 10179 Berlin, Germany.
  *
  * 1. Use, Modification and Redistribution (including distribution of any
  *    modified or derived work) in source and/or binary forms is permitted
@@ -199,7 +196,7 @@ class idna_convert
             $this->_error('This is already a punycode string');
             return FALSE;
         }
-        // We will not try to encode string containing of basic code points only
+        // We will not try to encode strings containing of basic code points only
         if (!preg_match('![\x80-\xff]!', $decoded)) {
             $this->_error('The given string does not contain encodable chars');
             return FALSE;
@@ -226,46 +223,40 @@ class idna_convert
         $bias      = $this->punycode_initial_bias;
         $delta     = 0;
         while ($codecount < $deco_len) {
-            $limit = -1;
-            $rest  =  0;
-            $enco_len  = strlen($encoded);
-            $next_code = $this->max_ucs;
             // Find the smallest code point >= the current code point and
             // remember the last ouccrence of it in the input
-            for ($i = $deco_len - 1; $i >= 0; $i--) {
+            for ($i = 0, $next_code = $this->max_ucs; $i < $deco_len; $i++) {
                 if (ord($decoded{$i}) >= $cur_code && ord($decoded{$i}) <= $next_code) {
                     $next_code = ord($decoded{$i});
-                    $limit     = $i;
                 }
-            }
-            // There must be such code point.
-            if (!($limit+1)) {
-                $this->_error('Codepoint out of range, I am helpless');
-                return FALSE;
             }
 
             $delta += ($next_code - $cur_code) * ($codecount + 1);
             $cur_code = $next_code;
 
             // Scan input again and encode all characters whose code point is $cur_code
-            for ($i = 0, $rest = $codecount; $i < $deco_len; $i++) {
-                    if (ord($decoded{$i}) < $cur_code) {
-                        $delta++;
-                        $rest--;
-                    } elseif (ord($decoded{$i}) == $cur_code) {
-                        $sz = $this->_putwc($enco_len, $delta, $bias);
-                        if (!$sz) {
-                            $this->_error('Invalid input string; cannot encode it');
-                            return FALSE;
-                        }
-                        $encoded .= $sz;
-                        $codecount++;
-                        $bias = $this->_adapt($delta, $codecount, $is_first);
-                        $delta = 0;
-                        $is_first = FALSE;
+            for ($i = 0; $i < $deco_len; $i++) {
+                if (ord($decoded{$i}) < $cur_code) {
+                    $delta++;
+                } elseif (ord($decoded{$i}) == $cur_code) {
+                    for ($q = $delta, $k = $this->punycode_base; 1; $k += $this->punycode_base) {
+                        $t = ($k <= $bias) ? $this->punycode_tmin :
+                                (($k >= $bias + $this->punycode_tmax) ? $this->punycode_tmax : $k-$bias);
+                        if ($q < $t) break;
+                        // $add = $t + (($q - $t) % ($this->punycode_base - $t));
+                        // $encoded .= $this->punycode_base36{$add};
+                        $encoded .= $this->_encode_digit(round($t + (($q - $t) % ($this->punycode_base - $t)), 0));
+                        $q = ($q - $t) / ($this->punycode_base - $t);
                     }
+                    // $encoded .= $this->punycode_base36{$q};
+                    $encoded .= $this->_encode_digit($q);
+                    $bias = $this->_adapt($delta, $codecount+1, $is_first);
+                    $codecount++;
+                    $delta = 0;
+                    $is_first = FALSE;
+                }
             }
-            $delta += $rest + 1;
+            $delta++;
             $cur_code++;
         }
         return $encoded;
@@ -304,39 +295,21 @@ class idna_convert
         return FALSE; // final character missing
     }
 
-    // Convert char and position to base36 string
-    function _putwc($len, $delta, $bias)
-    {
-        $return = '';
-        for ($k = $this->punycode_base - $bias; 1; $k += $this->punycode_base) {
-            $t = ($k < $this->punycode_tmin) ? $this->punycode_tmin :
-                 (($k > $this->punycode_tmax) ? $this->punycode_tmax : $k);
-            if ($delta < $t) break;
-            if ($len < 1) return FALSE;
-            $add = ($t + (($delta - $t) % ($this->punycode_base - $t)));
-            $return .= $this->punycode_base36{$add};
-            $len--;
-            $delta = ($delta - $t) / ($this->punycode_base - $t);
-        }
-        if ($len < 1) return FALSE;
-        $add = $delta;
-        $return .= $this->punycode_base36{$add};
-        return $return;
-    }
-
     // Adapt the bias according to the current code point and position
     function _adapt($delta, $npoints, $is_first)
     {
-        $k = 0;
         $delta = $is_first ? ($delta / $this->punycode_damp) : ($delta / 2);
         $delta += $delta / $npoints;
-        while ($delta > (($this->punycode_base - $this->punycode_tmin) * $this->punycode_tmax) / 2) {
+        for ($k = 0;
+                $delta > (($this->punycode_base - $this->punycode_tmin) * $this->punycode_tmax) / 2;
+                $k += $this->punycode_base) {
             $delta = $delta / ($this->punycode_base - $this->punycode_tmin);
-            $k++;
         }
-        return ($this->punycode_base * $k +
-                ((($this->punycode_base - $this->punycode_tmin + 1) * $delta) /
-                 ($delta + $this->punycode_skew)));
+        return $k + ($this->punycode_base - $this->punycode_tmin + 1) * $delta / ($delta + $this->punycode_skew);
+    }
+
+    function _encode_digit($d) {
+        return chr($d + 22 + 75 * ($d < 26));
     }
 
     // Internal error handling method
