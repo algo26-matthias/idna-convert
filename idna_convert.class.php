@@ -47,9 +47,8 @@
  * ACE input and output is always expected to be ASCII.
  *
  * @author  Matthias Sommerfeld <mso@phlylabs.de>
- * @author  Leonid Kogan <lko@neuse.de>
  * @copyright 2004-2010 phlyLabs Berlin, http://phlylabs.de
- * @version 0.6.9 2010-11-04
+ * @version 0.7.0 2010-11-20
  */
 class idna_convert
 {
@@ -82,7 +81,6 @@ class idna_convert
     protected $_api_encoding = 'utf8';   // Default input charset is UTF-8
     protected $_allow_overlong = false;  // Overlong UTF-8 encodings are forbidden
     protected $_strict_mode = false;     // Behave strict or not
-    protected $_encode_german_sz = true; // True to encode German ß; False, if not
 
     /**
      * the constructor
@@ -96,9 +94,6 @@ class idna_convert
         $this->slast = $this->_sbase + $this->_lcount * $this->_vcount * $this->_tcount;
         // If parameters are given, pass these to the respective method
         if (is_array($options)) return $this->set_parameter($options);
-        if (!$this->_encode_german_sz) {
-            $this->NP['replacemaps'][0xDF] = array(0x73, 0x73);
-        }
     }
 
     /**
@@ -142,7 +137,11 @@ class idna_convert
                 $this->_strict_mode = ($v) ? true : false;
                 break;
             case 'encode_german_sz':
-                $this->_encode_german_sz = ($v) ? true : false;
+                if (!$v) {
+                    $this->NP['replacemaps'][0xDF] = array(0x73, 0x73);
+                } else {
+                    unset($this->NP['replacemaps'][0xDF]);
+                }
                 break;
             default:
                 $this->_error('Set Parameter: Unknown option '.$k);
