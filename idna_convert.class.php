@@ -48,10 +48,9 @@
  *
  * @author  Matthias Sommerfeld <mso@phlylabs.de>
  * @author  Leonid Kogan <lko@neuse.de>
- * @copyright 2004-2008 phlyLabs Berlin, http://phlylabs.de
- * @version 0.6.0
+ * @copyright 2004-2009 phlyLabs Berlin, http://phlylabs.de
+ * @version 0.6.2
  * @changelog since 0.5.1 class updated to PHP5/6 style should be compatible to PHP 4.3+
- *
  */
 class idna_convert
 {
@@ -764,7 +763,12 @@ class idna_convert
     {
         $output = array();
         $out_len = 0;
-        $inp_len = strlen($input);
+        // Patch by Daniel Hahler; work around prolbem with mbstring.func_overload
+        if (function_exists('mb_strlen')) {
+            $inp_len = mb_strlen($input, '8bit');
+        } else {
+            $inp_len = strlen($input);
+        }
         $mode = 'next';
         $test = 'none';
         for ($k = 0; $k < $inp_len; ++$k) {
@@ -840,7 +844,7 @@ class idna_convert
     private function _ucs4_to_utf8($input)
     {
         $output = '';
-        foreach ($input as $v) {
+        foreach ($input as $k => $v) {
             if ($v < 128) { // 7bit are transferred literally
                 $output .= chr($v);
             } elseif ($v < (1 << 11)) { // 2 bytes

@@ -62,13 +62,13 @@ input { font-size:8pt;font-family:Verdana, Helvetica, Sans-Serif; }
    Stellen Sie aber sicher, dass Ihr Browser den Zeichensatz <strong>UTF-8</strong> unterstützt.<br />
    <br />
    Wenn Sie Interesse an der zugrundeliegenden PHP-Klasse haben, können Sie diese
-   <a href="http://phlymail.de/de/downloads/idna/download/">hier herunterladen</a>.<br />
+   <a href="http://phlymail.com/de/downloads/idna/download/">hier herunterladen</a>.<br />
    <br />
    Diese Klasse wird ohne Garantie ihrer Funktionstüchtigkeit bereit gestellt. Nutzung auf eigene Gefahr.<br />
    Um sicher zu stellen, dass eine Zeichenkette korrekt umgewandelt wurde, sollten Sie diese immer zurückwandeln
    und das Ergebnis mit Ihrer ursprünglichen Eingabe vergleichen.<br />
    <br />
-   Fehler und Probleme können Sie gern an <a href="mailto:team@phlymail.de">team@phlymail.de</a> senden.<br />
+   Fehler und Probleme können Sie gern an <a href="mailto:team@phlymail.com">team@phlymail.com</a> senden.<br />
    <?php } else { ?>
    This converter allows you to transfer domain names between the encoded (Punycode) notation
    and the decoded (UTF-8) notation.<br />
@@ -79,13 +79,13 @@ input { font-size:8pt;font-family:Verdana, Helvetica, Sans-Serif; }
    Make sure, that your browser is capable of the <strong>UTF-8</strong> character encoding.<br />
    <br />
    For those of you interested in the PHP source of the underlying class, you might
-   <a href="http://phlymail.de/en/downloads/idna/download/">download it here</a>.<br />
+   <a href="http://phlymail.com/en/downloads/idna/download/">download it here</a>.<br />
    <br />
    Please be aware, that this class is provided as is and without any liability. Use at your own risk.<br />
    To ensure, that a certain string has been converted correctly, you should convert it both ways and compare the
    results.<br />
    <br />
-   Please feel free to report bugs and problems to: <a href="mailto:team@phlymail.de">team@phlymail.de</a>.<br />
+   Please feel free to report bugs and problems to: <a href="mailto:team@phlymail.com">team@phlymail.com</a>.<br />
    <?php } ?>
    <br />
    </div>
@@ -109,7 +109,7 @@ input { font-size:8pt;font-family:Verdana, Helvetica, Sans-Serif; }
     </td>
    </tr>
    </table><br />
-   <span id="copy">Version used: 0.6.0; (c) <a href="http://phlylabs.de">phlyLabs</a> 2004-2008</span>
+   <span id="copy">Version used: 0.6.2; (c) <a href="http://phlylabs.de">phlyLabs</a> 2004-2009</span>
 </div>
  </td>
 </tr>
