@@ -38,7 +38,7 @@
  * simple strings and complete email addresses as well. That means, that you might
  * use any of the following notations:
  *
- * - www.nörgler.com
+ * - www.nï¿½rgler.com
  * - xn--nrgler-wxa
  * - xn--brse-5qa.xn--knrz-1ra.info
  *
@@ -51,7 +51,7 @@
  * @author  Markus Nix <mnix@docuverse.de>
  * @author  Matthias Sommerfeld <mso@phlylabs.de>
  * @package Net
- * @version $Id: IDNA.php,v 0.3.6 2004/08/11 17:13:21 phlylabs_de Exp $
+ * @version $Id: IDNA.php,v 0.4.0 2005/07/30 06:06 phlylabs_de Exp $
  */
 
 class Net_IDNA
@@ -2498,6 +2498,7 @@ class Net_IDNA
         // Start with the prefix; copy it to output
         $encoded = $this->_punycode_prefix;
 
+        $encoded = '';
         // Copy all basic code points to output
         for ($i = 0; $i < $deco_len; ++$i) {
             if (preg_match('![0-9a-zA-Z-]!', chr($decoded[$i]))) {
@@ -2505,6 +2506,13 @@ class Net_IDNA
                 $codecount++;
             }
         }
+
+        // All codepoints were basic ones
+        if ($codecount == $deco_len) {
+            return $encoded;
+        }
+        // Start with the prefix; copy it to output
+        $encoded = $this->_punycode_prefix . $encoded;
 
         // If we have basic code points in output, add an hyphen to the end
         if ($codecount) {
@@ -2573,7 +2581,7 @@ class Net_IDNA
     {
         // We do need to find the Punycode prefix
         if (!preg_match('!^' . preg_quote($this->_punycode_prefix, '!') . '!', $encoded)) {
-            throw new Exception('This is not a punycode string.');
+            return false;
         }
 
         $encode_test = preg_replace('!^' . preg_quote($this->_punycode_prefix, '!') . '!', '', $encoded);
@@ -2649,11 +2657,11 @@ class Net_IDNA
      */
     private function _adapt($delta, $npoints, $is_first)
     {
-        $delta  = ($is_first)? ($delta / $this->_damp) : ($delta / 2);
-        $delta += $delta / $npoints;
+        $delta = (int) ($is_first ? ($delta / $this->_damp) : ($delta / 2));
+        $delta += (int) ($delta / $npoints);
 
         for ($k = 0; $delta > (($this->_base - $this->_tmin) * $this->_tmax) / 2; $k += $this->_base) {
-            $delta = $delta / ($this->_base - $this->_tmin);
+            $delta = (int) ($delta / ($this->_base - $this->_tmin));
         }
 
         return (int) ($k + ($this->_base - $this->_tmin + 1) * $delta / ($delta + $this->_skew));
@@ -2993,88 +3001,73 @@ class Net_IDNA
      */
     private function _utf8_to_ucs4($input)
     {
-        $output  = array();
+        $output = array();
         $out_len = 0;
         $inp_len = strlen($input);
-        $mode    = 'next';
-
+        $mode = 'next';
+        $test = 'none';
         for ($k = 0; $k < $inp_len; ++$k) {
-            // Extract byte from input string
-            $v = ord($input{$k});
+            $v = ord($input{$k}); // Extract byte from input string
 
-            // echo chr($v) . ' ' . Net_IDNA::_showBitmask($v) . ' ' . join('.', $output) . '<br />';
-
-            // We found an ASCII char - put into string as is
-            if ($v < 128) {
+            if ($v < 128) { // We found an ASCII char - put into stirng as is
                 $output[$out_len] = $v;
                 ++$out_len;
-
-                if ($mode == 'add') {
-                    throw new Exception('Conversion from UTF-8 to UCS-4 failed: malformed input at byte ' . $k);
+                if ('add' == $mode) {
+                    $this->_error('Conversion from UTF-8 to UCS-4 failed: malformed input at byte '.$k);
+                    return false;
                 }
-
                 continue;
             }
-
-            // Try to find the next start byte; determine the width of the Unicode char
-            if ('next' == $mode) {
-                if ($v >> 5 == 6) {
-                    // &110xxxxx 10xxxxx
-                    $mode = 'add';
+            if ('next' == $mode) { // Try to find the next start byte; determine the width of the Unicode char
+                $start_byte = $v;
+                $mode = 'add';
+                $test = 'range';
+                if ($v >> 5 == 6) { // &110xxxxx 10xxxxx
                     $next_byte = 0; // Tells, how many times subsequent bitmasks must rotate 6bits to the left
                     $v = ($v - 192) << 6;
-                } else if ($v >> 4 == 14) {
-                    // &1110xxxx 10xxxxxx 10xxxxxx
-                    $mode = 'add';
+                } elseif ($v >> 4 == 14) { // &1110xxxx 10xxxxxx 10xxxxxx
                     $next_byte = 1;
                     $v = ($v - 224) << 12;
-                } else if ($v >> 3 == 30) {
-                    // &11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
-                    $mode = 'add';
+                } elseif ($v >> 3 == 30) { // &11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
                     $next_byte = 2;
                     $v = ($v - 240) << 18;
-                } else if ($v >> 2 == 62) {
-                    // &111110xx 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx
-                    $mode = 'add';
+                } elseif ($v >> 2 == 62) { // &111110xx 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx
                     $next_byte = 3;
                     $v = ($v - 248) << 24;
-                } else if ($v >> 1 == 126) {
-                    // &1111110x 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx
-                    $mode = 'add';
+                } elseif ($v >> 1 == 126) { // &1111110x 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx
                     $next_byte = 4;
                     $v = ($v - 252) << 30;
                 } else {
-                    throw new Exception('This might be UTF-8, but I don\'t understand it at byte ' . $k);
+                    $this->_error('This might be UTF-8, but I don\'t understand it at byte '.$k);
+                    return false;
                 }
-
-                if ($mode == 'add') {
-                    $output[$out_len] = (int)$v;
+                if ('add' == $mode) {
+                    $output[$out_len] = (int) $v;
                     ++$out_len;
-
                     continue;
                 }
             }
-
-            if ($mode == 'add') {
-                if ($v == 128 && !$this->_allow_overlong) {
-                    throw new Exception('Bogus UTF-8 character detected (unnecessarily long encoding) at byte ' . $k);
+            if ('add' == $mode) {
+                if (!$this->_allow_overlong && $test == 'range') {
+                    $test = 'none';
+                    if (($v < 0xA0 && $start_byte == 0xE0) || ($v < 0x90 && $start_byte == 0xF0) || ($v > 0x8F && $start_byte == 0xF4)) {
+                        $this->_error('Bogus UTF-8 character detected (out of legal range) at byte '.$k);
+                        return false;
+                    }
                 }
-
-                // Bit mask must be 10xxxxxx
-                if ($v >> 6 == 2) {
+                if ($v >> 6 == 2) { // Bit mask must be 10xxxxxx
                     $v = ($v - 128) << ($next_byte * 6);
                     $output[($out_len - 1)] += $v;
                     --$next_byte;
                 } else {
-                    throw new Exception('Conversion from UTF-8 to UCS-4 failed: malformed input at byte ' . $k);
+                    $this->_error('Conversion from UTF-8 to UCS-4 failed: malformed input at byte '.$k);
+                    return false;
                 }
-
                 if ($next_byte < 0) {
                     $mode = 'next';
                 }
             }
-        }
-
+        } // for
         return $output;
     }
 

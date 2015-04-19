@@ -1,12 +1,19 @@
 <?php
 header('Content-Type: text/html; charset=UTF-8');
 
-include('idna_convert.class.php');
-$IDN = new Net_IDNA();
+if (isset($_REQUEST['pear'])) {
+    include('idna_convert.class.php5.php');
+    $IDN = new Net_IDNA();
+    $add = '<input type="hidden" name="pear" value="'.$_REQUEST['pear'].'" />'."\n";
+} else {
+    include('idna_convert.class.php');
+    $IDN = new idna_convert();
+    $add = '';
+}
 
 if (isset($_REQUEST['encode'])) {
     $decoded = isset($_REQUEST['decoded']) ? $_REQUEST['decoded'] : '';
-    $encoded = $IDN->encode($decoded, 'utf8');
+    $encoded = $IDN->encode($decoded);
 }
 if (isset($_REQUEST['decode'])) {
     $encoded = isset($_REQUEST['encoded']) ? $_REQUEST['encoded'] : '';
@@ -98,15 +105,13 @@ input {
    Just enter the domain name in the respective field and click on the button right beside it to have
    it converted. Please note, that you might even enter complete domain names (like j&#xFC;rgen-m&#xFC;ller.de)
    or a email addresses.<br />
-   Since the underlying library is still buggy, we cannot guarantee its usefulness and correctness. You should
-   always doublecheck the results given here by converting them back to the original form.<br />
-
-   Any productive use is discouraged and prone to fail.<br />
+   We cannot guarantee its usefulness and correctness. You should always doublecheck the results given here by
+   converting them back to the original form.<br />
    <br />
    Make sure, that your browser is capable of the <strong>UTF-8</strong> character encoding.<br />
    <br />
    For those of you interested in the PHP source of the underlying class, you might
-   <a href="http://phlymail.de/?page=products&what=idna">download it here</a>.<br />
+   <a href="http://phlymail.de/de/downloads/idna/download/">download it here</a>.<br />
 
    Please be aware, that this class is provided as is and without any liability. Use at your own risk.<br />
    It is free for <strong>non-commercial</strong> purposes.<br />
@@ -120,22 +125,22 @@ input {
     <td class="thead" align="right">Punycode</td>
    </tr>
    <tr>
-    <td align="right">
+    <td>
      <form action="<?php echo $_SERVER['PHP_SELF']; ?>" method="GET">
-      <input type="text" name="decoded" value="<?php echo $decoded; ?>" size="44" maxlength="255" /><br />
+      <input type="text" name="decoded" value="<?php echo $decoded; ?>" size="32" maxlength="255" />
       <input type="submit" name="encode" value="Encode &gt;&gt;" /><?php echo $add; ?>
      </form>
     </td>
-    <td align="left">
+    <td>
      <form action="<?php echo $_SERVER['PHP_SELF']; ?>" method="GET">
-      <input type="text" name="encoded" value="<?php echo $encoded; ?>" size="44" maxlength="255" /><br />
       <input type="submit" name="decode" value="&lt;&lt; Decode" /><?php echo $add; ?>
+      <input type="text" name="encoded" value="<?php echo $encoded; ?>" size="32" maxlength="255" />
      </form>
     </td>
    </tr>
-   </table>
+   </table><br />
    <br />
-   <span id="copy">Version used: 0.3.5; (c) phlyLabs 2004<br />
+   <span id="copy">Version used: 0.4.0; (c) phlyLabs 2004-2005<br />
     Made by the team of <a href="http://phlymail.de">http://phlymail.de</a></span>
 </div>
  </td>
