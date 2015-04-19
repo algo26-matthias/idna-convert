@@ -3,17 +3,8 @@
 /* idna_convert.class.php - Encode / Decode Internationalized Domain Names   */
 /* (c) 2004 phlyLabs, Berlin (http://phlylabs.de)                            */
 /* All rights reserved                                                       */
-/* v0.3.5                                                                    */
+/* v0.3.6                                                                    */
 /* ------------------------------------------------------------------------- */
-
-/* Remove this block */
-/* Changes since 0.3.4:
- - Added second parameter to encode() and decode(), which allow to pass a
-   desired Unicode format for just that operation
- - Added an adapter class for aligning Net_IDNA and idna_convert regarding
-   the API
-*/
-
 
 // {{{ license
 
@@ -2372,7 +2363,7 @@ class idna_convert
             }
             $bias = $this->_adapt($idx - $old_idx, $deco_len + 1, $is_first);
             $is_first = false;
-            $char += ($idx / ($deco_len + 1)) % 256;
+            $char += (int) ($idx / ($deco_len + 1));
             $idx %= ($deco_len + 1);
             if ($deco_len > 0) {
                 // Make room for the decoded char

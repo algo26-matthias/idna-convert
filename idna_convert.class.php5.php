@@ -51,7 +51,7 @@
  * @author  Markus Nix <mnix@docuverse.de>
  * @author  Matthias Sommerfeld <mso@phlylabs.de>
  * @package Net
- * @version $Id: IDNA.php,v 1.9 2004/08/06 17:13:21 phlylabs_de Exp $
+ * @version $Id: IDNA.php,v 0.3.6 2004/08/11 17:13:21 phlylabs_de Exp $
  */
 
 class Net_IDNA
@@ -2271,16 +2271,18 @@ class Net_IDNA
     /**
      * Encode a given UTF-8 domain name.
      *
-     * @param    string     $decoded     Domain name (UTF-8)
+     * @param    string     $decoded     Domain name (UTF-8 or UCS-4)
+     * [@param    string     $encoding    Desired input encoding, see {@link set_parameter}]
      * @return   string                  Encoded Domain name (ACE string)
      * @return   mixed                   processed string
      * @throws   Exception
      * @access   public
      */
-    public function encode($decoded)
+    public function encode($decoded, $one_time_encoding = false)
     {
         // Forcing conversion of input to UCS4 array
-        switch ($this->_api_encoding) {
+        // If one time encoding is given, use this, else the objects property
+        switch (($one_time_encoding) ? $one_time_encoding : $this->_api_encoding) {
         case 'utf8':
             $decoded = $this->_utf8_to_ucs4($decoded);
             break;
@@ -2289,7 +2291,7 @@ class Net_IDNA
         case 'ucs4_array': // No break; before this line. Catch case, but do nothing
            break;
         default:
-            throw new Exception('Unsupported input format: '.$this->_api_encoding);
+            throw new Exception('Unsupported input format');
         }
 
         // No input, no output, what else did you expect?
@@ -2359,13 +2361,25 @@ class Net_IDNA
      * Decode a given ACE domain name.
      *
      * @param    string     $encoded     Domain name (ACE string)
-     * @return   string                  Decoded Domain name (UTF-8)
-     * @return   mixed                   processed string
+     * [@param    string     $encoding    Desired output encoding, see {@link set_parameter}]
+     * @return   string                  Decoded Domain name (UTF-8 or UCS-4)
      * @throws   Exception
      * @access   public
      */
-    public function decode($input)
+    public function decode($input, $one_time_encoding = false)
     {
+        // Optionally set
+        if ($one_time_encoding) {
+            switch ($one_time_encoding) {
+            case 'utf8':
+            case 'ucs4_string':
+            case 'ucs4_array':
+                break;
+            default:
+                $this->_error('Unknown encoding '.$one_time_encoding);
+                return false;
+            }
+        }
         // Make sure to drop any newline characters around
         $input = trim($input);
 
@@ -2412,7 +2426,8 @@ class Net_IDNA
             $return = $this->_decode($input);
         }
         // The output is UTF-8 by default, other output formats need conversion here
-        switch ($this->_api_encoding) {
+        // If one time encoding is given, use this, else the objects property
+        switch (($one_time_encoding) ? $one_time_encoding : $this->_api_encoding) {
         case 'utf8':
             return $return;
             break;
@@ -2423,7 +2438,7 @@ class Net_IDNA
             return $this->_utf8_to_ucs4($return);
             break;
         default:
-            throw new Exception('Unsupported output format: '.$this->_api_encoding);
+            throw new Exception('Unsupported output format');
         }
     }
 
@@ -2606,7 +2621,7 @@ class Net_IDNA
 
             $bias      = $this->_adapt($idx - $old_idx, $deco_len + 1, $is_first);
             $is_first  = false;
-            $char     += ($idx / ($deco_len + 1)) % 256;
+            $char     += (int) ($idx / ($deco_len + 1));
             $idx      %= ($deco_len + 1);
 
             if ($deco_len > 0) {
