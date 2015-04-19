@@ -1,6 +1,4 @@
 <?php
-error_reporting(E_ALL);
-
 header('Content-Type: text/html; charset=UTF-8');
 
 include('idna_convert.class.php');
@@ -69,6 +67,10 @@ input {
     color: rgb(60, 60, 80);
 }
 
+#subhead {
+    font-size: 8pt;
+}
+
 #bla {
     font-size: 8pt;
     text-align: left;
@@ -80,26 +82,33 @@ input {
 <tr>
  <td id="mitte">
   <div id="round">
-   <strong>IDNA Converter (<a href="http://faqs.org/rfcs/rfc3492.html" target="_blank">RFC3492</a>; Punycode)</strong><br />
+   <strong>PHP IDNA Converter</strong><br />
+   <span id="subhead">
+    See <a href="http://faqs.org/rfcs/rfc3490.html" title="IDNA" target="_blank">RFC3490</a>,
+    <a href="http://faqs.org/rfcs/rfc3491.html" title="Nameprep, a Stringprep profile" target="_blank">RFC3491</a>,
+    <a href="http://faqs.org/rfcs/rfc3492.html" title="Punycode" target="_blank">RFC3492</a> and
+    <a href="http://faqs.org/rfcs/rfc3454.html" title="Stringprep" target="_blank">RFC3454</a><br />
+   </span>
    <br />
    <div id="bla">
    This converter allows you to transfer domain names between the encoded (Punycode) notation
-   and the decoded (8bit) notation.<br />
+   and the decoded (UTF-8) notation.<br />
    Just enter the domain name in the respective field and click on the button right beside it to have
    it converted. Please be aware, that you might even enter complete domain names (like j&#xFC;rgen-m&#xFC;ller.de),
-   but neither should you enter the protocol (<strong>DO NOT</strong> enter http://m&#xFC;ller.de) nor
-   an email address.<br />
-   Since the underlying library is in a quite early state of development we cannot guarantee its
-   usefulness and correctness. You should always doublecheck the results given here by converting them
-   back to the original form.<br />
+   but without the protocol (<strong>DO NOT</strong> enter http://m&#xFC;ller.de) or an email address.<br />
+   Since the underlying library is still buggy, we cannot guarantee its usefulness and correctness. You should
+   always doublecheck the results given here by converting them back to the original form.<br />
+   Any productive use is discouraged and prone to fail.<br />
    <br />
    Make sure, that your browser is capable of the <strong>UTF-8</strong> character encoding.<br />
    <br />
    For those of you interested in the PHP source of the underlying class, you might
-   <a href="http://phlymail.de/cgi-bin/dlmanager.cgi?Goodies/idna_convert_023.zip">download it here</a>.<br />
+   <a href="http://phlymail.de/cgi-bin/dlmanager.cgi?Goodies/idna_convert_024.zip">download it here</a> (latest version: 0.2.4).<br />
    Please be aware, that this class is provided as is and without any liability. Use at your own risk.<br />
+   It is free for <strong>non-commercial</strong> purposes.<br />
    <br />
-   Please feel free to report bugs and problems to: <a href="mailto:team@phlymail.de">team@phlymail.de</a><br />
+   Please feel free to report bugs and problems to: <a href="mailto:team@phlymail.de">team@phlymail.de</a> or
+   <a href="mailto:idnaconv@code42.de">idnaconv@code42.de</a>.<br />
    <br />
    </div>
    <table border="0" cellpadding="2" cellspacing="2" align="center">
@@ -123,7 +132,7 @@ input {
    </tr>
    </table><br />
    <br />
-   <span id="copy">(c) blue birdy 2004<br />
+   <span id="copy">class: v0.2.7, npdata: v0.1.1; (c) blue birdy 2004<br />
     This service is brought to you by <a href="http://phlymail.de">http://phlymail.de</a></span>
 </div>
  </td>

@@ -3,7 +3,7 @@
 /* idna_convert.class.php - Encode / Decode punycode based domain names      */
 /* (c) 2004 blue birdy, Berlin (http://bluebirdy.de)                         */
 /* All rights reserved                                                       */
-/* v0.2.4                                                                    */
+/* v0.2.7                                                                    */
 /* ------------------------------------------------------------------------- */
 
 /* By using this file, you agree to the terms and conditions set forth below
@@ -54,7 +54,7 @@ class idna_convert
     // Internal settings, do not mess with them
     var $punycode_prefix = 'xn--';
     var $invalid_ucs =     0x80000000;
-    var $max_ucs =         0x10ffff;
+    var $max_ucs =         0x10FFFF;
     var $base =            36;
     var $tmin =            1;
     var $tmax =            26;
@@ -62,9 +62,18 @@ class idna_convert
     var $damp =            700;
     var $initial_bias =    72;
     var $initial_n =       0x80;
+    var $sbase =           0xAC00;
+    var $lbase =           0x1100;
+    var $vbase =           0x1161;
+    var $tbase =           0x11a7;
+    var $lcount =          19;
+    var $vcount =          21;
+    var $tcount =          28;
+    var $ncount =          588; // vcount * tcount
+    var $scount =          11172; // lcount * tcount * vcount
     var $error =           FALSE;
 
-    // See set_parameter() for fetails of how to change the following settings
+    // See set_parameter() for details of how to change the following settings
     // from within your script / application
     var $use_utf8 =        TRUE;  // Default input charset is UTF-8
     var $allow_overlong =  FALSE; // Overlong UTF-8 encodings are forbidden
@@ -72,6 +81,7 @@ class idna_convert
     // The constructor
     function idna_convert()
     {
+        $this->slast = $this->sbase + $this->lcount * $this->vcount * $this->tcount;
         include(dirname(__FILE__).'/idna_convert.npdata.php');
         return TRUE;
     }
@@ -366,24 +376,22 @@ class idna_convert
     */
     function _nameprep($input)
     {
+        echo '<pre>';
+
         $output = array();
         $error = FALSE;
         //
         // Mapping
         // Walking through the input array, performing the required steps on each of
         // the input chars and putting the result into the output array
+        // While mapping required chars we apply the cannonical ordering
+
+        $this->_show_hex($input);
         foreach ($input as $v) {
+            // Map to nothing == skip that code point
             if (in_array($v, $this->np_map_nothing)) continue;
-            if (isset($this->np_casemap[$v])) {
-                foreach ($this->np_casemap[$v] as $out) {
-                    $output[] = $out;
-                }
-            } else {
-                $output[] = $v;
-            }
-        }
-        // Walking through the effective output trying to find prohibited chars
-        foreach ($output as $v) {
+
+            // Try to find prohibited input
             if (in_array($v, $this->np_prohibit)) {
                 $this->_error('NAMEPREP: Prohibited input U+'.sprintf('%04X', $v));
                 return FALSE;
@@ -394,23 +402,207 @@ class idna_convert
                     return FALSE;
                 }
             }
-        }
-        //
-        // Normalization
-        //
-        $input = $output;
-        $output = array();
-        // Apply additional decomposition mappings
-        foreach ($input as $v) {
-            if (isset($this->np_norm_deco[$v])) {
-                foreach ($this->np_norm_deco[$v] as $out) {
+            //
+            // Hangul syllable decomposition
+            if (0xAC00 <= $v && $v <= 0xD7AF) {
+                // foreach ($this->_apply_cannonical_ordering($this->_hangul_decompose($v)) as $out) {
+                foreach ($this->_hangul_decompose($v) as $out) {
+                    $output[] = $out;
+                }
+            // There's a decomposition mapping for that code point
+            } elseif (isset($this->np_casemap[$v])) {
+                foreach ($this->_apply_cannonical_ordering($this->np_casemap[$v]) as $out) {
                     $output[] = $out;
                 }
             } else {
                 $output[] = $v;
             }
         }
+        echo "After Decompose\n";
+        $this->_show_hex($output);
+        //
+        // Combine code points
+        //
+        $last_class   = 0;
+        $last_starter = 0;
+        $out_len      = count($output);
+        for ($i = 0; $i < $out_len; ++$i) {
+            $class = $this->_get_combining_class($output[$i]);
+            if ($i && (!$last_class || $last_class != $class)/* && $class */) {
+                $seq_len = $i - $last_starter;
+                // Try to combine the found sequence
+                $out = $this->_combine(array_slice($output, $last_starter, $seq_len));
+                // On match: Replace the last starter with the composed character and remove
+                // the now redundant non-starter
+                if ($out) {
+                    $output[$last_starter] = $out;
+                    for ($j = $i+1; $j < $out_len; ++$j) {
+                        $output[$j-1] = $output[$j];
+                    }
+                    // Rewind the for loop by one, since there can be more possible compositions
+                    $i--;
+                    $out_len--;
+                    $last_class = ($i == $last_starter) ? 0 : $this->_get_combining_class($output[$i-1]);
+                    continue;
+                }
+            }
+            if (!$class) { // The current class is 0
+                $last_starter = $i;
+            }
+            $last_class = $class;
+        }
+
+        echo "After Normalize\n";
+        $this->_show_hex($output);
+        echo '</pre>';
         return $output;
+    }
+
+    /**
+    * Decomposes a Hangul syllable
+    * (see http://www.unicode.org/unicode/reports/tr15/#Hangul
+    * @param    integer  32bit UCS4 code point
+    * @return   array    Either Hangul Syllable decomposed or original 32bit value as one value array
+    * @access   private
+    */
+    function _hangul_decompose($char)
+    {
+        $sindex = $char - $this->sbase;
+        if ($sindex < 0 || $sindex >= $this->scount) {
+            return array($char);
+        }
+        $result = array();
+        $T = $this->tbase + $sindex % $this->tcount;
+        $result[] = (int) ($this->lbase + $sindex / $this->ncount);
+        $result[] = (int) ($this->vbase + ($sindex % $this->ncount) / $this->tcount);
+        if ($T != $this->tbase) $result[] = $T;
+        return $result;
+    }
+
+    /**
+    * Ccomposes a Hangul syllable
+    * (see http://www.unicode.org/unicode/reports/tr15/#Hangul
+    * @param    array    Decomposed UCS4 sequence
+    * @return   array    UCS4 sequence with syllables composed
+    * @access   private
+    */
+    function _hangul_compose($input)
+    {
+        echo "Hangul Compose:\n";
+        print_r($input);
+        $inp_len = count($input);
+        if (!$inp_len) return array();
+        $result = array();
+        $last = $input[0];
+        $result[] = $last; // copy first char from input to output
+
+        for ($i = 1; $i < $inp_len; ++$i) {
+            $char = $input[$i];
+
+            // Find out, wether two current characters from L and V
+            $lindex = $last - $this->lbase;
+            if (0 <= $lindex && $lindex < $this->lcount) {
+                $vindex = $char - $this->vbase;
+                if (0 <= $vindex && $vindex < $this->vcount) {
+                    // create syllable of form LV
+                    $last = ($this->sbase + ($lindex * $this->vcount + $vindex) * $this->tcount);
+                    $out_off = count($result) - 1;
+                    $result[$out_off] = $last; // reset last
+                    continue; // discard char
+                }
+            }
+
+            // Find out, wether two current characters are LV and T
+            $sindex = $last - $this->sbase;
+            if (0 <= $sindex && $sindex < $this->scount && ($sindex % $this->tcount) == 0) {
+                $tindex = $char - $this->tbase;
+                if (0 <= $tindex && $tindex <= $this->tcount) {
+                    // create syllable of form LVT
+                    $last += $tindex;
+                    $out_off = count($result) - 1;
+                    $result[$out_off] = $last; // reset last
+                    continue; // discard char
+                }
+            }
+            // if neither case was true, just add the character
+            $last = $char;
+            $result[] = $char;
+        }
+        return $result;
+    }
+
+    /**
+    * Returns the combining class of a certain wide char
+    * @param    integer    Wide char to check (32bit integer)
+    * @return   integer    Combining class if found, else 0
+    * @access   private
+    */
+    function _get_combining_class($char)
+    {
+        return isset($this->np_norm_combcls[$char]) ? $this->np_norm_combcls[$char] : 0;
+    }
+
+    /**
+    * Apllies the cannonical ordering of a decomposed UCS4 sequence
+    * @param    array      Decomposed UCS4 sequence
+    * @return   array      Ordered USC4 sequence
+    * @access   private
+    */
+    function _apply_cannonical_ordering($input)
+    {
+        $swap = TRUE;
+        $size = count($input);
+        while ($swap) {
+            $swap = FALSE;
+            $last = $this->_get_combining_class($input[0]);
+            for ($i = 0; $i < $size - 1; ++$i) {
+                $next = $this->_get_combining_class($input[$i+1]);
+                if ($next != 0 && $last > $next) {
+                    // Move item leftward until it fits
+                    for ($j = $i + 1; $j > 0; --$j) {
+                        if ($this->_get_combining_class($input[$j - 1]) <= $next) break;
+                        $t = $input[$j];
+                        $input[$j] = $input[$j - 1];
+                        $input[$j - 1] = $t;
+                        $swap = 1;
+                    }
+                    // Reentering the loop looking at the old character again
+                    $next = $last;
+                }
+                $last = $next;
+            }
+        }
+        return $input;
+    }
+
+    /**
+    * Do composition of a sequence of starter and non-starter
+    * @param    array      UCS4 Decomposed sequence
+    * @return   array      Ordered USC4 sequence
+    * @access   private
+    */
+    function _combine($input)
+    {
+        $inp_len = count($input);
+        if (1 == $inp_len) return FALSE;
+        // Is it a Hangul syllable?
+        $hangul = $this->_hangul_compose($input);
+        if (count($hangul) != $inp_len) return $hangul;
+        foreach ($this->np_casemap as $k => $v) {
+            if ($v[0] != $input[0]) continue;
+            if (count($v) != $inp_len) continue;
+            $hit = FALSE;
+            foreach ($input as $k2 => $v2) {
+                if ($v2 == $v[$k2]) {
+                    $hit = TRUE;
+                } else {
+                    $hit = FALSE;
+                    break;
+                }
+            }
+            if ($hit) return $k;
+        }
+        return FALSE;
     }
 
     /**
@@ -537,7 +729,7 @@ class idna_convert
     * Output width is automagically determined
     * @access   private
     */
-    function show_bitmask ($octet)
+    function show_bitmask($octet)
     {
         if ($octet >= (1 << 16)) $w = 31;
         elseif ($octet >= (1 << 8)) $w = 15;
@@ -545,6 +737,21 @@ class idna_convert
         $return = '';
         for ($i = $w; $i > -1; $i--) {
             $return .= ($octet & (1 << $i)) ? 1 : '0';
+        }
+        return $return;
+    }
+
+    /**
+    * echo hex represnatation of UCS4 sequence
+    * @param    array      UCS4 sequence
+    * @return   void
+    * @access   private
+    */
+    function _show_hex($input)
+    {
+        $return = '';
+        foreach ($input as $k => $v) {
+            $return .= '['.$k.'] => '.sprintf('%X', $v)."\n";
         }
         return $return;
     }

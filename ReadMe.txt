@@ -7,8 +7,11 @@
 * (c) 2004 blue birdy, Berlin                                                 *
 *******************************************************************************
 
+Introduction
+------------
+
 The class idna_convert allows to convert internationalized domain names
-(see RFC 3492 for detials) as they can be used with various registries worldwide
+(see RFC 3490 for detials) as they can be used with various registries worldwide
 to be translated between their original (localized) form and their encoded form
 as it will be used in the DNS (Domain Name System).
 
@@ -26,8 +29,21 @@ incorrectly encoded or invalid strings will lead to a FALSE response.
 You can query the occured error by calling the method get_last_error().
 
 
-Examples:
----------
+Files
+-----
+
+idna_convert.class.php   - The actual class
+idna_convert.npdata.php  - Nameprep tables, included by the class
+example.php              - An example web page for converting
+ReadMe.txt               - This file
+Licence.txt              - The licence
+
+For using the class, you will have to copy idna_convert.class.php as well as
+idna_convert.npdata.php to the same directory.
+
+
+Examples
+--------
 
 1. Say we wish to encode the domain name nörgler.com:
 
