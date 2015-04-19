@@ -3,7 +3,7 @@
 /* idna_convert.class.php - Encode / Decode Internationalized Domain Names   */
 /* (c) 2004 phlyLabs, Berlin (http://phlylabs.de)                            */
 /* All rights reserved                                                       */
-/* v0.3.1dev                                                                 */
+/* v0.3.2dev                                                                 */
 /* ------------------------------------------------------------------------- */
 
 // {{{ license
@@ -2382,7 +2382,12 @@ class idna_convert
         $encoded = $this->punycode_prefix;
         // Copy all basic code points to output
         for ($i = 0; $i < $deco_len; ++$i) {
-            if (preg_match('![0-9a-zA-Z-]!', chr($decoded[$i]))) {
+            $test = $decoded[$i];
+            // Will match [0-9a-zA-Z-]
+            if ((0x2F < $test && $test < 0x40)
+                    || (0x40 < $test && $test < 0x5B)
+                    || (0x60 < $test && $test <= 0x7B)
+                    || (0x2D == $test)) {
                 $encoded .= chr($decoded[$i]);
                 $codecount++;
             }
