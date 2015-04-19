@@ -4,7 +4,7 @@
 *                                                                             *
 * http://idnaconv.phlymail.de                     mailto:phlymail@phlylabs.de *
 *******************************************************************************
-* (c) 2004-2010 phlyLabs, Berlin                                              *
+* (c) 2004-2011 phlyLabs, Berlin                                              *
 * This file is encoded in UTF-8                                               *
 *******************************************************************************
 
@@ -45,6 +45,9 @@ containing ß.
 In older builds "ß" was mapped to "ss". Should you still need this behaviour,
 see example 5 below.
 
+ATTENTION: As of version 0.8.0 the class fully supports IDNA 2008. Thus the 
+aforementioned parameter is deprecated and replaced by a parameter to switch
+between the standards. See the updated example 5 below.
 
 Files
 -----
@@ -121,20 +124,27 @@ $output = $IDN->encode_uri($input);
 echo $output; // http://nörgler:secret@xn--nrgler-wxa.com/my_päth_is_not_ÄSCII/
 
 
-5. Since per default this class does no longer map "ß" to "ss", we wish to enforce
-   the mapping anyway. Thus we need to pass a parameter to the constructor:
+5. To support IDNA 2008, the class needs to be invoked with an additional
+   parameter. This can also be achieved on an instance.
 
 // Include the class
 require_once('idna_convert.class.php');
 // Instantiate it
-$IDN = new idna_convert(array('encode_german_sz' => false));
+$IDN = new idna_convert(array('idn_version' => 2008));
+// Sth. containing the German letter ß
+$input = 'meine-straße.de');
+// Encode it to its punycode presentation
+$output = $IDN->encode_uri($input);
+// Output, what we got now
+echo $output; // xn--meine-strae-46a.de
+// Switch back to old IDNA 2003, the original standard
+$IDN->set_parameter('idn_version', 2003);
 // Sth. containing the German letter ß
 $input = 'meine-straße.de');
 // Encode it to its punycode presentation
 $output = $IDN->encode_uri($input);
 // Output, what we got now
 echo $output; // meine-strasse.de
-
 
 
 Transcode wrapper

@@ -2,7 +2,16 @@
 $encoded = $decoded = $add = '';
 header('Content-Type: text/html; charset=utf-8');
 require_once('idna_convert.class.php');
-$IDN = new idna_convert();
+
+$idn_version = isset($_REQUEST['idn_version']) && $_REQUEST['idn_version'] == 2003 ? 2003 : 2008;
+$IDN = new idna_convert(array('idn_version' => $idn_version));
+
+$version_select = '<select size="1" name="idn_version"><option value="2003">IDNA 2003</option><option value="2008"';
+if ($idn_version == 2008) {
+    $version_select .= ' selected="selected"';
+}
+$version_select .= '>IDNA 2008</option></select>';
+
 if (isset($_REQUEST['encode'])) {
     $decoded = isset($_REQUEST['decoded']) ? stripslashes($_REQUEST['decoded']) : '';
     $encoded = $IDN->encode($decoded);
@@ -42,10 +51,15 @@ h5 {margin:0;font-size:11pt;font-weight:bold;}
 <div id="round">
  <h5>phlyLabs' pure PHP IDNA Converter</h5><br />
  <span id="subhead">
-  See <a href="http://faqs.org/rfcs/rfc3490.html" title="IDNA" target="_blank">RFC3490</a>,
-  <a href="http://faqs.org/rfcs/rfc3491.html" title="Nameprep, a Stringprep profile" target="_blank">RFC3491</a>,
-  <a href="http://faqs.org/rfcs/rfc3492.html" title="Punycode" target="_blank">RFC3492</a> and
-  <a href="http://faqs.org/rfcs/rfc3454.html" title="Stringprep" target="_blank">RFC3454</a><br />
+  See the RFCs <a href="http://faqs.org/rfcs/rfc3490.html" title="IDNA" target="_blank">3490</a>,
+  <a href="http://faqs.org/rfcs/rfc3491.html" title="Nameprep, a Stringprep profile" target="_blank">3491</a>,
+  <a href="http://faqs.org/rfcs/rfc3492.html" title="Punycode" target="_blank">3492</a> and
+  <a href="http://faqs.org/rfcs/rfc3454.html" title="Stringprep" target="_blank">3454</a> as well as
+  <a href="http://faqs.org/rfcs/rfc5890.html" target="_blank">5890</a>,
+  <a href="http://faqs.org/rfcs/rfc5891.html" target="_blank">5891</a>,
+  <a href="http://faqs.org/rfcs/rfc5892.html" target="_blank">5892</a>,
+  <a href="http://faqs.org/rfcs/rfc5893.html" target="_blank">5893</a> and
+  <a href="http://faqs.org/rfcs/rfc5894.html" target="_blank">RFC5894</a>.<br />
  </span>
  <br />
  <div id="bla"><?php if ($lang == 'de') { ?>
@@ -97,6 +111,7 @@ h5 {margin:0;font-size:11pt;font-weight:bold;}
     <td align="right">
      <form action="<?php echo $_SERVER['PHP_SELF']; ?>" method="get">
       <input type="text" name="decoded" value="<?php echo htmlentities($decoded, null, 'UTF-8'); ?>" size="48" maxlength="255" /><br />
+      <?php echo $version_select; ?>
       <input type="submit" name="encode" value="Encode &gt;&gt;" /><?php echo $add; ?>
      </form>
     </td>
@@ -110,7 +125,7 @@ h5 {margin:0;font-size:11pt;font-weight:bold;}
   </tbody>
  </table>
  <br />
- <span id="copy">Version used: 0.6.9; &copy; 2004-2010 phlyLabs Berlin; part of <a href="http://phlymail.com/">phlyMail</a></span>
+ <span id="copy">Version used: 0.8.0; &copy; 2004-2011 phlyLabs Berlin; part of <a href="http://phlymail.com/">phlyMail</a></span>
 </div>
 </body>
 </html>
