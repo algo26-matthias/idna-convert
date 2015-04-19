@@ -150,7 +150,7 @@ input {
     </td>
    </tr>
    </table><br />
-   <span id="copy">Version used: 0.5.0; (c) <a href="http://phlylabs.de">phlyLabs</a> 2004-2007</span>
+   <span id="copy">Version used: 0.5.1; (c) <a href="http://phlylabs.de">phlyLabs</a> 2004-2007</span>
 </div>
  </td>
 </tr>
