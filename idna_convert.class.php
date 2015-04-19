@@ -49,42 +49,40 @@
  * @author  Matthias Sommerfeld <mso@phlylabs.de>
  * @author  Leonid Kogan <lko@neuse.de>
  * @copyright 2004-2010 phlyLabs Berlin, http://phlylabs.de
- * @version 0.6.4 2010-10-13
- * @changelog since 0.5.1 class updated to PHP5/6 style should be compatible to PHP 4.3+
- * - added a missing replace mapping for THAI CHARACTER SARA AM
+ * @version 0.6.9 2010-11-04
  */
 class idna_convert
 {
     // NP See below
 
     // Internal settings, do not mess with them
-    private $_punycode_prefix = 'xn--';
-    private $_invalid_ucs = 0x80000000;
-    private $_max_ucs = 0x10FFFF;
-    private $_base = 36;
-    private $_tmin = 1;
-    private $_tmax = 26;
-    private $_skew = 38;
-    private $_damp = 700;
-    private $_initial_bias = 72;
-    private $_initial_n = 0x80;
-    private $_sbase = 0xAC00;
-    private $_lbase = 0x1100;
-    private $_vbase = 0x1161;
-    private $_tbase = 0x11A7;
-    private $_lcount = 19;
-    private $_vcount = 21;
-    private $_tcount = 28;
-    private $_ncount = 588;   // _vcount * _tcount
-    private $_scount = 11172; // _lcount * _tcount * _vcount
-    private $_error = false;
+    protected $_punycode_prefix = 'xn--';
+    protected $_invalid_ucs = 0x80000000;
+    protected $_max_ucs = 0x10FFFF;
+    protected $_base = 36;
+    protected $_tmin = 1;
+    protected $_tmax = 26;
+    protected $_skew = 38;
+    protected $_damp = 700;
+    protected $_initial_bias = 72;
+    protected $_initial_n = 0x80;
+    protected $_sbase = 0xAC00;
+    protected $_lbase = 0x1100;
+    protected $_vbase = 0x1161;
+    protected $_tbase = 0x11A7;
+    protected $_lcount = 19;
+    protected $_vcount = 21;
+    protected $_tcount = 28;
+    protected $_ncount = 588;   // _vcount * _tcount
+    protected $_scount = 11172; // _lcount * _tcount * _vcount
+    protected $_error = false;
 
     // See {@link set_paramter()} for details of how to change the following
     // settings from within your script / application
-    private $_api_encoding = 'utf8';  // Default input charset is UTF-8
-    private $_allow_overlong = false; // Overlong UTF-8 encodings are forbidden
-    private $_strict_mode = false;    // Behave strict or not
-
+    protected $_api_encoding = 'utf8';   // Default input charset is UTF-8
+    protected $_allow_overlong = false;  // Overlong UTF-8 encodings are forbidden
+    protected $_strict_mode = false;     // Behave strict or not
+    protected $_encode_german_sz = true; // True to encode German ß; False, if not
 
     /**
      * the constructor
@@ -98,7 +96,9 @@ class idna_convert
         $this->slast = $this->_sbase + $this->_lcount * $this->_vcount * $this->_tcount;
         // If parameters are given, pass these to the respective method
         if (is_array($options)) return $this->set_parameter($options);
-        return true;
+        if (!$this->_encode_german_sz) {
+            $this->NP['replacemaps'][0xDF] = array(0x73, 0x73);
+        }
     }
 
     /**
@@ -140,6 +140,9 @@ class idna_convert
                 break;
             case 'strict':
                 $this->_strict_mode = ($v) ? true : false;
+                break;
+            case 'encode_german_sz':
+                $this->_encode_german_sz = ($v) ? true : false;
                 break;
             default:
                 $this->_error('Set Parameter: Unknown option '.$k);
@@ -380,7 +383,7 @@ class idna_convert
      * @param string
      * @return mixed
      */
-    private function _decode($encoded)
+    protected function _decode($encoded)
     {
         $decoded = array();
         // find the Punycode prefix
@@ -437,7 +440,7 @@ class idna_convert
      * @param  string
      * @return mixed
      */
-    private function _encode($decoded)
+    protected function _encode($decoded)
     {
         // We cannot encode a domain name containing the Punycode prefix
         $extract = strlen($this->_punycode_prefix);
@@ -531,7 +534,7 @@ class idna_convert
      * @param int $is_first
      * @return int
      */
-    private function _adapt($delta, $npoints, $is_first)
+    protected function _adapt($delta, $npoints, $is_first)
     {
         $delta = intval($is_first ? ($delta / $this->_damp) : ($delta / 2));
         $delta += intval($delta / $npoints);
@@ -546,7 +549,7 @@ class idna_convert
      * @param    int $d
      * @return string
      */
-    private function _encode_digit($d)
+    protected function _encode_digit($d)
     {
         return chr($d + 22 + 75 * ($d < 26));
     }
@@ -556,7 +559,7 @@ class idna_convert
      * @param    int $cp
      * @return int
      */
-    private function _decode_digit($cp)
+    protected function _decode_digit($cp)
     {
         $cp = ord($cp);
         return ($cp - 48 < 10) ? $cp - 22 : (($cp - 65 < 26) ? $cp - 65 : (($cp - 97 < 26) ? $cp - 97 : $this->_base));
@@ -566,7 +569,7 @@ class idna_convert
      * Internal error handling method
      * @param  string $error
      */
-    private function _error($error = '')
+    protected function _error($error = '')
     {
         $this->_error = $error;
     }
@@ -576,7 +579,7 @@ class idna_convert
      * @param    array    Unicode Characters
      * @return   string   Unicode Characters, Nameprep'd
      */
-    private function _nameprep($input)
+    protected function _nameprep($input)
     {
         $output = array();
         $error = false;
@@ -653,7 +656,7 @@ class idna_convert
      * @param    integer  32bit UCS4 code point
      * @return   array    Either Hangul Syllable decomposed or original 32bit value as one value array
      */
-    private function _hangul_decompose($char)
+    protected function _hangul_decompose($char)
     {
         $sindex = (int) $char - $this->_sbase;
         if ($sindex < 0 || $sindex >= $this->_scount) return array($char);
@@ -670,7 +673,7 @@ class idna_convert
      * @param    array    Decomposed UCS4 sequence
      * @return   array    UCS4 sequence with syllables composed
      */
-    private function _hangul_compose($input)
+    protected function _hangul_compose($input)
     {
         $inp_len = count($input);
         if (!$inp_len) return array();
@@ -711,7 +714,7 @@ class idna_convert
      * @param    integer    Wide char to check (32bit integer)
      * @return   integer    Combining class if found, else 0
      */
-    private function _get_combining_class($char)
+    protected function _get_combining_class($char)
     {
         return isset($this->NP['norm_combcls'][$char]) ? $this->NP['norm_combcls'][$char] : 0;
     }
@@ -721,7 +724,7 @@ class idna_convert
      * @param    array      Decomposed UCS4 sequence
      * @return   array      Ordered USC4 sequence
      */
-    private function _apply_cannonical_ordering($input)
+    protected function _apply_cannonical_ordering($input)
     {
         $swap = true;
         $size = count($input);
@@ -753,7 +756,7 @@ class idna_convert
      * @param    array      UCS4 Decomposed sequence
      * @return   array      Ordered USC4 sequence
      */
-    private function _combine($input)
+    protected function _combine($input)
     {
         $inp_len = count($input);
         foreach ($this->NP['replacemaps'] as $np_src => $np_target) {
@@ -791,7 +794,7 @@ class idna_convert
      * @param string $input
      * @return string
      */
-    private function _utf8_to_ucs4($input)
+    protected function _utf8_to_ucs4($input)
     {
         $output = array();
         $out_len = 0;
@@ -873,7 +876,7 @@ class idna_convert
      * @param string  $input
      * @return string
      */
-    private function _ucs4_to_utf8($input)
+    protected function _ucs4_to_utf8($input)
     {
         $output = '';
         foreach ($input as $k => $v) {
@@ -901,7 +904,7 @@ class idna_convert
      * @param array $input
      * @return string
      */
-    private function _ucs4_to_ucs4_string($input)
+    protected function _ucs4_to_ucs4_string($input)
     {
         $output = '';
         // Take array values and split output to 4 bytes per value
@@ -918,7 +921,7 @@ class idna_convert
      * @param  string $input
      * @return array
      */
-    private function _ucs4_string_to_ucs4($input)
+    protected function _ucs4_string_to_ucs4($input)
     {
         $output = array();
         $inp_len = strlen($input);
@@ -947,7 +950,7 @@ class idna_convert
      * @private array
      * @since 0.5.2
      */
-    private $NP = array
+    protected $NP = array
             ('map_nothing' => array(0xAD, 0x34F, 0x1806, 0x180B, 0x180C, 0x180D, 0x200B, 0x200C
                     ,0x200D, 0x2060, 0xFE00, 0xFE01, 0xFE02, 0xFE03, 0xFE04, 0xFE05, 0xFE06, 0xFE07
                     ,0xFE08, 0xFE09, 0xFE0A, 0xFE0B, 0xFE0C, 0xFE0D, 0xFE0E, 0xFE0F, 0xFEFF
@@ -982,7 +985,7 @@ class idna_convert
                     ,0xD0 => array(0xF0), 0xD1 => array(0xF1), 0xD2 => array(0xF2), 0xD3 => array(0xF3)
                     ,0xD4 => array(0xF4), 0xD5 => array(0xF5), 0xD6 => array(0xF6), 0xD8 => array(0xF8)
                     ,0xD9 => array(0xF9), 0xDA => array(0xFA), 0xDB => array(0xFB), 0xDC => array(0xFC)
-                    ,0xDD => array(0xFD), 0xDE => array(0xFE), 0xDF => array(0x73, 0x73)
+                    ,0xDD => array(0xFD), 0xDE => array(0xFE) /* Here was German "ß" -> "ss", is now configurable */
                     ,0x100 => array(0x101), 0x102 => array(0x103), 0x104 => array(0x105)
                     ,0x106 => array(0x107), 0x108 => array(0x109), 0x10A => array(0x10B)
                     ,0x10C => array(0x10D), 0x10E => array(0x10F), 0x110 => array(0x111)

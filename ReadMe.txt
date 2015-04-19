@@ -35,9 +35,15 @@ call the method setParams() - please see the inline documentation for details.
 ACE strings (the Punycode form) are always 7bit ASCII strings.
 
 ATTENTION: As of version 0.6.0 this class is written in the OOP style of PHP5.
-Since PHP4 is no longer actively maintained, you should switch to PHP5 as fast as 
+Since PHP4 is no longer actively maintained, you should switch to PHP5 as fast as
 possible.
 We expect to see no compatibility issues with the upcoming PHP6, too.
+
+ATTENTION: BC break! As of version 0.6.4 the class per default allows the German
+ligature ß to be encoded as the DeNIC, the registry for .DE allows domains
+containing ß.
+In older builds "ß" was mapped to "ss". Should you still need this behaviour,
+see example 5 below.
 
 
 Files
@@ -102,7 +108,7 @@ foreach (file('ucs4-domains.txt') as $line) {
 4. We wish to convert a whole URI into the IDNA form, but leave the path or
    query string component of it alone. Just using encode() would lead to mangled
    paths or query strings. Here the public method encode_uri() comes into play:
-   
+
 // Include the class
 require_once('idna_convert.class.php');
 // Instantiate it
@@ -115,6 +121,22 @@ $output = $IDN->encode_uri($input);
 echo $output; // http://nörgler:secret@xn--nrgler-wxa.com/my_päth_is_not_ÄSCII/
 
 
+5. Since per default this class does no longer map "ß" to "ss", we wish to enforce
+   the mapping anyway. Thus we need to pass a parameter to the constructor:
+
+// Include the class
+require_once('idna_convert.class.php');
+// Instantiate it
+$IDN = new idna_convert(array('encode_german_sz' => false));
+// Sth. containing the German letter ß
+$input = 'meine-straße.de');
+// Encode it to its punycode presentation
+$output = $IDN->encode_uri($input);
+// Output, what we got now
+echo $output; // meine-strasse.de
+
+
+
 Transcode wrapper
 -----------------
 In case you have strings in different encoding than ISO-8859-1 and UTF-8 you might need to
@@ -122,7 +144,7 @@ translate these strings to UTF-8 before feeding the IDNA converter with it.
 PHP's built in functions utf8_encode() and utf8_decode() can only deal with ISO-8859-1.
 Use the file transcode_wrapper.php for the conversion. It requires either iconv, libiconv
 or mbstring installed together with one of the relevant PHP extensions.
-The functions you will find useful are 
+The functions you will find useful are
 encode_utf8() as a replacement for utf8_encode() and
 decode_utf8() as a replacement for utf8_decode().
 
@@ -144,7 +166,7 @@ flavours. The class is static, it requires PHP5. It can transcode into each othe
 - UTF-8
 - UTF-7
 - UTF-7 IMAP (modified UTF-7)
-All encodings expect / return a string in the given format, with one major exception: 
+All encodings expect / return a string in the given format, with one major exception:
 UCS-4 array is jsut an array, where each value represents one codepoint in the string, i.e.
 every value is a 32bit integer value.
 

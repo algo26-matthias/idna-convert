@@ -109,8 +109,8 @@ h5 {margin:0;font-size:11pt;font-weight:bold;}
    </tr>
   </tbody>
  </table>
- <br />   
- <span id="copy">Version used: 0.6.4; &copy; 2004-2010 phlyLabs Berlin; part of <a href="http://phlymail.com/">phlyMail</a></span>
+ <br />
+ <span id="copy">Version used: 0.6.9; &copy; 2004-2010 phlyLabs Berlin; part of <a href="http://phlymail.com/">phlyMail</a></span>
 </div>
 </body>
 </html>
