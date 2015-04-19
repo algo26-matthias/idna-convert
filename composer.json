@@ -1,0 +1,28 @@
+{
+    "name": "mso/idna_convert",
+    "description": "A library for encoding and decoding internationalized domain names",
+    "license": "LGPL-2.1+",
+    "keywords": ["PHP","IDN","IDNA"],
+    "authors": [
+        {
+            "name": "Matthias Sommerfeld",
+            "email": "mso@phlylabs.de",
+            "role": "Developer"
+        }
+    ],
+    "autoload": {
+        "classmap": [
+            "idna_convert.class.php",
+            "uctc.php"
+        ]
+    },
+    "require": {
+        "ext-pcre": "*",
+        "php": ">=5.0.0"
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "0.9.x-dev"
+        }
+    }
+}
