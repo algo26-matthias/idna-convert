@@ -38,14 +38,18 @@ ACE strings (the Punycode form) are always 7bit ASCII strings.
 Files
 -----
 
-idna_convert.class.php       - The actual class
-idna_convert.class.php5.php  - A PHP5 version, contributed by Marcus Nix
-example.php                  - An example web page for converting
-ReadMe.txt                   - This file
-LICENCE                      - The LGPL licence file
+idna_convert.class.php         - The actual class
+idna_convert.class.php5.php    - A PHP5 version, contributed by Marcus Nix
+idna_convert.create.npdata.php - Useful for (re)creating the NPData file
+npdata.ser                     - Serialized data for NamePrep
+example.php                    - An example web page for converting
+ReadMe.txt                     - This file
+LICENCE                        - The LGPL licence file
 
 For using the class, you will have to either use idna_convert.class.php or
 idna_convert.class.php5.php from your application.
+MAKE SURE to copy the npdata.ser file into the same folder as the class file
+itself!
 
 
 Examples
@@ -55,8 +59,8 @@ Examples
 
 // Include the class
 include_once('idna_convert.class.php');
-// Instantiate it
-$IDN = new Net_IDNA();
+// Instantiate it *
+$IDN = new idna_convert();
 // The input string, if input is not UTF-8 or UCS-4, it must be converted before
 $input = utf8_encode('nörgler.com');
 // Encode it to its punycode presentation
@@ -64,14 +68,18 @@ $output = $IDN->encode($input);
 // Output, what we got now
 echo $output; // This will read: xn--nrgler-wxa.com
 
+* If you wish to use the PHP5 version of the class, be aware, that the constructor
+  is named Net_IDNA_php5() since this file is used in the PEAR version of this class.
+  Likeweise, you can also instantiate the PHP4 version with new Net_IDNA_php4().
+
 
 2. We received an email from a punycoded domain and are willing to learn, how
    the domain name reads originally
 
 // Include the class
 include_once('idna_convert.class.php');
-// Instantiate it
-$IDN = new Net_IDNA();
+// Instantiate it (depending on the version you are using) with
+$IDN = new Net_IDNA_php4();
 // The input string
 $input = 'andre@xn--brse-5qa.xn--knrz-1ra.info';
 // Encode it to its punycode presentation
@@ -88,12 +96,21 @@ echo utf8_decode($output); // This will read: andre@börse.knürz.info
 // Include the class
 include_once('idna_convert.class.php');
 // Instantiate it
-$IDN = new Net_IDNA();
+$IDN = new Net_IDNA_php4();
 // Iterate through the input file line by line
 foreach (file('ucs4-domains.txt') as $line) {
     echo $IDN->encode(trim($line), 'ucs4_string');
     echo "\n";
 }
+
+
+NPData
+------
+
+Should you need to recreate the npdata.ser file, which holds all necessary translation
+tables in a serialized format, you can run the file idna_convert.create.npdata.php, which
+creates the file for you and stores it in the same folder, where it is placed.
+Should you need to do changes to the tables you can do so, but beware of the consequences.
 
 
 Contact us
