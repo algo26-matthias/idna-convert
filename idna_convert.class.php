@@ -3,17 +3,10 @@
 /* idna_convert.class.php - Encode / Decode punycode based domain names      */
 /* (c) 2004 blue birdy, Berlin (http://bluebirdy.de)                         */
 /* All rights reserved                                                       */
-/* v0.2.3                                                                    */
+/* v0.2.4                                                                    */
 /* ------------------------------------------------------------------------- */
 
-/*
- * This PHP class is derived work from the IDN extension for PHP, originally
- * written by JPNIC in C++ and the ANSI C code from RFC3492, written by
- * Adam M. Costello.
- * PHP port: Copyright 2004 blue birdy
- * All rights reserved.
- *
- * By using this file, you agree to the terms and conditions set forth below
+/* By using this file, you agree to the terms and conditions set forth below
  *                        LICENSE TERMS AND CONDITIONS
  *
  * The following License Terms and Conditions apply, unless a different
@@ -37,7 +30,13 @@
  *    derived from this software without specific prior written approval of
  *    blue birdy.
  *
- * 5. Disclaimer/Limitation of Liability: THIS SOFTWARE IS PROVIDED "AS IS"
+ * 5. You are free to use this class for non-commercial purposes. You will have
+ *    to obtain a license before using this work, either as-is, parts of it or
+ *    any derivative work in commercial projects, products or distributions of
+ *    any kind. This includes, but is not limited to, ports to other programming
+ *    languages, in compiled or linked form.
+ *
+ * 6. Disclaimer/Limitation of Liability: THIS SOFTWARE IS PROVIDED "AS IS"
  *    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
  *    LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
  *    PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL BLUE BIRDY BE
@@ -64,7 +63,7 @@ class idna_convert
     var $initial_bias =    72;
     var $initial_n =       0x80;
     var $error =           FALSE;
-    //
+
     // See set_parameter() for fetails of how to change the following settings
     // from within your script / application
     var $use_utf8 =        TRUE;  // Default input charset is UTF-8
@@ -256,7 +255,7 @@ class idna_convert
             $decoded = &$d_s;
         }
         // Do NAMEPREP
-        $decoded = $this->_nameprep($decoded); 
+        $decoded = $this->_nameprep($decoded);
 
         $deco_len  = count($decoded);
         if (!$deco_len) return FALSE; // UTF-8 to UCS conversion or NAMEPREP failed
@@ -368,7 +367,9 @@ class idna_convert
     function _nameprep($input)
     {
         $output = array();
-        $out_len = 0;
+        $error = FALSE;
+        //
+        // Mapping
         // Walking through the input array, performing the required steps on each of
         // the input chars and putting the result into the output array
         foreach ($input as $v) {
@@ -382,7 +383,6 @@ class idna_convert
             }
         }
         // Walking through the effective output trying to find prohibited chars
-        $error = FALSE;
         foreach ($output as $v) {
             if (in_array($v, $this->np_prohibit)) {
                 $this->_error('NAMEPREP: Prohibited input U+'.sprintf('%04X', $v));
@@ -393,6 +393,21 @@ class idna_convert
                     $this->_error('NAMEPREP: Prohibited input U+'.sprintf('%04X', $v));
                     return FALSE;
                 }
+            }
+        }
+        //
+        // Normalization
+        //
+        $input = $output;
+        $output = array();
+        // Apply additional decomposition mappings
+        foreach ($input as $v) {
+            if (isset($this->np_norm_deco[$v])) {
+                foreach ($this->np_norm_deco[$v] as $out) {
+                    $output[] = $out;
+                }
+            } else {
+                $output[] = $v;
             }
         }
         return $output;
