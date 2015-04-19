@@ -3,7 +3,7 @@
 /* idna_convert.npdata.php - Nameprep and Normalization Data                 */
 /* (c) 2004 blue birdy, Berlin (http://bluebirdy.de)                         */
 /* All rights reserved                                                       */
-/* v0.1.1                                                                    */
+/* v0.1.2                                                                    */
 /* ------------------------------------------------------------------------- */
 
 /*
@@ -37,13 +37,7 @@
  *    derived from this software without specific prior written approval of
  *    blue birdy.
  *
- * 5. You are free to use this class for non-commercial purposes. You will have
- *    to obtain a license before using this work, either as-is, parts of it or
- *    any derivative work in commercial projects, products or distributions of
- *    any kind. This includes, but is not limited to, ports to other programming
- *    languages, in compiled or linked form.
- *
- * 6. Disclaimer/Limitation of Liability: THIS SOFTWARE IS PROVIDED "AS IS"
+ * 5. Disclaimer/Limitation of Liability: THIS SOFTWARE IS PROVIDED "AS IS"
  *    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
  *    LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
  *    PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL BLUE BIRDY BE
@@ -63,6 +57,13 @@ $this->np_map_nothing = array
 ,0xFE0A, 0xFE0B, 0xFE0C, 0xFE0D, 0xFE0E, 0xFE0F, 0xFEFF
 );
 
+$this->general_prohibited = array
+(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0xA, 0xB, 0xC, 0xD, 0xE, 0xF, 0x10, 0x11, 0x12
+,0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F
+,0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28, 0x29, 0x2A, 0x2B, 0x2C
+,0x2F, 0x3B, 0x3C, 0x3D, 0x3E, 0x3F, 0x40, 0x5B, 0x5C, 0x5D, 0x5E, 0x5F, 0x60
+,0x7B, 0x7C, 0x7D, 0x7E, 0x7F, 0x3002);
+
 $this->np_prohibit = array
 (0xA0, 0x1680, 0x2000, 0x2001, 0x2002, 0x2003, 0x2004, 0x2005, 0x2006, 0x2007
 ,0x2008, 0x2009, 0x200A, 0x200B, 0x202F, 0x205F, 0x3000, 0x6DD, 0x70F, 0x180E
@@ -73,8 +74,7 @@ $this->np_prohibit = array
 ,0xCFFFE, 0xCFFFF, 0xDFFFE, 0xDFFFF, 0xEFFFE, 0xEFFFF, 0xFFFFE, 0xFFFFF
 ,0x10FFFE, 0x10FFFF, 0xFFF9, 0xFFFA, 0xFFFB, 0xFFFC, 0xFFFD, 0x340, 0x341
 ,0x200E, 0x200F, 0x202A, 0x202B, 0x202C, 0x202D, 0x202E, 0x206A, 0x206B, 0x206C
-,0x206D, 0x206E, 0x206F, 0xE0001
-);
+,0x206D, 0x206E, 0x206F, 0xE0001);
 
 $this->np_prohibit_ranges = array
 (array(0x80, 0x9F), array(0x2060, 0x206F), array(0x1D173, 0x1D17A)

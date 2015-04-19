@@ -3,7 +3,7 @@
 /* idna_convert.class.php - Encode / Decode punycode based domain names      */
 /* (c) 2004 blue birdy, Berlin (http://bluebirdy.de)                         */
 /* All rights reserved                                                       */
-/* v0.2.7                                                                    */
+/* v0.2.8dev                                                                 */
 /* ------------------------------------------------------------------------- */
 
 /* By using this file, you agree to the terms and conditions set forth below
@@ -69,7 +69,7 @@ class idna_convert
     var $lcount =          19;
     var $vcount =          21;
     var $tcount =          28;
-    var $ncount =          588; // vcount * tcount
+    var $ncount =          588;   // vcount * tcount
     var $scount =          11172; // lcount * tcount * vcount
     var $error =           FALSE;
 
@@ -77,11 +77,15 @@ class idna_convert
     // from within your script / application
     var $use_utf8 =        TRUE;  // Default input charset is UTF-8
     var $allow_overlong =  FALSE; // Overlong UTF-8 encodings are forbidden
+    var $strict_mode    =  FALSE;  // Behave strict or not
 
     // The constructor
     function idna_convert()
     {
         $this->slast = $this->sbase + $this->lcount * $this->vcount * $this->tcount;
+        if (!file_exists(dirname(__FILE__).'/idna_convert.npdata.php')) {
+            die('npdata file not found. Please put it into the same directory as the class file.');
+        }
         include(dirname(__FILE__).'/idna_convert.npdata.php');
         return TRUE;
     }
@@ -93,18 +97,27 @@ class idna_convert
     * [overlong - Unicode does not allow unnecessarily long encodings of chars,
     *             to allow this, set this parameter to TRUE, else to FALSE;
     *             default is FALSE.]
+    * [strict - TRUE: strict mode, good for registration purposes - Causes errors
+    *           on failures; FALSE: loose mode, ideal for "wildlife" applications
+    *           by silently ignoring errors and returning the original input instead
     *
-    * @param    string    Parameter to set
-    * @param    string    Value to use
+    * @param    mixed     Parameter to set (string: single parameter; array of Parameter => Value pairs)
+    * @param    string    Value to use (if parameter 1 is a string)
     * @return   boolean   TRUE on success, FALSE otherwise
     * @access   public
     */
     function set_parameter($option, $value = FALSE)
     {
-        switch ($option) {
-        case 'utf8': $this->use_utf8 = ($value) ? TRUE : FALSE; break;
-        case 'overlong': $this->allow_overlong = ($value) ? TRUE : FALSE; break;
-        default: $this->_error('Unknown option '.$option); return FALSE;
+        if (!is_array($option)) {
+            $option = array($option => $value);
+        }
+        foreach ($option as $k => $v) {
+            switch ($k) {
+            case 'utf8': $this->use_utf8 = ($v) ? TRUE : FALSE; break;
+            case 'overlong': $this->allow_overlong = ($v) ? TRUE : FALSE; break;
+            case 'strict': $this->strict_mode = ($v) ? TRUE : FALSE; break;
+            default: $this->_error('Set Parameter: Unknown option '.$k); return FALSE;
+            }
         }
         return TRUE;
     }
@@ -117,10 +130,8 @@ class idna_convert
     */
     function decode($encoded)
     {
-        // Clean up input
-        $encoded = trim($encoded);
         // Call actual wrapper
-        $decoded = $this->_do_job($encoded, 'decode');
+        $decoded = $this->_do_job(trim($encoded), 'decode');
         return $decoded;
     }
 
@@ -132,10 +143,8 @@ class idna_convert
     */
     function encode($decoded)
     {
-        // Clean up input (This will be done by nameprep, once it is ready)
-        // $decoded = str_replace('ß', 'ss', strtolower(trim($decoded)));
         // Call actual wrapper
-        return $this->_do_job($decoded, 'encode');
+        return $this->_do_job(trim($decoded), 'encode');
     }
 
 
@@ -158,20 +167,54 @@ class idna_convert
     function _do_job($input, $mode)
     {
         $method = '_'.$mode;
-        // Maybe it is an email address
-        if (strpos($input, '@')) {
+        // Make sure to use just the plain dot
+        if ('encode' == $mode) {
+            $input = preg_replace('![\x3002\xFF0E\xFF61]!U', '\x2E', $input);
+        }
+        // Negotiate input and try to determine, wether it is a plain string,
+        // an email address or something like a complete URL
+        if (strpos($input, '@')) { // Maybe it is an email address
+            // No no in strict mode
+            if ($this->strict_mode) {
+                $this->_error('Only simple domain name parts can be handled in strict mode');
+                return FALSE;
+            }
             list($email_pref, $input) = explode('@', $input, 2);
-            $email_pref .= '@';
-        } else {
-            $email_pref = '';
+            $arr = explode('.', $input);
+            foreach ($arr as $k => $v) {
+                $conv = $this->$method($v);
+                if ($conv) $arr[$k] = $conv;
+            }
+            return $email_pref . '@' . join('.', $arr);
+        } elseif (preg_match('![:\./]!', $input)) { // Or a complete domain name (with or without paths / parameters)
+            // No no in strict mode
+            if ($this->strict_mode) {
+                $this->_error('Only simple domain name parts can be handled in strict mode');
+                return FALSE;
+            }
+            $parsed = parse_url($input);
+            if (isset($parsed['host'])) {
+                $arr = explode('.', $parsed['host']);
+                foreach ($arr as $k => $v) {
+                    $conv = $this->$method($v);
+                    if ($conv) $arr[$k] = $conv;
+                }
+                $parsed['host'] = join('.', $arr);
+                if (isset($parsed['scheme'])) {
+                    $parsed['scheme'] .= (strtolower($parsed['scheme']) == 'mailto') ? ':' : '://';
+                }
+                return join('', $parsed);
+            } else { // parse_url seems to have failed, try without it
+                $arr = explode('.', $input);
+                foreach ($arr as $k => $v) {
+                    $conv = $this->$method($v);
+                    if ($conv) $arr[$k] = $conv;
+                }
+                return join('.', $arr);
+            }
+        } else { // Otherwise we consider it being a pure domain name string
+            return $this->$method($input);
         }
-        // Process any substring
-        $arr = explode('.', $input);
-        foreach($arr as $k => $v) {
-            $conv = $this->$method($v);
-            if ($conv) $arr[$k] = $conv;
-        }
-        return $email_pref . join('.', $arr);
     }
 
     /**
@@ -257,6 +300,7 @@ class idna_convert
 
         if ($this->use_utf8) {
             $decoded = $this->utf8_to_ucs4($decoded);
+            if (!$decoded || !is_array($decoded)) return FALSE; // UTF-8 to UCS conversion failed
         } else {
             $d_s = array();
             for ($k = 0; $k < strlen($decoded); ++$k) {
@@ -266,9 +310,10 @@ class idna_convert
         }
         // Do NAMEPREP
         $decoded = $this->_nameprep($decoded);
+        if (!$decoded || !is_array($decoded)) return FALSE; // NAMEPREP failed
 
         $deco_len  = count($decoded);
-        if (!$deco_len) return FALSE; // UTF-8 to UCS conversion or NAMEPREP failed
+        if (!$deco_len) return FALSE; // Empty array
 
         $codecount = 0; // How many chars have been consumed
 
@@ -376,8 +421,6 @@ class idna_convert
     */
     function _nameprep($input)
     {
-        echo '<pre>';
-
         $output = array();
         $error = FALSE;
         //
@@ -386,26 +429,25 @@ class idna_convert
         // the input chars and putting the result into the output array
         // While mapping required chars we apply the cannonical ordering
 
-        $this->_show_hex($input);
+        // $this->_show_hex($input);
         foreach ($input as $v) {
             // Map to nothing == skip that code point
             if (in_array($v, $this->np_map_nothing)) continue;
 
             // Try to find prohibited input
-            if (in_array($v, $this->np_prohibit)) {
-                $this->_error('NAMEPREP: Prohibited input U+'.sprintf('%04X', $v));
+            if (in_array($v, $this->np_prohibit) || in_array($v, $this->general_prohibited)) {
+                $this->_error('NAMEPREP: Prohibited input U+'.sprintf('%08X', $v));
                 return FALSE;
             }
             foreach ($this->np_prohibit_ranges as $range) {
                 if ($range[0] <= $v && $v <= $range[1]) {
-                    $this->_error('NAMEPREP: Prohibited input U+'.sprintf('%04X', $v));
+                    $this->_error('NAMEPREP: Prohibited input U+'.sprintf('%08X', $v));
                     return FALSE;
                 }
             }
             //
             // Hangul syllable decomposition
             if (0xAC00 <= $v && $v <= 0xD7AF) {
-                // foreach ($this->_apply_cannonical_ordering($this->_hangul_decompose($v)) as $out) {
                 foreach ($this->_hangul_decompose($v) as $out) {
                     $output[] = $out;
                 }
@@ -418,8 +460,6 @@ class idna_convert
                 $output[] = $v;
             }
         }
-        echo "After Decompose\n";
-        $this->_show_hex($output);
         //
         // Combine code points
         //
@@ -428,16 +468,19 @@ class idna_convert
         $out_len      = count($output);
         for ($i = 0; $i < $out_len; ++$i) {
             $class = $this->_get_combining_class($output[$i]);
-            if ($i && (!$last_class || $last_class != $class)/* && $class */) {
+            if ((!$last_class || $last_class != $class) && $class) {
+                // Try to match
                 $seq_len = $i - $last_starter;
-                // Try to combine the found sequence
                 $out = $this->_combine(array_slice($output, $last_starter, $seq_len));
                 // On match: Replace the last starter with the composed character and remove
-                // the now redundant non-starter
+                // the now redundant non-starter(s)
                 if ($out) {
                     $output[$last_starter] = $out;
-                    for ($j = $i+1; $j < $out_len; ++$j) {
-                        $output[$j-1] = $output[$j];
+                    if (count($out) != $seq_len) {
+                        for ($j = $i+1; $j < $out_len; ++$j) {
+                            $output[$j-1] = $output[$j];
+                        }
+                        unset($output[$out_len]);
                     }
                     // Rewind the for loop by one, since there can be more possible compositions
                     $i--;
@@ -451,10 +494,11 @@ class idna_convert
             }
             $last_class = $class;
         }
-
+        /*
         echo "After Normalize\n";
-        $this->_show_hex($output);
-        echo '</pre>';
+        $this->_show_hex($output, TRUE);
+        echo "\n";
+        */
         return $output;
     }
 
@@ -488,8 +532,6 @@ class idna_convert
     */
     function _hangul_compose($input)
     {
-        echo "Hangul Compose:\n";
-        print_r($input);
         $inp_len = count($input);
         if (!$inp_len) return array();
         $result = array();
@@ -584,23 +626,24 @@ class idna_convert
     function _combine($input)
     {
         $inp_len = count($input);
-        if (1 == $inp_len) return FALSE;
         // Is it a Hangul syllable?
-        $hangul = $this->_hangul_compose($input);
-        if (count($hangul) != $inp_len) return $hangul;
-        foreach ($this->np_casemap as $k => $v) {
-            if ($v[0] != $input[0]) continue;
-            if (count($v) != $inp_len) continue;
+        if (1 != $inp_len) {
+            $hangul = $this->_hangul_compose($input);
+            if (count($hangul) != $inp_len) return $hangul; // This place is probably wrong
+        }
+        foreach ($this->np_casemap as $np_src => $np_target) {
+            if ($np_target[0] != $input[0]) continue;
+            if (count($np_target) != $inp_len) continue;
             $hit = FALSE;
             foreach ($input as $k2 => $v2) {
-                if ($v2 == $v[$k2]) {
+                if ($v2 == $np_target[$k2]) {
                     $hit = TRUE;
                 } else {
                     $hit = FALSE;
                     break;
                 }
             }
-            if ($hit) return $k;
+            if ($hit) return $np_src;
         }
         return FALSE;
     }
@@ -744,16 +787,19 @@ class idna_convert
     /**
     * echo hex represnatation of UCS4 sequence
     * @param    array      UCS4 sequence
+    * @param    boolean    include bitmask in output
     * @return   void
     * @access   private
     */
-    function _show_hex($input)
+    function _show_hex($input, $include_bit = FALSE)
     {
-        $return = '';
         foreach ($input as $k => $v) {
-            $return .= '['.$k.'] => '.sprintf('%X', $v)."\n";
+            echo '[',$k,'] => ',sprintf('%X', $v);
+            if ($include_bit) {
+                echo ' (', $this->show_bitmask($v),')';
+            }
+            echo "\n";
         }
-        return $return;
     }
 }
 
