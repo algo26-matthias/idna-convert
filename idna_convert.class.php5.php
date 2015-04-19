@@ -5,20 +5,20 @@
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4 foldmethod=marker: */
 //
 // +----------------------------------------------------------------------+
-// | PHP Version 4                                                        |
-// +----------------------------------------------------------------------+
-// | Copyright (c) 1997-2002 The PHP Group                                |
-// +----------------------------------------------------------------------+
-// | This source file is subject to version 2.0 of the PHP license,       |
-// | that is bundled with this package in the file LICENSE, and is        |
-// | available at through the world-wide-web at                           |
-// | http://www.php.net/license/2_02.txt.                                 |
-// | If you did not receive a copy of the PHP license and are unable to   |
-// | obtain it through the world-wide-web, please send a note to          |
-// | license@php.net so we can mail you a copy immediately.               |
-// +----------------------------------------------------------------------+
-// | Authors: Markus Nix <mnix@docuverse.de>                              |
-// |          Matthias Sommerfeld <mso@phlylabs.de> (original version)    |
+// | This library is free software; you can redistribute it and/or modify |
+// | it under the terms of the GNU Lesser General Public License as       |
+// | published by the Free Software Foundation; either version 2.1 of the |
+// | License, or (at your option) any later version.                      |
+// |                                                                      |
+// | This library is distributed in the hope that it will be useful, but  |
+// | WITHOUT ANY WARRANTY; without even the implied warranty of           |
+// | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU    |
+// | Lesser General Public License for more details.                      |
+// |                                                                      |
+// | You should have received a copy of the GNU Lesser General Public     |
+// | License along with this library; if not, write to the Free Software  |
+// | Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 |
+// | USA.                                                                 |
 // +----------------------------------------------------------------------+
 //
 
@@ -26,10 +26,10 @@
 
 
 /**
- * Encode/decode punycode based domain names.
+ * Encode/decode Internationalized Domain Names.
  *
  * The class allows to convert internationalized domain names
- * (see RFC 3492 for details) as they can be used with various registries worldwide
+ * (see RFC 3490 for details) as they can be used with various registries worldwide
  * to be translated between their original (localized) form and their encoded form
  * as it will be used in the DNS (Domain Name System).
  *
@@ -42,20 +42,16 @@
  * - xn--nrgler-wxa
  * - xn--brse-5qa.xn--knrz-1ra.info
  *
- * The methods expect strings as their input and will return you strings.
+ * Unicode input might be given as either UTF-8 string, UCS-4 string or UCS-4
+ * array. Unicode output is available in the same formats.
+ * You can select your preferred format via {@link set_paramter()}.
  *
- * C++ Original: Copyright (c) 2001, 2002 Japan Network Information Center.
- * This PHP class is derived work from the IDN extension for PHP, originally
- * written by JPNIC in C++.
- *
- * Since this original work closely implements the algorithms from RFC 3492
- * as this PHP code does, we consider it being just an add on for all of you
- * whose hosting provider refuses to use the original extension.
+ * ACE input and output is always expected to be ASCII.
  *
  * @author  Markus Nix <mnix@docuverse.de>
  * @author  Matthias Sommerfeld <mso@phlylabs.de>
  * @package Net
- * @version $Id: IDNA.php,v 1.3 2004/07/14 22:23:55 docuverse_de Exp $
+ * @version $Id: IDNA.php,v 1.9 2004/08/06 17:13:21 phlylabs_de Exp $
  */
 
 class Net_IDNA
@@ -100,6 +96,8 @@ class Net_IDNA
     );
 
     /**
+     * Prohibited codepints
+     *
      * @static
      * @var array
      * @access private
@@ -172,6 +170,7 @@ class Net_IDNA
     );
 
     /**
+     * Codepints prohibited by Nameprep
      * @static
      * @var array
      * @access private
@@ -264,6 +263,8 @@ class Net_IDNA
     );
 
     /**
+     * Codepoint ranges prohibited by nameprep
+     *
      * @static
      * @var array
      * @access private
@@ -282,11 +283,13 @@ class Net_IDNA
     );
 
     /**
+     * Replacement mappings (casemapping, replacement sequences, ...)
+     *
      * @static
      * @var array
      * @access private
      */
-    private static $_np_casemap = array(
+    private static $_np_replacemaps = array(
         0x41    => array(0x61),
         0x42    => array(0x62),
         0x43    => array(0x63),
@@ -2164,12 +2167,14 @@ class Net_IDNA
     private $_scount = 11172;
 
     /**
-     * Default input charset is UTF-8
+     * Default encoding for encode()'s input and decode()'s output is UTF-8;
+     * Other possible encodings are ucs4_string and ucs4_array
+     * See {@link setParams()} for how to select these
      *
      * @var bool
      * @access private
      */
-    private $_use_utf8 = true;
+    private $_api_encoding = 'utf8';
 
     /**
      * Overlong UTF-8 encodings are forbidden
@@ -2233,16 +2238,26 @@ class Net_IDNA
 
         foreach ($option as $k => $v) {
             switch ($k) {
-            case 'utf8':
-                $this->_use_utf8 = ($v)? true : false;
+            case 'encoding':
+                switch ($v) {
+                case 'utf8':
+                case 'ucs4_string':
+                case 'ucs4_array':
+                    $this->_api_encoding = $v;
+                    break;
+
+                default:
+                    throw new Exception('Set Parameter: Unknown parameter '.$v.' for option '.$k);
+                }
+
                 break;
 
             case 'overlong':
-                $this->_allow_overlong = ($v)? true : false;
+                $this->_allow_overlong = ($v) ? true : false;
                 break;
 
             case 'strict':
-                $this->_strict_mode = ($v)? true : false;
+                $this->_strict_mode = ($v) ? true : false;
                 break;
 
             default:
@@ -2264,12 +2279,79 @@ class Net_IDNA
      */
     public function encode($decoded)
     {
-        try {
-            return $this->_process(trim($decoded), 'encode');
+        // Forcing conversion of input to UCS4 array
+        switch ($this->_api_encoding) {
+        case 'utf8':
+            $decoded = $this->_utf8_to_ucs4($decoded);
+            break;
+        case 'ucs4_string':
+           $decoded = $this->_ucs4_string_to_ucs4($decoded);
+        case 'ucs4_array': // No break; before this line. Catch case, but do nothing
+           break;
+        default:
+            throw new Exception('Unsupported input format: '.$this->_api_encoding);
         }
-        catch (Exception $e) {
-            // rethrow
-            throw $e;
+
+        // No input, no output, what else did you expect?
+        if (empty($decoded)) return '';
+
+        // Anchors for iteration
+        $last_begin = 0;
+        // Output string
+        $output = '';
+
+        foreach ($decoded as $k => $v) {
+            // Make sure to use just the plain dot
+            switch($v) {
+            case 0x3002:
+            case 0xFF0E:
+            case 0xFF61:
+                $decoded[$k] = 0x2E;
+                // It's right, no break here
+                // The codepoints above have to be converted to dots anyway
+
+            // Stumbling across an anchoring character
+            case 0x2E:
+            case 0x2F:
+            case 0x3A:
+            case 0x3F:
+            case 0x40:
+                // Neither email addresses nor URLs allowed in strict mode
+                if ($this->_strict_mode) {
+                   throw new Exception('Neither email addresses nor URLs are allowed in strict mode.');
+                } else {
+                    // Skip first char
+                    if ($k) {
+                        $encoded = '';
+                        $encoded = $this->_encode(array_slice($decoded, $last_begin, (($k)-$last_begin)));
+                        if ($encoded) {
+                            $output .= $encoded;
+                        } else {
+                            $output .= $this->_ucs4_to_utf8(array_slice($decoded, $last_begin, (($k)-$last_begin)));
+                        }
+                        $output .= chr($decoded[$k]);
+                    }
+                    $last_begin = $k + 1;
+                }
+            }
+        }
+        // Catch the rest of the string
+        if ($last_begin) {
+            $inp_len = sizeof($decoded);
+            $encoded = '';
+            $encoded = $this->_encode(array_slice($decoded, $last_begin, (($inp_len)-$last_begin)));
+            if ($encoded) {
+                $output .= $encoded;
+            } else {
+                $output .= $this->_ucs4_to_utf8(array_slice($decoded, $last_begin, (($inp_len)-$last_begin)));
+            }
+            return $output;
+        } else {
+            if ($output = $this->_encode($decoded)) {
+                return $output;
+            } else {
+                return $this->_ucs4_to_utf8($decoded);
+            }
         }
     }
 
@@ -2282,122 +2364,71 @@ class Net_IDNA
      * @throws   Exception
      * @access   public
      */
-    public function decode($encoded)
+    public function decode($input)
     {
-        try {
-            return $this->_process(trim($encoded), 'decode');
+        // Make sure to drop any newline characters around
+        $input = trim($input);
+
+        // Negotiate input and try to determine, wether it is a plain string,
+        // an email address or something like a complete URL
+        if (strpos($input, '@')) { // Maybe it is an email address
+            // No no in strict mode
+            if ($this->_strict_mode) {
+                throw new Exception('Only simple domain name parts can be handled in strict mode');
+            }
+            list($email_pref, $input) = explode('@', $input, 2);
+            $arr = explode('.', $input);
+            foreach ($arr as $k => $v) {
+                $conv = $this->_decode($v);
+                if ($conv) $arr[$k] = $conv;
+            }
+            $return = $email_pref . '@' . join('.', $arr);
+        } elseif (preg_match('![:\./]!', $input)) { // Or a complete domain name (with or without paths / parameters)
+            // No no in strict mode
+            if ($this->_strict_mode) {
+                throw new Exception('Only simple domain name parts can be handled in strict mode');
+            }
+            $parsed = parse_url($input);
+            if (isset($parsed['host'])) {
+                $arr = explode('.', $parsed['host']);
+                foreach ($arr as $k => $v) {
+                    $conv = $this->_decode($v);
+                    if ($conv) $arr[$k] = $conv;
+                }
+                $parsed['host'] = join('.', $arr);
+                if (isset($parsed['scheme'])) {
+                    $parsed['scheme'] .= (strtolower($parsed['scheme']) == 'mailto') ? ':' : '://';
+                }
+                $return = join('', $parsed);
+            } else { // parse_url seems to have failed, try without it
+                $arr = explode('.', $input);
+                foreach ($arr as $k => $v) {
+                    $conv = $this->_decode($v);
+                    if ($conv) $arr[$k] = $conv;
+                }
+                $return = join('.', $arr);
+            }
+        } else { // Otherwise we consider it being a pure domain name string
+            $return = $this->_decode($input);
         }
-        catch (Exception $e) {
-            // rethrow
-            throw $e;
+        // The output is UTF-8 by default, other output formats need conversion here
+        switch ($this->_api_encoding) {
+        case 'utf8':
+            return $return;
+            break;
+        case 'ucs4_string':
+           return $this->_ucs4_to_ucs4_string($this->_utf8_to_ucs4($return));
+           break;
+        case 'ucs4_array':
+            return $this->_utf8_to_ucs4($return);
+            break;
+        default:
+            throw new Exception('Unsupported output format: '.$this->_api_encoding);
         }
     }
 
 
     // {{{ private
-    /**
-     * Wrapper method to provide extended functionality.
-     * This allows for processing complete email addresses and domain names.
-     *
-     * @return   mixed                   Either processed string or false
-         * @access   private
-     */
-    private function _process($input, $mode)
-    {
-        $method = '_' . $mode;
-
-        // Make sure to use just the plain dot
-        if ($mode == 'encode') {
-            $input = preg_replace('![\x3002\xFF0E\xFF61]!U', '\x2E', $input);
-        }
-
-        // Negotiate input and try to determine, wether it is a plain string,
-        // an email address or something like a complete URL
-
-        // Maybe it is an email address
-        if (strpos($input, '@')) {
-            // No in strict mode
-            if ($this->_strict_mode) {
-                throw new Exception('Only simple domain name parts can be handled in strict mode.');
-            }
-
-            list($email_pref, $input) = explode('@', $input, 2);
-            $arr = explode('.', $input);
-
-            foreach ($arr as $k => $v) {
-                try {
-                    $conv = $this->$method($v);
-                    $arr[$k] = $conv;
-                }
-                catch (Exception $e) {
-                    // for now, just forget about it
-                }
-            }
-
-            return $email_pref . '@' . join('.', $arr);
-        }
-        // Or a complete domain name (with or without paths / parameters)
-        else if (preg_match('![:\./]!', $input)) {
-            // No in strict mode
-            if ($this->_strict_mode) {
-                throw new Exception('Only simple domain name parts can be handled in strict mode.');
-            }
-
-            $parsed = parse_url($input);
-
-            if (isset($parsed['host'])) {
-                $arr = explode('.', $parsed['host']);
-
-                foreach ($arr as $k => $v) {
-                    try {
-                        $conv = $this->$method($v);
-                        $arr[$k] = $conv;
-                    }
-                    catch (Exception $e) {
-                        // for now, just forget about it
-                    }
-                }
-
-                $parsed['host'] = join('.', $arr);
-
-                if (isset($parsed['scheme'])) {
-                    $parsed['scheme'] .= (strtolower($parsed['scheme']) == 'mailto')? ':' : '://';
-                }
-
-                return join('', $parsed);
-            }
-            // parse_url seems to have failed, try without it
-            else
-            {
-                $arr = explode('.', $input);
-
-                foreach ($arr as $k => $v) {
-                    try {
-                        $conv = $this->$method($v);
-                        $arr[$k] = $conv;
-                    }
-                    catch (Exception $e) {
-                        // for now, just forget about it
-                    }
-                }
-
-                return join('.', $arr);
-            }
-        }
-        // Otherwise we consider it being a pure domain name string
-        else
-        {
-            try {
-                $res = $this->$method($input);
-                return $res;
-            }
-            catch (Exception $e) {
-                // rethrow
-                throw $e;
-            }
-        }
-    }
-
     /**
      * The actual encoding algorithm.
      *
@@ -2407,45 +2438,34 @@ class Net_IDNA
      */
     private function _encode($decoded)
     {
-        // No empty strings please
-        if (!$decoded) {
-            return false;
-        }
-
         // We cannot encode a domain name containing the Punycode prefix
-        if (preg_match('!^' . preg_quote($this->_punycode_prefix, '!u') . '!', $decoded)) {
-            throw new Exception('This is already a punycode string.');
-        }
+        $extract = strlen($this->_punycode_prefix);
+        $check_pref = $this->_utf8_to_ucs4($this->_punycode_prefix);
+        $check_deco = array_slice($decoded, 0, $extract);
 
+        if ($check_pref == $check_deco) {
+            throw new Exception('This is already a punycode string');
+        }
         // We will not try to encode strings consisting of basic code points only
-        if (!preg_match('![^0-9a-zA-Z-]!u', $decoded)) {
-            throw new Exception('The given string does not contain encodable chars.');
-        }
-
-        if ($this->_use_utf8) {
-            try {
-                $decoded = $this->_utf8_to_ucs4($decoded);
-            }
-            catch (Exception $e) {
-                // UTF-8 to UCS conversion failed - rethrow exception
-                throw $e;
+        $encodable = false;
+        foreach ($decoded as $k => $v) {
+            if ($v > 0x7a) {
+                $encodable = true;
+                break;
             }
         }
-        else
-        {
-            $d_s = array();
-
-            for ($k = 0; $k < strlen($decoded); ++$k)
-                $d_s[$k] = $decoded{$k};
-
-            $decoded = &$d_s;
+        if (!$encodable) {
+            if ($this->_strict_mode) {
+                throw new Exception('The given string does not contain encodable chars');
+            } else {
+                return false;
+            }
         }
 
         // Do NAMEPREP
         try {
             $decoded = $this->_nameprep($decoded);
-        }
-        catch (Exception $e) {
+        } catch (Exception $e) {
             // hmm, serious - rethrow
             throw $e;
         }
@@ -2485,8 +2505,7 @@ class Net_IDNA
         while ($codecount < $deco_len) {
             // Find the smallest code point >= the current code point and
             // remember the last ouccrence of it in the input
-            for ($i = 0, $next_code = $this->_max_ucs; $i < $deco_len; $i++)
-            {
+            for ($i = 0, $next_code = $this->_max_ucs; $i < $deco_len; $i++) {
                 if ($decoded[$i] >= $cur_code && $decoded[$i] <= $next_code) {
                     $next_code = $decoded[$i];
                 }
@@ -2496,14 +2515,11 @@ class Net_IDNA
             $cur_code = $next_code;
 
             // Scan input again and encode all characters whose code point is $cur_code
-            for ($i = 0; $i < $deco_len; $i++)
-            {
+            for ($i = 0; $i < $deco_len; $i++) {
                 if ($decoded[$i] < $cur_code) {
                     $delta++;
-                }
-                else if ($decoded[$i] == $cur_code) {
-                    for ($q = $delta, $k = $this->_base; 1; $k += $this->_base)
-                    {
+                } else if ($decoded[$i] == $cur_code) {
+                    for ($q = $delta, $k = $this->_base; 1; $k += $this->_base) {
                         $t = ($k <= $bias)?
                             $this->_tmin :
                             (($k >= $bias + $this->_tmax)? $this->_tmax : $k - $bias);
@@ -2556,10 +2572,10 @@ class Net_IDNA
         $delim_pos = strrpos($encoded, '-');
 
         if ($delim_pos > strlen($this->_punycode_prefix)) {
-            for ($k = strlen($this->_punycode_prefix); $k < $delim_pos; ++$k)
+            for ($k = strlen($this->_punycode_prefix); $k < $delim_pos; ++$k) {
                 $decoded[] = ord($encoded{$k});
-        }
-        else {
+            }
+        } else {
             $decoded = array();
         }
 
@@ -2572,14 +2588,12 @@ class Net_IDNA
         $idx      = 0;
         $char     = $this->_initial_n;
 
-        for ($enco_idx = ($delim_pos)? ($delim_pos + 1) : 0; $enco_idx < $enco_len; ++$deco_len)
-        {
-            for ($old_idx = $idx, $w = 1, $k = $this->_base; 1 ; $k += $this->_base)
-            {
+        for ($enco_idx = ($delim_pos)? ($delim_pos + 1) : 0; $enco_idx < $enco_len; ++$deco_len) {
+            for ($old_idx = $idx, $w = 1, $k = $this->_base; 1 ; $k += $this->_base) {
                 $digit = $this->_decodeDigit($encoded{$enco_idx++});
                 $idx += $digit * $w;
 
-                $t = ($k <= $bias)?
+                $t = ($k <= $bias) ?
                     $this->_tmin :
                     (($k >= $bias + $this->_tmax)? $this->_tmax : ($k - $bias));
 
@@ -2607,8 +2621,7 @@ class Net_IDNA
 
         try {
             return $this->_ucs4_to_utf8($decoded);
-        }
-        catch (Exception $e) {
+        } catch (Exception $e) {
             // rethrow
             throw $e;
         }
@@ -2624,10 +2637,11 @@ class Net_IDNA
         $delta  = ($is_first)? ($delta / $this->_damp) : ($delta / 2);
         $delta += $delta / $npoints;
 
-        for ($k = 0; $delta > (($this->_base - $this->_tmin) * $this->_tmax) / 2; $k += $this->_base)
+        for ($k = 0; $delta > (($this->_base - $this->_tmin) * $this->_tmax) / 2; $k += $this->_base) {
             $delta = $delta / ($this->_base - $this->_tmin);
+        }
 
-        return $k + ($this->_base - $this->_tmin + 1) * $delta / ($delta + $this->_skew);
+        return (int) ($k + ($this->_base - $this->_tmin + 1) * $delta / ($delta + $this->_skew));
     }
 
     /**
@@ -2689,14 +2703,11 @@ class Net_IDNA
                 foreach ($this->_hangulDecompose($v) as $out) {
                     $output[] = $out;
                 }
-            }
-            // There's a decomposition mapping for that code point
-            else if (isset(self::$_np_casemap[$v])) {
-                foreach ($this->_applyCannonicalOrdering(self::$_np_casemap[$v]) as $out) {
+            } else if (isset(self::$_np_replacemaps[$v])) { // There's a decomposition mapping for that code point
+                foreach ($this->_applyCannonicalOrdering(self::$_np_replacemaps[$v]) as $out) {
                     $output[] = $out;
                 }
-            }
-            else {
+            } else {
                 $output[] = $v;
             }
         }
@@ -2870,8 +2881,7 @@ class Net_IDNA
             $swap = false;
             $last = $this->_getCombiningClass($input[0]);
 
-            for ($i = 0; $i < $size - 1; ++$i)
-            {
+            for ($i = 0; $i < $size - 1; ++$i) {
                 $next = $this->_getCombiningClass($input[$i + 1]);
 
                 if ($next != 0 && $last > $next) {
@@ -2919,7 +2929,7 @@ class Net_IDNA
             }
         }
 
-        foreach (self::$_np_casemap as $np_src => $np_target) {
+        foreach (self::$_np_replacemaps as $np_src => $np_target) {
             if ($np_target[0] != $input[0]) {
                 continue;
             }
@@ -2933,8 +2943,7 @@ class Net_IDNA
             foreach ($input as $k2 => $v2) {
                 if ($v2 == $np_target[$k2]) {
                     $hit = true;
-                }
-                else {
+                } else {
                     $hit = false;
                     break;
                 }
@@ -2949,10 +2958,10 @@ class Net_IDNA
     }
 
     /**
-     * This converts an UTF-8 encoded string to its UCS-4 representation
-     * By talking about UCS-4 "strings" we mean arrays of 32bit integers representing
+     * This converts an UTF-8 encoded string to its UCS-4 (array) representation
+     * By talking about UCS-4 we mean arrays of 32bit integers representing
      * each of the "chars". This is due to PHP not being able to handle strings with
-     * bit depth different from 8. This apllies to the reverse method _ucs4_to_utf8(), too.
+     * bit depth different from 8. This applies to the reverse method _ucs4_to_utf8(), too.
      * The following UTF-8 encodings are supported:
      *
      * bytes bits  representation
@@ -2974,8 +2983,7 @@ class Net_IDNA
         $inp_len = strlen($input);
         $mode    = 'next';
 
-        for ($k = 0; $k < $inp_len; ++$k)
-        {
+        for ($k = 0; $k < $inp_len; ++$k) {
             // Extract byte from input string
             $v = ord($input{$k});
 
@@ -2995,37 +3003,32 @@ class Net_IDNA
 
             // Try to find the next start byte; determine the width of the Unicode char
             if ('next' == $mode) {
-                // &110xxxxx 10xxxxx
                 if ($v >> 5 == 6) {
+                    // &110xxxxx 10xxxxx
                     $mode = 'add';
                     $next_byte = 0; // Tells, how many times subsequent bitmasks must rotate 6bits to the left
                     $v = ($v - 192) << 6;
-                }
-                // &1110xxxx 10xxxxxx 10xxxxxx
-                else if ($v >> 4 == 14) {
+                } else if ($v >> 4 == 14) {
+                    // &1110xxxx 10xxxxxx 10xxxxxx
                     $mode = 'add';
                     $next_byte = 1;
                     $v = ($v - 224) << 12;
-                }
-                // &11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
-                else if ($v >> 3 == 30) {
+                } else if ($v >> 3 == 30) {
+                    // &11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
                     $mode = 'add';
                     $next_byte = 2;
                     $v = ($v - 240) << 18;
-                }
-                // &111110xx 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx
-                else if ($v >> 2 == 62) {
+                } else if ($v >> 2 == 62) {
+                    // &111110xx 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx
                     $mode = 'add';
                     $next_byte = 3;
                     $v = ($v - 248) << 24;
-                }
-                // &1111110x 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx
-                else if ($v >> 1 == 126) {
+                } else if ($v >> 1 == 126) {
+                    // &1111110x 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx
                     $mode = 'add';
                     $next_byte = 4;
                     $v = ($v - 252) << 30;
-                }
-                else {
+                } else {
                     throw new Exception('This might be UTF-8, but I don\'t understand it at byte ' . $k);
                 }
 
@@ -3047,8 +3050,7 @@ class Net_IDNA
                     $v = ($v - 128) << ($next_byte * 6);
                     $output[($out_len - 1)] += $v;
                     --$next_byte;
-                }
-                else {
+                } else {
                     throw new Exception('Conversion from UTF-8 to UCS-4 failed: malformed input at byte ' . $k);
                 }
 
@@ -3062,7 +3064,7 @@ class Net_IDNA
     }
 
     /**
-     * Convert UCS-4 string into UTF-8 string.
+     * Convert UCS-4 array into UTF-8 string.
      *
      * @throws   Exception
      * @access   private
@@ -3074,50 +3076,92 @@ class Net_IDNA
         foreach ($input as $v) {
             // $v = ord($v);
 
-            // 7bit are transferred literally
             if ($v < 128) {
+                // 7bit are transferred literally
                 $output .= chr($v);
-            }
-            // 2 bytes
-            else if ($v < 1 << 11) {
+            } else if ($v < 1 << 11) {
+                // 2 bytes
                 $output .= chr(192 + ($v >> 6))
                     . chr(128 + ($v & 63));
-            }
-            // 3 bytes
-            else if ($v < 1 << 16) {
+            } else if ($v < 1 << 16) {
+                // 3 bytes
                 $output .= chr(224 + ($v >> 12))
                     . chr(128 + (($v >> 6) & 63))
                     . chr(128 + ($v & 63));
-            }
-            // 4 bytes
-            else if ($v < 1 << 21) {
+            } else if ($v < 1 << 21) {
+                // 4 bytes
                 $output .= chr(240 + ($v >> 18))
                     . chr(128 + (($v >> 12) & 63))
                     . chr(128 + (($v >>  6) & 63))
                     . chr(128 + ($v & 63));
-            }
-            // 5 bytes
-            else if ($v < 1 << 26) {
+            } else if ($v < 1 << 26) {
+                // 5 bytes
                 $output .= chr(248 + ($v >> 24))
                     . chr(128 + (($v >> 18) & 63))
                     . chr(128 + (($v >> 12) & 63))
                     . chr(128 + (($v >>  6) & 63))
                     . chr(128 + ($v & 63));
-            }
-            // 6 bytes
-            else if ($v < 1 << 31) {
+            } else if ($v < 1 << 31) {
+                // 6 bytes
                 $output .= chr(252 + ($v >> 30))
                     . chr(128 + (($v >> 24) & 63))
                     . chr(128 + (($v >> 18) & 63))
                     . chr(128 + (($v >> 12) & 63))
                     . chr(128 + (($v >>  6) & 63))
                     . chr(128 + ($v & 63));
-            }
-            else {
+            } else {
                 throw new Exception('Conversion from UCS-4 to UTF-8 failed: malformed input at byte ' . $k);
             }
         }
 
+        return $output;
+    }
+
+    /**
+     * Convert UCS-4 array into UCS-4 string
+     *
+     * @throws   Exception
+     * @access   private
+     */
+    private function _ucs4_to_ucs4_string($input)
+    {
+        $output = '';
+        // Take array values and split output to 4 bytes per value
+        // The bit mask is 255, which reads &11111111
+        foreach ($input as $v) {
+            $output .= ($v & (255 << 24) >> 24) . ($v & (255 << 16) >> 16) . ($v & (255 << 8) >> 8) . ($v & 255);
+        }
+        return $output;
+    }
+
+    /**
+     * Convert UCS-4 strin into UCS-4 garray
+     *
+     * @throws   Exception
+     * @access   private
+     */
+    private function _ucs4_string_to_ucs4($input)
+    {
+        $output = array();
+
+        $inp_len = strlen($input);
+        // Input length must be dividable by 4
+        if ($inp_len % 4) {
+            throw new Exception('Input UCS4 string is broken');
+            return false;
+        }
+
+        // Empty input - return empty output
+        if (!$inp_len) return $output;
+
+        for ($i = 0, $out_len = -1; $i < $inp_len; ++$i) {
+            // Increment output position every 4 input bytes
+            if (!$i % 4) {
+                $out_len++;
+                $output[$out_len] = 0;
+            }
+            $output[$out_len] += ord($input{$i}) << (8 * (3 - ($i % 4) ) );
+        }
         return $output;
     }
 
@@ -3154,11 +3198,9 @@ class Net_IDNA
     {
         if ($octet >= (1 << 16)) {
             $w = 31;
-        }
-        else if ($octet >= (1 << 8)) {
+        } else if ($octet >= (1 << 8)) {
             $w = 15;
-        }
-        else {
+        } else {
             $w = 7;
         }
 

@@ -3,7 +3,7 @@
 /* idna_convert.class.php - Encode / Decode Internationalized Domain Names   */
 /* (c) 2004 phlyLabs, Berlin (http://phlylabs.de)                            */
 /* All rights reserved                                                       */
-/* v0.3.2dev                                                                 */
+/* v0.3.4                                                                    */
 /* ------------------------------------------------------------------------- */
 
 // {{{ license
@@ -2106,12 +2106,23 @@ class idna_convert
                 switch ($v) {
                 case 'utf8':
                 case 'ucs4_string':
-                case 'ucs4_array': $this->_api_encoding = $v; break;
+                case 'ucs4_array':
+                    $this->_api_encoding = $v;
+                    break;
+                default:
+                    $this->_error('Set Parameter: Unknown parameter '.$v.' for option '.$k);
+                    return false;
                 }
                 break;
-            case 'overlong': $this->_allow_overlong = ($v) ? true : false; break;
-            case 'strict':   $this->_strict_mode = ($v) ? true : false; break;
-            default:         $this->_error('Set Parameter: Unknown option '.$k); return false;
+            case 'overlong':
+                $this->_allow_overlong = ($v) ? true : false;
+                break;
+            case 'strict':
+                $this->_strict_mode = ($v) ? true : false;
+                break;
+            default:
+                $this->_error('Set Parameter: Unknown option '.$k);
+                return false;
             }
         }
         return true;
@@ -2123,11 +2134,70 @@ class idna_convert
     * @return   string   Decoded Domain name (UTF-8)
     * @access   public
     */
-    function decode($encoded)
+    function decode($input)
     {
-        // Call actual wrapper
-        $decoded = $this->_do_job(trim($encoded), 'decode');
-        return $decoded;
+        // Make sure to drop any newline characters around
+        $input = trim($input);
+
+        // Negotiate input and try to determine, wether it is a plain string,
+        // an email address or something like a complete URL
+        if (strpos($input, '@')) { // Maybe it is an email address
+            // No no in strict mode
+            if ($this->_strict_mode) {
+                $this->_error('Only simple domain name parts can be handled in strict mode');
+                return false;
+            }
+            list($email_pref, $input) = explode('@', $input, 2);
+            $arr = explode('.', $input);
+            foreach ($arr as $k => $v) {
+                $conv = $this->_decode($v);
+                if ($conv) $arr[$k] = $conv;
+            }
+            $return = $email_pref . '@' . join('.', $arr);
+        } elseif (preg_match('![:\./]!', $input)) { // Or a complete domain name (with or without paths / parameters)
+            // No no in strict mode
+            if ($this->_strict_mode) {
+                $this->_error('Only simple domain name parts can be handled in strict mode');
+                return false;
+            }
+            $parsed = parse_url($input);
+            if (isset($parsed['host'])) {
+                $arr = explode('.', $parsed['host']);
+                foreach ($arr as $k => $v) {
+                    $conv = $this->_decode($v);
+                    if ($conv) $arr[$k] = $conv;
+                }
+                $parsed['host'] = join('.', $arr);
+                if (isset($parsed['scheme'])) {
+                    $parsed['scheme'] .= (strtolower($parsed['scheme']) == 'mailto') ? ':' : '://';
+                }
+                $return = join('', $parsed);
+            } else { // parse_url seems to have failed, try without it
+                $arr = explode('.', $input);
+                foreach ($arr as $k => $v) {
+                    $conv = $this->_decode($v);
+                    if ($conv) $arr[$k] = $conv;
+                }
+                $return = join('.', $arr);
+            }
+        } else { // Otherwise we consider it being a pure domain name string
+            $return = $this->_decode($input);
+        }
+        // The output is UTF-8 by default, other output formats need conversion here
+        switch ($this->_api_encoding) {
+        case 'utf8':
+            return $return;
+            break;
+        case 'ucs4_string':
+           return $this->_ucs4_to_ucs4_string($this->_utf8_to_ucs4($return));
+           break;
+        case 'ucs4_array':
+            return $this->_utf8_to_ucs4($return);
+            break;
+        default:
+            $this->_error('Unsupported output format: '.$this->_api_encoding);
+            return false;
+        }
     }
 
     /**
@@ -2145,7 +2215,11 @@ class idna_convert
             break;
         case 'ucs4_string':
            $decoded = $this->_ucs4_string_to_ucs4($decoded);
+        case 'ucs4_array':
            break;
+        default:
+            $this->_error('Unsupported input format: '.$this->_api_encoding);
+            return false;
         }
 
         // No input, no output, what else did you expect?
@@ -2220,66 +2294,6 @@ class idna_convert
     function get_last_error()
     {
         return $this->error;
-    }
-
-    /**
-    * Wrapper method to provide extended functionality
-    * This allows for processing complete email addresses and domain names
-    * @access   private
-    */
-    function _do_job($input, $mode)
-    {
-        $method = '_'.$mode;
-        // Make sure to use just the plain dot
-        /* Snippet does not work, neither with nor without Unicode support in PCRE
-        if ('encode' == $mode) {
-            $input = preg_replace('![\x3002\xFF0E\xFF61]!U', '\x2E', $input);
-        }
-        */
-        // Negotiate input and try to determine, wether it is a plain string,
-        // an email address or something like a complete URL
-        if (strpos($input, '@')) { // Maybe it is an email address
-            // No no in strict mode
-            if ($this->_strict_mode) {
-                $this->_error('Only simple domain name parts can be handled in strict mode');
-                return false;
-            }
-            list($email_pref, $input) = explode('@', $input, 2);
-            $arr = explode('.', $input);
-            foreach ($arr as $k => $v) {
-                $conv = $this->$method($v);
-                if ($conv) $arr[$k] = $conv;
-            }
-            return $email_pref . '@' . join('.', $arr);
-        } elseif (preg_match('![:\./]!', $input)) { // Or a complete domain name (with or without paths / parameters)
-            // No no in strict mode
-            if ($this->_strict_mode) {
-                $this->_error('Only simple domain name parts can be handled in strict mode');
-                return false;
-            }
-            $parsed = parse_url($input);
-            if (isset($parsed['host'])) {
-                $arr = explode('.', $parsed['host']);
-                foreach ($arr as $k => $v) {
-                    $conv = $this->$method($v);
-                    if ($conv) $arr[$k] = $conv;
-                }
-                $parsed['host'] = join('.', $arr);
-                if (isset($parsed['scheme'])) {
-                    $parsed['scheme'] .= (strtolower($parsed['scheme']) == 'mailto') ? ':' : '://';
-                }
-                return join('', $parsed);
-            } else { // parse_url seems to have failed, try without it
-                $arr = explode('.', $input);
-                foreach ($arr as $k => $v) {
-                    $conv = $this->$method($v);
-                    if ($conv) $arr[$k] = $conv;
-                }
-                return join('.', $arr);
-            }
-        } else { // Otherwise we consider it being a pure domain name string
-            return $this->$method($input);
-        }
     }
 
     /**
@@ -2448,7 +2462,7 @@ class idna_convert
         for ($k = 0; $delta > (($this->base - $this->tmin) * $this->tmax) / 2; $k += $this->base) {
             $delta = $delta / ($this->base - $this->tmin);
         }
-        return $k + ($this->base - $this->tmin + 1) * $delta / ($delta + $this->skew);
+        return (int) ($k + ($this->base - $this->tmin + 1) * $delta / ($delta + $this->skew));
     }
 
     /**
@@ -2733,7 +2747,6 @@ class idna_convert
         $mode = 'next';
         for ($k = 0; $k < $inp_len; ++$k) {
             $v = ord($input{$k}); // Extract byte from input string
-            // echo chr($v).' '.$this->show_bitmask($v).' '.join('.', $output).'<br />';
 
             if ($v < 128) { // We found an ASCII char - put into stirng as is
                 $output[$out_len] = $v;
