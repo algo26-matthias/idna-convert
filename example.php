@@ -1,14 +1,41 @@
 <?php
+error_reporting(E_ALL);
+
+header('Content-Type: text/html; charset=UTF-8');
+
 include('idna_convert.class.php');
 $IDN = new idna_convert();
 
 if (isset($_REQUEST['encode'])) {
+    /*
+    echo 'Original UTF8 string: '.$_REQUEST['decoded'].'<br />';
+    echo 'Viewed bytewise:<br />';
+    for ($k = 0; $k < strlen($_REQUEST['decoded']); ++$k) {
+        $v = $_REQUEST['decoded']{$k};
+        echo $k.' '.$v.' => '.ord($v).' => '.$IDN->show_bitmask(ord($v)).'<br />';
+    }
+    $_REQUEST['decoded'] = $IDN->utf8_to_ucs4($_REQUEST['decoded']);
+    if (!$_REQUEST['decoded']) echo $IDN->get_last_error();
+
+    echo 'Converted to UCS-4: '.$_REQUEST['decoded'].'<br />';
+    echo 'Viewed bytewise:<br />';
+    for ($k = 0; $k < strlen($_REQUEST['decoded']); ++$k) {
+        $v = $_REQUEST['decoded']{$k};
+        echo $k.' '.$v.' => '.ord($v).' => '.$IDN->show_bitmask(ord($v)).'<br />';
+    }
+    */
     $decoded = isset($_REQUEST['decoded']) ? $_REQUEST['decoded'] : '';
     $encoded = $IDN->encode($decoded);
 }
 if (isset($_REQUEST['decode'])) {
     $encoded = isset($_REQUEST['encoded']) ? $_REQUEST['encoded'] : '';
     $decoded = $IDN->decode($encoded);
+    /*
+    for ($k = 0; $k < strlen($decoded); ++$k) {
+        $v = $decoded{$k};
+        echo $k.' '.$v.' => '.ord($v).' => '.$IDN->show_bitmask(ord($v)).'<br />';
+    }
+    */
 }
 
 if (!isset($encoded)) $encoded = '';
@@ -20,6 +47,7 @@ if (!isset($decoded)) $decoded = '';
 <head>
 <title>Punycode Converter</title>
 <meta name="author" content="blue birdy">
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <style type="text/css">
 body {
     color: rgb(0, 0, 0);
@@ -81,20 +109,18 @@ input {
    This converter allows you to transfer domain names between the encoded (Punycode) notation
    and the decoded (8bit) notation.<br />
    Just enter the domain name in the respective field and click on the button right beside it to have
-   it converted. Please be aware, that you might even enter complete domain names (like jürgen-müller.de),
-   but neither should you enter the protocol (<strong>DO NOT</strong> enter http://müller.de) nor
+   it converted. Please be aware, that you might even enter complete domain names (like j&#xFC;rgen-m&#xFC;ller.de),
+   but neither should you enter the protocol (<strong>DO NOT</strong> enter http://m&#xFC;ller.de) nor
    an email address.<br />
    Since the underlying library is in a quite early state of development we cannot guarantee its
    usefulness and correctness. You should always doublecheck the results given here by converting them
    back to the original form.<br />
    <br />
    For those of you interested in the PHP source of the underlying class, you might
-   <a href="http://phlymail.de/cgi-bin/dlmanager.cgi?Goodies/idna_convert_010.zip">download it here</a>.<br />
+   <a href="http://phlymail.de/cgi-bin/dlmanager.cgi?Goodies/idna_convert_012.zip">download it here</a>.<br />
    Please be aware, that this class is provided as is and without any liability. Use at your own risk.<br />
    <br />
    Please feel free to report bugs and problems to: <a href="mailto:team@phlymail.de">team@phlymail.de</a><br />
-   <br />
-   Have fun! :)<br />
    <br />
    </div>
    <table border="0" cellpadding="2" cellspacing="2" align="center">
@@ -126,5 +152,4 @@ input {
 </table>
 </body>
 </html>
-
 
