@@ -3,7 +3,7 @@
 /* idna_convert.class.php - Encode / Decode Internationalized Domain Names   */
 /* (c) 2004-2005 phlyLabs, Berlin (http://phlylabs.de)                       */
 /* All rights reserved                                                       */
-/* v0.4.0                                                                    */
+/* v0.4.1                                                                    */
 /* ------------------------------------------------------------------------- */
 
 // {{{ license
@@ -54,7 +54,7 @@
  * ACE input and output is always expected to be ASCII.
  *
  * @author  Matthias Sommerfeld <mso@phlylabs.de>
- * @version 0.4.0
+ * @version 0.4.1
  *
  */
 
@@ -2963,7 +2963,7 @@ class idna_convert
 * Net_IDNA
 * @author  Matthias Sommerfeld <mso@phlylabs.de>
 */
-class Net_IDNA extends idna_convert
+class Net_IDNA_php4 extends idna_convert
 {
     /**
     * Constructor
@@ -2972,29 +2972,28 @@ class Net_IDNA extends idna_convert
     * @access public
     * @see    setParams()
     */
-    function Net_IDNA($options = false)
+    function Net_IDNA_php4($options = false)
     {
         $this->IC = new idna_convert($options);
         return $this->IC;
     }
 
     /**
-     * Sets a new option value. Available options and values:
-     *
-     * [utf8 -     Use either UTF-8 or ISO-8859-1 as input (true for UTF-8, false
-     *             otherwise); The output is always UTF-8]
-     * [overlong - Unicode does not allow unnecessarily long encodings of chars,
-     *             to allow this, set this parameter to true, else to false;
-     *             default is false.]
-     * [strict -   true: strict mode, good for registration purposes - Causes errors
-     *             on failures; false: loose mode, ideal for "wildlife" applications
-     *             by silently ignoring errors and returning the original input instead]
-     *
-     * @param    mixed     $option      Parameter to set (string: single parameter; array of Parameter => Value pairs)
-     * @param    string    $value       Value to use (if parameter 1 is a string)
-     * @return   boolean                true on success, false otherwise
-     * @access   public
-     */
+    * Sets a new option value. Available options and values:
+    * [encoding - Use either UTF-8, UCS4 as array or UCS4 as string as input ('utf8' for UTF-8,
+    *         'ucs4_string' and 'ucs4_array' respectively for UCS4); The output is always UTF-8]
+    * [overlong - Unicode does not allow unnecessarily long encodings of chars,
+    *             to allow this, set this parameter to true, else to false;
+    *             default is false.]
+    * [strict - true: strict mode, good for registration purposes - Causes errors
+    *           on failures; false: loose mode, ideal for "wildlife" applications
+    *           by silently ignoring errors and returning the original input instead
+    *
+    * @param    mixed     Parameter to set (string: single parameter; array of Parameter => Value pairs)
+    * @param    string    Value to use (if parameter 1 is a string)
+    * @return   boolean   true on success, false otherwise
+    * @access   public
+    */
     function setParams($option, $param = false)
     {
         return $this->IC->set_parameters($option, $param);

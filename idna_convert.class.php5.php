@@ -38,7 +38,7 @@
  * simple strings and complete email addresses as well. That means, that you might
  * use any of the following notations:
  *
- * - www.nï¿½rgler.com
+ * - www.nörgler.com
  * - xn--nrgler-wxa
  * - xn--brse-5qa.xn--knrz-1ra.info
  *
@@ -51,10 +51,10 @@
  * @author  Markus Nix <mnix@docuverse.de>
  * @author  Matthias Sommerfeld <mso@phlylabs.de>
  * @package Net
- * @version $Id: IDNA.php,v 0.4.0 2005/07/30 06:06 phlylabs_de Exp $
+ * @version $Id: IDNA.php,v 0.4.1 2005/08/07 18:35 phlylabs_de Exp $
  */
 
-class Net_IDNA
+class Net_IDNA_php5
 {
     // {{{ npdata
     /**
@@ -2191,6 +2191,14 @@ class Net_IDNA
      * @access private
      */
     private $_strict_mode = false;
+
+    /**
+    * In case of error (not caught by Exception handling), the error message can be found here
+    *
+    * @var string
+    * @access public
+    */
+    public $_error = false;
     // }}}
 
 
@@ -2214,22 +2222,21 @@ class Net_IDNA
 
 
     /**
-     * Sets a new option value. Available options and values:
-     *
-     * [utf8 -     Use either UTF-8 or ISO-8859-1 as input (true for UTF-8, false
-     *             otherwise); The output is always UTF-8]
-     * [overlong - Unicode does not allow unnecessarily long encodings of chars,
-     *             to allow this, set this parameter to true, else to false;
-     *             default is false.]
-     * [strict -   true: strict mode, good for registration purposes - Causes errors
-     *             on failures; false: loose mode, ideal for "wildlife" applications
-     *             by silently ignoring errors and returning the original input instead]
-     *
-     * @param    mixed     $option      Parameter to set (string: single parameter; array of Parameter => Value pairs)
-     * @param    string    $value       Value to use (if parameter 1 is a string)
-     * @return   boolean                true on success, false otherwise
-     * @access   public
-     */
+    * Sets a new option value. Available options and values:
+    * [encoding - Use either UTF-8, UCS4 as array or UCS4 as string as input ('utf8' for UTF-8,
+    *         'ucs4_string' and 'ucs4_array' respectively for UCS4); The output is always UTF-8]
+    * [overlong - Unicode does not allow unnecessarily long encodings of chars,
+    *             to allow this, set this parameter to true, else to false;
+    *             default is false.]
+    * [strict - true: strict mode, good for registration purposes - Causes errors
+    *           on failures; false: loose mode, ideal for "wildlife" applications
+    *           by silently ignoring errors and returning the original input instead
+    *
+    * @param    mixed     Parameter to set (string: single parameter; array of Parameter => Value pairs)
+    * @param    string    Value to use (if parameter 1 is a string)
+    * @return   boolean   true on success, false otherwise
+    * @access   public
+    */
     public function setParams($option, $value = false)
     {
         if (!is_array($option)) {
