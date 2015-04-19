@@ -4,7 +4,7 @@
 *                                                                             *
 * http://idnaconv.phlymail.de                     mailto:phlymail@phlylabs.de *
 *******************************************************************************
-* (c) 2004-2007 phlyLabs, Berlin                                              *
+* (c) 2004-2008 phlyLabs, Berlin                                              *
 * This file is encoded in UTF-8                                               *
 *******************************************************************************
 
@@ -34,17 +34,15 @@ arrays. The default format is UTF-8. For setting different encodings, you can
 call the method setParams() - please see the inline documentation for details.
 ACE strings (the Punycode form) are always 7bit ASCII strings.
 
-ATTENTION: We no longer supply the PHP5 version of the class. It is not
-necessary for achieving a successfull conversion, since the supplied PHP code is
-compatible with both PHP4 and PHP5. We expect to see no compatibility issues
-with the upcoming PHP6, too.
+ATTENTION: As of version 0.6.0 of this class it is written in the OOP style of PHP5.
+Since PHP4 is no longer actively maintained, you should switch to PHP5 as fast as 
+possible.
+We expect to see no compatibility issues with the upcoming PHP6, too.
 
 
 Files
 -----
 idna_convert.class.php         - The actual class
-idna_convert.create.npdata.php - Useful for (re)creating the NPData file
-npdata.ser                     - Serialized data for NamePrep
 example.php                    - An example web page for converting
 transcode_wrapper.php          - Convert various encodings, see below
 uctc.php                       - phlyLabs' Unicode Transcoder, see below
@@ -52,8 +50,6 @@ ReadMe.txt                     - This file
 LICENCE                        - The LGPL licence file
 
 The class is contained in idna_convert.class.php.
-MAKE SURE to copy the npdata.ser file into the same folder as the class file
-itself!
 
 
 Examples
@@ -101,14 +97,6 @@ foreach (file('ucs4-domains.txt') as $line) {
     echo $IDN->encode(trim($line), 'ucs4_string');
     echo "\n";
 }
-
-
-NPData
-------
-Should you need to recreate the npdata.ser file, which holds all necessary translation
-tables in a serialized format, you can run the file idna_convert.create.npdata.php, which
-creates the file for you and stores it in the same folder, where it is placed.
-Should you need to do changes to the tables you can do so, but beware of the consequences.
 
 
 Transcode wrapper

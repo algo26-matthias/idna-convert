@@ -27,57 +27,16 @@ if (isset($_REQUEST['lang'])) {
 <meta name="author" content="phlyLabs">
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <style type="text/css">
-body {
-    color:black;
-    background:white;
-    font-size:10pt;
-    font-family:Verdana, Helvetica, Sans-Serif;
-}
-
-body, form {
-    margin:0px;
-}
-
-form {
-    display:inline;
-}
-
-input {
-    font-size:8pt;
-    font-family:Verdana, Helvetica, Sans-Serif;
-}
-
-#mitte {
-    text-align:center;
-    vertical-align:middle;
-}
-
-#round {
-    background-color:rgb(230, 230, 240);
-    border:1px solid black;
-    text-align:center;
-    vertical-align:middle;
-    padding:10px;
-}
-
-.thead {
-    font-size:9pt;
-    font-weight:bold;
-}
-
-#copy {
-    font-size:8pt;
-    color:rgb(60, 60, 80);
-}
-
-#subhead {
-    font-size:8pt;
-}
-
-#bla {
-    font-size:8pt;
-    text-align:left;
-}
+body { color:black;background:white;font-size:10pt;font-family:Verdana, Helvetica, Sans-Serif; }
+body, form { margin:0px; }
+form { display:inline; }
+input { font-size:8pt;font-family:Verdana, Helvetica, Sans-Serif; }
+#mitte { text-align:center;vertical-align:middle; }
+#round { background-color:rgb(230, 230, 240);border:1px solid black;text-align:center;vertical-align:middle;padding:10px; }
+.thead { font-size:9pt;font-weight:bold; }
+#copy { font-size:8pt;color:rgb(60, 60, 80); }
+#subhead { font-size:8pt; }
+#bla { font-size:8pt;text-align:left; }
 </style>
 </head>
 <body>
@@ -150,7 +109,7 @@ input {
     </td>
    </tr>
    </table><br />
-   <span id="copy">Version used: 0.5.1; (c) <a href="http://phlylabs.de">phlyLabs</a> 2004-2007</span>
+   <span id="copy">Version used: 0.6.0; (c) <a href="http://phlylabs.de">phlyLabs</a> 2004-2008</span>
 </div>
  </td>
 </tr>
