@@ -1,6 +1,5 @@
 <?php
 header('Content-Type: text/html; charset=UTF-8');
-
 if (isset($_REQUEST['pear'])) {
     include('idna_convert.class.php5.php');
     $add = '<input type="hidden" name="pear" value="'.$_REQUEST['pear'].'" />'."\n";
@@ -10,26 +9,22 @@ if (isset($_REQUEST['pear'])) {
     $add = '';
     $IDN = new idna_convert();
 }
-
 if (isset($_REQUEST['encode'])) {
-    $decoded = isset($_REQUEST['decoded']) ? $_REQUEST['decoded'] : '';
+    $decoded = isset($_REQUEST['decoded']) ? stripslashes($_REQUEST['decoded']) : '';
     $encoded = $IDN->encode($decoded);
 }
 if (isset($_REQUEST['decode'])) {
-    $encoded = isset($_REQUEST['encoded']) ? $_REQUEST['encoded'] : '';
+    $encoded = isset($_REQUEST['encoded']) ? stripslashes($_REQUEST['encoded']) : '';
     $decoded = $IDN->decode($encoded);
 }
-
 if (isset($_REQUEST['lang'])) {
     if ('de' == $_REQUEST['lang'] || 'en' == $_REQUEST['lang']) $lang = $_REQUEST['lang'];
     $add.= '<input type="hidden" name="lang" value="'.$_REQUEST['lang'].'" />'."\n";
 } else {
     $lang = 'en';
 }
-
 if (!isset($encoded)) $encoded = '';
 if (!isset($decoded)) $decoded = '';
-
 ?>
 <!doctype html public "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
@@ -149,20 +144,19 @@ input {
    <tr>
     <td align="right">
      <form action="<?php echo $_SERVER['PHP_SELF']; ?>" method="GET">
-      <input type="text" name="decoded" value="<?php echo $decoded; ?>" size="48" maxlength="255" /><br />
+      <input type="text" name="decoded" value="<?php echo htmlentities($decoded, null, 'UTF-8'); ?>" size="48" maxlength="255" /><br />
       <input type="submit" name="encode" value="Encode &gt;&gt;" /><?php echo $add; ?>
      </form>
     </td>
     <td align="left">
      <form action="<?php echo $_SERVER['PHP_SELF']; ?>" method="GET">
-      <input type="text" name="encoded" value="<?php echo $encoded; ?>" size="48" maxlength="255" /><br />
+      <input type="text" name="encoded" value="<?php echo htmlentities($encoded, null, 'UTF-8'); ?>" size="48" maxlength="255" /><br />
       <input type="submit" name="decode" value="&lt;&lt; Decode" /><?php echo $add; ?>
      </form>
     </td>
    </tr>
    </table><br />
-   <span id="copy">Version used: 0.4.2; (c) phlyLabs 2004-2005<br />
-    Made by the team of <a href="http://phlymail.de">http://phlymail.de</a></span>
+   <span id="copy">Version used: 0.4.4; (c) <a href="http://phlylabs.de">phlyLabs</a> 2004-2006</span>
 </div>
  </td>
 </tr>
