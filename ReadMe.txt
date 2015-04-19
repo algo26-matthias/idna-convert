@@ -4,7 +4,7 @@
 *                                                                             *
 * http://idnaconv.phlymail.de                     mailto:phlymail@phlylabs.de *
 *******************************************************************************
-* (c) 2004-2008 phlyLabs, Berlin                                              *
+* (c) 2004-2010 phlyLabs, Berlin                                              *
 * This file is encoded in UTF-8                                               *
 *******************************************************************************
 
@@ -34,7 +34,7 @@ arrays. The default format is UTF-8. For setting different encodings, you can
 call the method setParams() - please see the inline documentation for details.
 ACE strings (the Punycode form) are always 7bit ASCII strings.
 
-ATTENTION: As of version 0.6.0 of this class it is written in the OOP style of PHP5.
+ATTENTION: As of version 0.6.0 this class is written in the OOP style of PHP5.
 Since PHP4 is no longer actively maintained, you should switch to PHP5 as fast as 
 possible.
 We expect to see no compatibility issues with the upcoming PHP6, too.
@@ -58,7 +58,7 @@ Examples
 
 // Include the class
 require_once('idna_convert.class.php');
-// Instantiate it *
+// Instantiate it
 $IDN = new idna_convert();
 // The input string, if input is not UTF-8 or UCS-4, it must be converted before
 $input = utf8_encode('nörgler.com');
@@ -73,7 +73,7 @@ echo $output; // This will read: xn--nrgler-wxa.com
 
 // Include the class
 require_once('idna_convert.class.php');
-// Instantiate it (depending on the version you are using) with
+// Instantiate it
 $IDN = new idna_convert();
 // The input string
 $input = 'andre@xn--brse-5qa.xn--knrz-1ra.info';
@@ -97,6 +97,22 @@ foreach (file('ucs4-domains.txt') as $line) {
     echo $IDN->encode(trim($line), 'ucs4_string');
     echo "\n";
 }
+
+
+4. We wish to convert a whole URI into the IDNA form, but leave the path or
+   query string component of it alone. Just using encode() would lead to mangled
+   paths or query strings. Here the public method encode_uri() comes into play:
+   
+// Include the class
+require_once('idna_convert.class.php');
+// Instantiate it
+$IDN = new idna_convert();
+// The input string, a whole URI in UTF-8 (!)
+$input = 'http://nörgler:secret@nörgler.com/my_päth_is_not_ÄSCII/');
+// Encode it to its punycode presentation
+$output = $IDN->encode_uri($input);
+// Output, what we got now
+echo $output; // http://nörgler:secret@xn--nrgler-wxa.com/my_päth_is_not_ÄSCII/
 
 
 Transcode wrapper
