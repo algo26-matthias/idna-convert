@@ -4,7 +4,7 @@
 *                                                                             *
 * http://idnaconv.phlymail.de                         mailto:team@phlymail.de *
 *******************************************************************************
-* (c) 2004 blue birdy, Berlin                                                 *
+* (c) 2004 phlyLabs, Berlin                                                   *
 *******************************************************************************
 
 Introduction
@@ -32,14 +32,14 @@ You can query the occured error by calling the method get_last_error().
 Files
 -----
 
-idna_convert.class.php   - The actual class
-idna_convert.npdata.php  - Nameprep tables, included by the class
-example.php              - An example web page for converting
-ReadMe.txt               - This file
-Licence.txt              - The licence
+idna_convert.class.php       - The actual class
+idna_convert.class.php5.php  - A PHP5 version, contributed by Marcus Nix
+example.php                  - An example web page for converting
+ReadMe.txt                   - This file
+LICENCE                      - The LGPL licence file
 
-For using the class, you will have to copy idna_convert.class.php as well as
-idna_convert.npdata.php to the same directory.
+For using the class, you will have to either use idna_convert.class.php or
+idna_convert.class.php5.php from your application.
 
 
 Examples
