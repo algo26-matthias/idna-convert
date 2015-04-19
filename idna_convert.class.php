@@ -3,11 +3,10 @@
 /* idna_convert.class.php - Encode / Decode punycode based domain names      */
 /* (c) 2004 blue birdy, Berlin (http://bluebirdy.de)                         */
 /* All rights reserved                                                       */
-/* v0.1.3                                                                    */
+/* v0.1.4                                                                    */
 /* ------------------------------------------------------------------------- */
 
 /*
- * C++ Original: Copyright (c) 2001, 2002 Japan Network Information Center.
  * This PHP class is derived work from the IDN extension for PHP, originally
  * written by JPNIC in C++ and the ANSI C code from RFC3492, written by
  * Adam M. Costello.
@@ -241,11 +240,11 @@ class idna_convert
                 } elseif (ord($decoded{$i}) == $cur_code) {
                     for ($q = $delta, $k = $this->punycode_base; 1; $k += $this->punycode_base) {
                         $t = ($k <= $bias) ? $this->punycode_tmin :
-                                (($k >= $bias + $this->punycode_tmax) ? $this->punycode_tmax : $k-$bias);
+                                (($k >= $bias + $this->punycode_tmax) ? $this->punycode_tmax : $k - $bias);
                         if ($q < $t) break;
                         // $add = $t + (($q - $t) % ($this->punycode_base - $t));
                         // $encoded .= $this->punycode_base36{$add};
-                        $encoded .= $this->_encode_digit(round($t + (($q - $t) % ($this->punycode_base - $t)), 0));
+                        $encoded .= $this->_encode_digit(ceil($t + (($q - $t) % ($this->punycode_base - $t))));
                         $q = ($q - $t) / ($this->punycode_base - $t);
                     }
                     // $encoded .= $this->punycode_base36{$q};
