@@ -22,8 +22,10 @@ if (isset($_REQUEST['decode'])) {
 }
 $lang = 'en';
 if (isset($_REQUEST['lang'])) {
-    if ('de' == $_REQUEST['lang'] || 'en' == $_REQUEST['lang']) $lang = $_REQUEST['lang'];
-    $add .= '<input type="hidden" name="lang" value="'.$_REQUEST['lang'].'" />'."\n";
+    if ('de' == $_REQUEST['lang'] || 'en' == $_REQUEST['lang']) {
+        $lang = $_REQUEST['lang'];
+        $add .= '<input type="hidden" name="lang" value="'.$lang.'" />'."\n";
+    }
 }
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -72,7 +74,7 @@ h5 {margin:0;font-size:11pt;font-weight:bold;}
   Stellen Sie aber sicher, dass Ihr Browser den Zeichensatz <strong>UTF-8</strong> unterstützt.<br />
   <br />
   Wenn Sie Interesse an der zugrundeliegenden PHP-Klasse haben, können Sie diese
-  <a href="http://phlymail.com/de/downloads/idna/download/">hier herunterladen</a>.<br />
+  <a href="http://phlymail.com/de/downloads/idna-convert.html">hier herunterladen</a>.<br />
   <br />
   Diese Klasse wird ohne Garantie ihrer Funktionstüchtigkeit bereit gestellt. Nutzung auf eigene Gefahr.<br />
   Um sicher zu stellen, dass eine Zeichenkette korrekt umgewandelt wurde, sollten Sie diese immer zurückwandeln
@@ -89,7 +91,7 @@ h5 {margin:0;font-size:11pt;font-weight:bold;}
   Make sure, that your browser is capable of the <strong>UTF-8</strong> character encoding.<br />
   <br />
   For those of you interested in the PHP source of the underlying class, you might
-  <a href="http://phlymail.com/en/downloads/idna/download/">download it here</a>.<br />
+  <a href="http://phlymail.com/en/downloads/idna-convert.html">download it here</a>.<br />
   <br />
   Please be aware, that this class is provided as is and without any liability. Use at your own risk.<br />
   To ensure, that a certain string has been converted correctly, you should convert it both ways and compare the
@@ -125,7 +127,7 @@ h5 {margin:0;font-size:11pt;font-weight:bold;}
   </tbody>
  </table>
  <br />
- <span id="copy">Version used: 0.8.1; &copy; 2004-2013 phlyLabs Berlin; part of <a href="http://phlymail.com/">phlyMail</a></span>
+ <span id="copy">Version used: 0.8.2; &copy; 2004-2014 phlyLabs Berlin; part of <a href="http://phlymail.com/">phlyMail</a></span>
 </div>
 </body>
 </html>

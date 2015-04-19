@@ -4,7 +4,7 @@
 *                                                                             *
 * http://idnaconv.phlymail.de                     mailto:phlymail@phlylabs.de *
 *******************************************************************************
-* (c) 2004-2013 phlyLabs, Berlin                                              *
+* (c) 2004-2014 phlyLabs, Berlin                                              *
 * This file is encoded in UTF-8                                               *
 *******************************************************************************
 
@@ -45,7 +45,7 @@ containing ß.
 In older builds "ß" was mapped to "ss". Should you still need this behaviour,
 see example 5 below.
 
-ATTENTION: As of version 0.8.0 the class fully supports IDNA 2008. Thus the 
+ATTENTION: As of version 0.8.0 the class fully supports IDNA 2008. Thus the
 aforementioned parameter is deprecated and replaced by a parameter to switch
 between the standards. See the updated example 5 below.
 
