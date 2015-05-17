@@ -40,9 +40,12 @@ The class is contained in idna_convert.class.php.
 
 ## Examples
 
-### Example 1. Say we wish to encode the domain name nörgler.com:
+### Example 1. 
 
-`<?php  
+Say we wish to encode the domain name nörgler.com:
+
+```
+<?php  
 // Include the class  
 require_once('idna_convert.class.php');  
 // Instantiate it  
@@ -52,12 +55,16 @@ $input = utf8_encode('nörgler.com');
 // Encode it to its punycode presentation  
 $output = $IDN->encode($input);  
 // Output, what we got now  
-echo $output; // This will read: xn--nrgler-wxa.com`  
+echo $output; // This will read: xn--nrgler-wxa.com
+```
 
 
-### Example 2. We received an email from a punycoded domain and are willing to learn, how the domain name reads originally
+### Example 2. 
 
-`<?php  
+We received an email from a punycoded domain and are willing to learn, how the domain name reads originally
+
+```
+<?php  
 // Include the class  
 require_once('idna_convert.class.php');  
 // Instantiate it  
@@ -68,12 +75,16 @@ $input = 'andre@xn--brse-5qa.xn--knrz-1ra.info';
 $output = $IDN->decode($input);  
 // Output, what we got now, if output should be in a format different to UTF-8  
 // or UCS-4, you will have to convert it before outputting it  
-echo utf8_decode($output); // This will read: andre@börse.knörz.info`  
+echo utf8_decode($output); // This will read: andre@börse.knörz.info
+```
 
 
-### Example 3. The input is read from a UCS-4 coded file and encoded line by line. By appending the optional second parameter we tell enode() about the input format to be used
+### Example 3. 
 
-`<?php  
+The input is read from a UCS-4 coded file and encoded line by line. By appending the optional second parameter we tell enode() about the input format to be used
+
+```
+<?php  
 // Include the class  
 require_once('idna_convert.class.php');  
 // Instantiate it  
@@ -82,11 +93,16 @@ $IDN = new dinca_convert();
 foreach (file('ucs4-domains.txt') as $line) {  
     echo $IDN->encode(trim($line), 'ucs4_string');  
     echo "\n";  
-}`
+}
+```
 
-### Example 4. We wish to convert a whole URI into the IDNA form, but leave the path or query string component of it alone. Just using encode() would lead to mangled paths or query strings. Here the public method encode_uri() comes into play:
 
-`<?php  
+### Example 4. 
+
+We wish to convert a whole URI into the IDNA form, but leave the path or query string component of it alone. Just using encode() would lead to mangled paths or query strings. Here the public method encode_uri() comes into play:
+
+```
+<?php  
 // Include the class  
 require_once('idna_convert.class.php');  
 // Instantiate it  
@@ -96,12 +112,16 @@ $input = 'http://nörgler:secret@nörgler.com/my_päth_is_not_ÄSCII/');
 // Encode it to its punycode presentation  
 $output = $IDN->encode_uri($input);  
 // Output, what we got now  
-echo $output; // http://nörgler:secret@xn--nrgler-wxa.com/my_päth_is_not_ÄSCII/`
+echo $output; // http://nörgler:secret@xn--nrgler-wxa.com/my_päth_is_not_ÄSCII/
+```
 
 
-### Example 5. To support IDNA 2008, the class needs to be invoked with an additional parameter. This can also be achieved on an instance.
+### Example 5. 
 
-`<?php  
+To support IDNA 2008, the class needs to be invoked with an additional parameter. This can also be achieved on an instance.
+
+```
+<?php  
 // Include the class  
 require_once('idna_convert.class.php');  
 // Instantiate it  
@@ -119,7 +139,8 @@ $input = 'meine-straße.de');
 // Encode it to its punycode presentation  
 $output = $IDN->encode_uri($input);  
 // Output, what we got now  
-echo $output; // meine-strasse.de`
+echo $output; // meine-strasse.de
+```
 
 
 ## Transcode wrapper
@@ -132,12 +153,14 @@ Use the file transcode_wrapper.php for the conversion. It requires either iconv,
 
 Example usage:
 
-`<?php  
+```
+<?php  
 require_once('idna_convert.class.php');  
 require_once('transcode_wrapper.php');  
 $mystring = '<something in e.g. ISO-8859-15';  
 $mystring = encode_utf8($mystring, 'ISO-8859-15');  
-echo $IDN->encode($mystring);`
+echo $IDN->encode($mystring);
+```
 
 
 ## UCTC - Unicode Transcoder
@@ -151,10 +174,12 @@ All encodings expect / return a string in the given format, with one major excep
 
 Example usage:
 
-`<?php  
+```
+<?php  
 require_once('uctc.php');  
 $mystring = 'nörgler.com';  
-echo uctc::convert($mystring, 'utf8', 'utf7imap');`
+echo uctc::convert($mystring, 'utf8', 'utf7imap');
+```
 
 
 ## Contact us
