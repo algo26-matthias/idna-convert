@@ -1,7 +1,7 @@
 # IDNA Convert (idna_convert.class.php)
 
-<http://idnaconv.phlymail.de>
-<phlymail@phlylabs.de>
+<http://idnaconv.phlymail.de>  
+<phlymail@phlylabs.de>  
 (c) 2004-2015 phlyLabs, Berlin
 
 ## Introduction
@@ -164,3 +164,4 @@ In case of errors, bugs, questions, wishes, please don't hesitate to contact us 
 The team of phlyLabs  
 http://phlylabs.de  
 mailto:phlymail@phlylabs.de
+
