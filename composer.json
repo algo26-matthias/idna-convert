@@ -1,5 +1,5 @@
 {
-    "name": "mso/idna_convert",
+    "name": "mso/idna-convert",
     "description": "A library for encoding and decoding internationalized domain names",
     "license": "LGPL-2.1+",
     "keywords": ["PHP","IDN","IDNA"],
