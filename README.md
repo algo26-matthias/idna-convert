@@ -38,6 +38,24 @@ In older builds "ß" was mapped to "ss". Should you still need this behaviour, s
 
 The class is contained in idna_convert.class.php.
 
+
+## Installation
+
+### Via Composer
+
+```
+{
+    "require" : {
+        "mso/idna-convert" : "0.9.*"
+    }
+}
+```
+
+### Official ZIP Package
+
+Go to <http://idnaconv.phlymail.de/> and follow the download link. Once downloaded and uncompressed, just copy the file `idna_convert.class.php` into your application and start using it.
+
+
 ## Examples
 
 ### Example 1. 
