@@ -43,7 +43,7 @@ The class is contained in idna_convert.class.php.
 
 ### Via Composer
 
-```
+```php
 {
     "require" : {
         "mso/idna-convert" : "0.9.*"
@@ -62,7 +62,7 @@ Go to <http://idnaconv.phlymail.de/> and follow the download link. Once download
 
 Say we wish to encode the domain name nörgler.com:
 
-```
+```php
 <?php  
 // Include the class  
 require_once('idna_convert.class.php');  
@@ -81,7 +81,7 @@ echo $output; // This will read: xn--nrgler-wxa.com
 
 We received an email from a punycoded domain and are willing to learn, how the domain name reads originally
 
-```
+```php
 <?php  
 // Include the class  
 require_once('idna_convert.class.php');  
@@ -101,7 +101,7 @@ echo utf8_decode($output); // This will read: andre@börse.knörz.info
 
 The input is read from a UCS-4 coded file and encoded line by line. By appending the optional second parameter we tell enode() about the input format to be used
 
-```
+```php
 <?php  
 // Include the class  
 require_once('idna_convert.class.php');  
@@ -119,7 +119,7 @@ foreach (file('ucs4-domains.txt') as $line) {
 
 We wish to convert a whole URI into the IDNA form, but leave the path or query string component of it alone. Just using encode() would lead to mangled paths or query strings. Here the public method encode_uri() comes into play:
 
-```
+```php
 <?php  
 // Include the class  
 require_once('idna_convert.class.php');  
@@ -138,7 +138,7 @@ echo $output; // http://nörgler:secret@xn--nrgler-wxa.com/my_päth_is_not_ÄSCI
 
 To support IDNA 2008, the class needs to be invoked with an additional parameter. This can also be achieved on an instance.
 
-```
+```php
 <?php  
 // Include the class  
 require_once('idna_convert.class.php');  
@@ -171,7 +171,7 @@ Use the file transcode_wrapper.php for the conversion. It requires either iconv,
 
 Example usage:
 
-```
+```php
 <?php  
 require_once('idna_convert.class.php');  
 require_once('transcode_wrapper.php');  
@@ -192,7 +192,7 @@ All encodings expect / return a string in the given format, with one major excep
 
 Example usage:
 
-```
+```php
 <?php  
 require_once('uctc.php');  
 $mystring = 'nörgler.com';  
