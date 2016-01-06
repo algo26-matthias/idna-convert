@@ -46,12 +46,12 @@
  * ACE input and output is always expected to be ASCII.
  *
  * @author  Matthias Sommerfeld <mso@phlylabs.de>
- * @copyright 2004-2014 phlyLabs Berlin, http://phlylabs.de
- * @version 0.9.0 2014-12-12
+ * @copyright 2004-2016 phlyLabs Berlin, http://phlylabs.de
+ * @version 0.9.1 2016-01-06
  */
 class idna_convert {
 
-    private $version = '0.9.0';
+    private $version = '0.9.1';
     protected $sub_version = 'main';
 
     // NP See below
