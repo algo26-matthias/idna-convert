@@ -32,7 +32,7 @@ if (isset($_REQUEST['lang'])) {
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 <title>phlyLabs Punycode Converter</title>
-<meta name="author" content="phlyLabs" />
+<meta name="author" content="Matthias Sommerfeld" />
 <meta http-equiv="content-type" content="text/html; charset=utf-8" />
 <style type="text/css">
 /*<![CDATA[*/
@@ -42,6 +42,7 @@ form { display:inline; }
 input { font-size:8pt;font-family:Verdana,Helvetica,Sans-Serif; }
 #round { width:730px;padding:10px;background-color:rgb(230,230,240);border:1px solid black;text-align:center;vertical-align:middle;margin:auto;margin-top:50px; }
 th { font-size:9pt;font-weight:bold; }
+td { vertical-align:top; }
 #copy { font-size:8pt;color:rgb(60,60,80); }
 #subhead { font-size:8pt; }
 #bla { font-size:8pt;text-align:left; }
@@ -127,7 +128,7 @@ h5 {margin:0;font-size:11pt;font-weight:bold;}
   </tbody>
  </table>
  <br />
- <span id="copy">Version used: 0.9.0; &copy; 2004-2014 phlyLabs Berlin; part of <a href="http://phlymail.com/">phlyMail</a></span>
+ <span id="copy">Version used: 0.9.0; &copy; 2004-2016 phlyLabs Berlin; part of <a href="http://phlymail.com/">phlyMail</a></span>
 </div>
 </body>
 </html>

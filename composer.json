@@ -3,6 +3,7 @@
     "description": "A library for encoding and decoding internationalized domain names",
     "license": "LGPL-2.1+",
     "keywords": ["PHP","IDN","IDNA"],
+    "homepage": "http://idnaconv.net/",
     "authors": [
         {
             "name": "Matthias Sommerfeld",
