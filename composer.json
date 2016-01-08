@@ -21,9 +21,13 @@
         "ext-pcre": "*",
         "php": ">=5.0.0"
     },
+    "repositories": {
+        "type": "vcs",
+        "url": "https://github.com/phlylabs/idna-convert.git"
+    },
     "extra": {
         "branch-alias": {
-            "dev-master": "0.9.x-dev"
+            "dev-master": "1.0.x-dev"
         }
     }
 }
