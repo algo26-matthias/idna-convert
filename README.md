@@ -1,8 +1,8 @@
 # IDNA Convert - pure PHP IDNA converter
 
-Project homepage: <http://idnaconv.net>
-
-by Matthias Sommerfeld <mso@phlylabs.de>
+Project homepage: <http://idnaconv.net><br>
+by Matthias Sommerfeld <mso@phlylabs.de><br>
+&copy; 2004-2016 phlyLabs, Berlin
 
 
 ## Introduction
@@ -205,11 +205,12 @@ echo UnicodeTranscoder::convert($mystring, 'utf8', 'utf7imap');
 
 For questions, bug reports and security issues just send me an email.
 
-phlyLabs
-c/o Matthias Sommerfeld
-Am Großen Rohrpfuhl 11
-D-12355 Berlin
-Germany
-
+phlyLabs<br>
+c/o Matthias Sommerfeld<br>
+Am Großen Rohrpfuhl 11<br>
+D-12355 Berlin<br>
+<br>
+Germany<br>
+<br>
 mailto:mso@phlylabs.de
 
