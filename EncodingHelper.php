@@ -4,6 +4,7 @@
  * @package IDNA Convert
  * @subpackage charset transcoding
  * @author Matthias Sommerfeld, <mso@phlylabs.de>
+ * @copyright 2003-2016 phlyLabs Berlin, http://phlylabs.de
  * @version 1.0.0 2016-01-08
  */
 
@@ -30,6 +31,7 @@ class EncodingHelper
         if (strtoupper($encoding) == 'ISO-8859-1') {
 
             return \utf8_encode($string);
+
         } if (strtoupper($encoding) == 'WINDOWS-1252') {
 
             return \utf8_encode(self::map_w1252_iso8859_1($string));

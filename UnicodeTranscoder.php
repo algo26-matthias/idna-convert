@@ -12,7 +12,7 @@
  *
  * @package IdnaConvert
  * @author Matthias Sommerfeld  <mso@phlyLabs.de>
- * @copyright 2003-2009 phlyLabs Berlin, http://phlylabs.de
+ * @copyright 2003-2016 phlyLabs Berlin, http://phlylabs.de
  * @version 0.1.0 2016-01-08
  */
 

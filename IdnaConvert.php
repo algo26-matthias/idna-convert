@@ -99,6 +99,24 @@ class IdnaConvert {
         if (self::$isMbStringOverload === null) {
             self::$isMbStringOverload = (extension_loaded('mbstring') && (ini_get('mbstring.func_overload') & 0x02) === 0x02);
         }
+        // Kept for backwarsds compatibility. Consider using the setter methods instead.
+        if (!empty($params) && is_array($params)) {
+            if (isset($params['encoding'])) {
+                $this->setEncoding($params['encoding']);
+            }
+
+            if (isset($params['allow_overlong'])) {
+                $this->setAllowOverlongUtf8($params['allow_overlong']);
+            }
+
+            if (isset($params['idn_version'])) {
+                $this->setIdnVersion($params['idn_version']);
+            }
+
+            if (isset($params['strict_mode'])) {
+                $this->setStrictMode($params['strict_mode']);
+            }
+        }
     }
 
     public function getClassVersion()
