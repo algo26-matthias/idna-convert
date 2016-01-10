@@ -53,7 +53,7 @@ In older builds "ß" was mapped to "ss". Should you still need this behaviour, s
 
 ### Official ZIP Package
 
-Go to <http://idnaconv.phlymail.de/> and follow the download link. Once downloaded and uncompressed, just copy the file `idna_convert.class.php` into your application and start using it.
+Go to <http://idnaconv.net/get-it.html> for the ZIP package. Put the uncompressed files into the vendor/ dir fo your app. Then follow the examples below
 
 
 ## Examples

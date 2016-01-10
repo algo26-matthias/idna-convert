@@ -47,7 +47,7 @@
  *
  * @author  Matthias Sommerfeld <mso@phlylabs.de>
  * @copyright 2004-2016 phlyLabs Berlin, http://phlylabs.de
- * @version 1.0.0-dev 2016-01-08
+ * @version 1.0.0-main 2016-01-10
  */
 
 namespace Mso\IdnaConvert;
@@ -55,7 +55,7 @@ namespace Mso\IdnaConvert;
 class IdnaConvert {
 
     const Version = '1.0.0';
-    const SubVersion = 'dev';
+    const SubVersion = 'main';
 
     // Internal settings, do not touch!
     const PunycodePrefix = 'xn--';
@@ -433,7 +433,7 @@ class IdnaConvert {
         $encode_test = preg_replace('!^' . preg_quote(self::PunycodePrefix, '!') . '!', '', $encoded);
         // If nothing left after removing the prefix, it is hopeless
         if (!$encode_test) {
-            throw new \InvalidArgumentException('The given encoded string was empty');
+            return false;
         }
         // Find last occurence of the delimiter
         $delim_pos = strrpos($encoded, '-');
@@ -501,7 +501,7 @@ class IdnaConvert {
             }
         }
         if (!$encodable) {
-            throw new \InvalidArgumentException('The given string does not contain encodable chars');
+            return false;
         }
         // Do NAMEPREP
         $decoded = $this->_nameprep($decoded);
