@@ -1,8 +1,9 @@
 # IDNA Convert - pure PHP IDNA converter
 
-<http://idnaconv.net>
+Project homepage: <http://idnaconv.net>
+
 by Matthias Sommerfeld <mso@phlylabs.de>
-&copy; 2004-2016 phlyLabs, Berlin
+
 
 ## Introduction
 
@@ -181,7 +182,7 @@ echo $IDN->encode($mystring);
 ```
 
 
-## UCTC - Unicode Transcoder
+## UCTC &mdash; Unicode Transcoder
 
 Another class you might find useful when dealing with one or more of the Unicode encoding flavours. It can transcode into each other:
 - UCS-4 string / array  
@@ -200,7 +201,7 @@ echo UnicodeTranscoder::convert($mystring, 'utf8', 'utf7imap');
 ```
 
 
-## Contact me
+## Contact the author
 
 For questions, bug reports and security issues just send me an email.
 
