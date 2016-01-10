@@ -70,9 +70,9 @@ class UnicodeTranscoder
      * @param string $input The UTF-8 string to convert
      * @return array  Array of 32bit values representing each codepoint
      * @throws \InvalidArgumentException
-     * @access private
+     * @access public
      */
-    private static function utf8_ucs4array($input)
+    public static function utf8_ucs4array($input)
     {
         $start_byte = $next_byte = 0;
 
@@ -163,9 +163,9 @@ class UnicodeTranscoder
     /**
      * Convert UCS-4 string into UTF-8 string
      * See utf8_ucs4array() for details
-     * @access   private
+     * @access   public
      */
-    private static function ucs4array_utf8($input)
+    public static function ucs4array_utf8($input)
     {
         $output = '';
         foreach ($input as $k => $v) {
@@ -187,12 +187,12 @@ class UnicodeTranscoder
         return $output;
     }
 
-    private static function utf7imap_ucs4array($input)
+    public static function utf7imap_ucs4array($input)
     {
         return self::utf7_ucs4array(str_replace(',', '/', $input), '&');
     }
 
-    private static function utf7_ucs4array($input, $sc = '+')
+    public static function utf7_ucs4array($input, $sc = '+')
     {
         $output = [];
         $out_len = 0;
@@ -251,12 +251,12 @@ class UnicodeTranscoder
         return $output;
     }
 
-    private static function ucs4array_utf7imap($input)
+    public static function ucs4array_utf7imap($input)
     {
         return str_replace('/', ',', self::ucs4array_utf7($input, '&'));
     }
 
-    private static function ucs4array_utf7($input, $sc = '+')
+    public static function ucs4array_utf7($input, $sc = '+')
     {
         $output = '';
         $mode = 'd';
@@ -294,9 +294,9 @@ class UnicodeTranscoder
 
     /**
      * Convert UCS-4 array into UCS-4 string (Little Endian at the moment)
-     * @access   private
+     * @access   public
      */
-    private static function ucs4array_ucs4($input)
+    public static function ucs4array_ucs4($input)
     {
         $output = '';
         foreach ($input as $v) {
@@ -308,9 +308,9 @@ class UnicodeTranscoder
 
     /**
      * Convert UCS-4 string (LE in the moment) into UCS-4 garray
-     * @access   private
+     * @access   public
      */
-    private static function ucs4_ucs4array($input)
+    public static function ucs4_ucs4array($input)
     {
         $output = [];
 

@@ -178,7 +178,7 @@ class EncodingHelper
                 default: $return .= chr($c);
             }
         }
-        
+
         return $return;
     }
 }
