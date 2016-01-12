@@ -18,7 +18,7 @@
 
 namespace Mso\IdnaConvert;
 
-class UnicodeTranscoder
+class UnicodeTranscoder implements UnicodeTranscoderInterface
 {
     private static $mechs = ['ucs4', 'ucs4array', 'utf8', 'utf7', 'utf7imap'];
     // unsupported yet: 'ucs4le', 'ucs4be', 'utf16', 'utf16le', 'utf16be'
@@ -55,10 +55,12 @@ class UnicodeTranscoder
             throw new \InvalidArgumentException(sprintf('Invalid output format %s', $to));
         }
         if ($from != 'ucs4array') {
-            eval('$data = self::' . $from . '_ucs4array($data);');
+            $methodName = $from.'_ucs4array';
+            $data = self::$methodName($data);
         }
         if ($to != 'ucs4array') {
-            eval('$data = self::ucs4array_' . $to . '($data);');
+            $methodName = 'ucs4array_'.$to;
+            $data = self::$methodName($data);
         }
 
         return $data;
