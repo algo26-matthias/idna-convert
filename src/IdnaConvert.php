@@ -54,18 +54,18 @@ namespace Mso\IdnaConvert;
 
 class IdnaConvert {
 
-    const Version = '1.0.1';
-    const SubVersion = 'dev';
+    const Version = '1.0.2';
+    const SubVersion = 'main';
 
     // Internal settings, do not touch!
     const PunycodePrefix = 'xn--';
 
     protected $encoding = 'utf8';          // Default input charset is UTF-8
     protected $strictMode = false;         // Behave strict or not
-    protected $idnVersion = 2008;          // Can be either 2003 (old) or 2008 (default)
+    protected $idnVersion = '2008';          // Can be either 2003 (old) or 2008 (default)
 
-    protected $NamePrepData;
-    protected $UnicodeTranscoder;
+    protected $NamePrepData = null;
+    protected $UnicodeTranscoder = null;
 
     /**
      * the constructor
@@ -92,9 +92,7 @@ class IdnaConvert {
             }
         }
 
-        if (is_null($this->NamePrepData)) {
-            $this->setIdnVersion($this->idnVersion);
-        }
+        $this->setIdnVersion($this->idnVersion);
     }
 
     public function getClassVersion()
@@ -156,7 +154,7 @@ class IdnaConvert {
     public function setIdnVersion($idnVersion)
     {
         if (in_array($idnVersion, ['2003', '2008'])) {
-            if ($idnVersion != $this->idnVersion) {
+            if (is_null($this->NamePrepData) || $idnVersion != $this->idnVersion) {
                 $this->NamePrepData = null; // Ought to destroy the object's reference
                 // Re-instantiate with different data set
                 $this->NamePrepData = ($idnVersion == 2003)
