@@ -13,7 +13,7 @@
  * @package IdnaConvert
  * @author Matthias Sommerfeld  <mso@phlyLabs.de>
  * @copyright 2003-2016 phlyLabs Berlin, http://phlylabs.de
- * @version 0.1.0 2016-01-08
+ * @version 0.1.1 2016-01-24
  */
 
 namespace Mso\IdnaConvert;
@@ -163,8 +163,10 @@ class UnicodeTranscoder implements UnicodeTranscoderInterface
     }
 
     /**
-     * Convert UCS-4 string into UTF-8 string
+     * Convert UCS-4 arary into UTF-8 string
      * See utf8_ucs4array() for details
+     * @param $input array Array of UCS-4 codepoints
+     * @return string
      * @access   public
      */
     public static function ucs4array_utf8($input)
@@ -296,6 +298,8 @@ class UnicodeTranscoder implements UnicodeTranscoderInterface
 
     /**
      * Convert UCS-4 array into UCS-4 string (Little Endian at the moment)
+     * @param $input array UCS-4 code points
+     * @return string
      * @access   public
      */
     public static function ucs4array_ucs4($input)
@@ -309,7 +313,9 @@ class UnicodeTranscoder implements UnicodeTranscoderInterface
     }
 
     /**
-     * Convert UCS-4 string (LE in the moment) into UCS-4 garray
+     * Convert UCS-4 string (LE ar the moment) into UCS-4 array
+     * @param $input string UCS-4 LE string
+     * @return array
      * @access   public
      */
     public static function ucs4_ucs4array($input)

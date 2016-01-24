@@ -278,7 +278,7 @@ class IdnaConvert {
     /**
      * Encode a given UTF-8 domain name
      * @param string $decoded  Domain name (UTF-8 or UCS-4)
-     * [@param string  $one_time_encoding  Desired input encoding, see {@link set_parameter}]
+     * [@param boolean  $one_time_encoding  Desired input encoding, see {@link set_parameter}]
      * @return string   Encoded Domain name (ACE string)
      */
     public function encode($decoded, $one_time_encoding = false)

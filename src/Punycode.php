@@ -25,7 +25,7 @@
  /*
  * @author  Matthias Sommerfeld <mso@phlylabs.de>
  * @copyright 2004-2016 phlyLabs Berlin, http://phlylabs.de
- * @version 1.0.0-main 2016-01-10
+ * @version 1.0.1 2016-01-24
  */
 
 namespace Mso\IdnaConvert;
@@ -62,7 +62,8 @@ class Punycode implements PunycodeInterface
     /**
      * the constructor
      *
-     * @param array|null $params Parameters to control the class' behaviour
+     * @param $NamePrepData NamePrepDataInterface inject NamePrepData object
+     * @param $UnicodeTranscoder UnicodeTranscoderInterface inject Unicode Transcoder
      * @since 0.5.2
      */
     public function __construct(NamePrepDataInterface $NamePrepData, UnicodeTranscoderInterface $UnicodeTranscoder)

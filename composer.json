@@ -11,12 +11,6 @@
             "role": "Developer"
         }
     ],
-    "autoload": {
-        "classmap": [
-            "idna_convert.class.php",
-            "uctc.php"
-        ]
-    },
     "require": {
         "ext-pcre": "*",
         "php": ">=5.6.0"
