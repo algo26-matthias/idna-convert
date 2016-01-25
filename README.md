@@ -7,7 +7,7 @@ by Matthias Sommerfeld <mso@phlylabs.de><br>
 
 ## Introduction
 
-The class idna_convert allows to convert internationalized domain names (see RFC 3490, 3491, 3492 and 3454 for details) as they can be used with various registries worldwide to be translated between their original (localized) form and their encoded form as it will be used in the DNS (Domain Name System).
+The class IdnaConvert allows to convert internationalized domain names (see RFC 3490, 3491, 3492 and 3454 for details) as they can be used with various registries worldwide to be translated between their original (localized) form and their encoded form as it will be used in the DNS (Domain Name System).
 
 The class provides two public methods, encode() and decode(), which do exactly what you would expect them to do. You are allowed to use complete domain names, simple strings and complete email addresses as well. That means, that you might use any of the following notations:
 
@@ -32,9 +32,9 @@ In older builds "ß" was mapped to "ss". Should you still need this behaviour, s
 
 ## Files
 
-- **IdnaConvert.php** - The actual class
-- **EncodingHelper.php** - Convert various encodings to and from UTF-8, see below
-- **UnicodeTranscoder.php** - Transcode between various Unicode representations, see below
+- **src/IdnaConvert.php** - The actual class
+- **src/EncodingHelper.php** - Convert various encodings to and from UTF-8, see below
+- **src/UnicodeTranscoder.php** - Transcode between various Unicode representations, see below
 - **README.md** - This file
 - **LICENCE** - The LGPL licence file
 
