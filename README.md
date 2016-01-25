@@ -28,7 +28,7 @@ In older builds "ß" was mapped to "ss". Should you still need this behaviour, s
 
 **ATTENTION:** As of version 0.8.0 the class fully supports IDNA 2008. Thus the aforementioned parameter is deprecated and replaced by a parameter to switch between the standards. See the updated example 5 below.
 
-**ATTENTION:** BC break: As of version 1.0.0 the class closely follows the PSRs PSR-1, PSR-2 and PSR-4 of the PHP-FIG. As such the classes' naming has been changed, a namespace has been introduced and the default IDN version has changed from 2003 to 2008.
+**ATTENTION:** BC break: As of version 1.0.0 the class closely follows the PSRs PSR-1, PSR-2 and PSR-4 of the PHP-FIG. As such the classes' naming has been changed, a namespace has been introduced and the default IDN version has changed from 2003 to 2008 and minimum PHP engine version raised to 5.6.0.
 
 ## Files
 
