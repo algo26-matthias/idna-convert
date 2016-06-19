@@ -58,7 +58,7 @@ class IdnaConvert {
     const SubVersion = 'main';
 
     // Internal settings, do not touch!
-    const PunycodePrefix = 'xn--';
+
 
     protected $encoding = 'utf8';          // Default input charset is UTF-8
     protected $strictMode = false;         // Behave strict or not
@@ -203,21 +203,17 @@ class IdnaConvert {
             list ($email_pref, $input) = explode('@', $input, 2);
             $arr = explode('.', $input);
             foreach ($arr as $k => $v) {
-                if (strpos($v, self::PunycodePrefix) === 0) {
-                    $conv = $punyCode->decode($v);
-                    if ($conv) {
-                        $arr[$k] = $conv;
-                    }
+                $conv = $punyCode->decode($v);
+                if ($conv) {
+                    $arr[$k] = $conv;
                 }
             }
             $input = join('.', $arr);
             $arr = explode('.', $email_pref);
             foreach ($arr as $k => $v) {
-                if (strpos($v, self::PunycodePrefix) === 0) {
-                    $conv = $punyCode->decode($v);
-                    if ($conv) {
-                        $arr[$k] = $conv;
-                    }
+                $conv = $punyCode->decode($v);
+                if ($conv) {
+                    $arr[$k] = $conv;
                 }
             }
             $email_pref = join('.', $arr);
@@ -231,11 +227,9 @@ class IdnaConvert {
             if (isset($parsed['host'])) {
                 $arr = explode('.', $parsed['host']);
                 foreach ($arr as $k => $v) {
-                    if (strpos($v, self::PunycodePrefix) === 0) {
-                        $conv = $punyCode->decode($v);
-                        if ($conv) {
-                            $arr[$k] = $conv;
-                        }
+                    $conv = $punyCode->decode($v);
+                    if ($conv) {
+                        $arr[$k] = $conv;
                     }
                 }
                 $parsed['host'] = join('.', $arr);
@@ -249,11 +243,9 @@ class IdnaConvert {
             } else { // parse_url seems to have failed, try without it
                 $arr = explode('.', $input);
                 foreach ($arr as $k => $v) {
-                    if (strpos($v, self::PunycodePrefix) === 0) {
-                        $conv = $punyCode->decode($v);
-                        if ($conv) {
-                            $arr[$k] = $conv;
-                        }
+                    $conv = $punyCode->decode($v);
+                    if ($conv) {
+                        $arr[$k] = $conv;
                     }
                 }
                 $return = join('.', $arr);
