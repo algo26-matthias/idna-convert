@@ -203,7 +203,7 @@ class IdnaConvert {
             list ($email_pref, $input) = explode('@', $input, 2);
             $arr = explode('.', $input);
             foreach ($arr as $k => $v) {
-                if (preg_match('!^' . preg_quote(self::PunycodePrefix, '!') . '!', $v)) {
+                if (strpos($v, self::PunycodePrefix) === 0) {
                     $conv = $punyCode->decode($v);
                     if ($conv) {
                         $arr[$k] = $conv;
@@ -213,7 +213,7 @@ class IdnaConvert {
             $input = join('.', $arr);
             $arr = explode('.', $email_pref);
             foreach ($arr as $k => $v) {
-                if (preg_match('!^' . preg_quote(self::PunycodePrefix, '!') . '!', $v)) {
+                if (strpos($v, self::PunycodePrefix) === 0) {
                     $conv = $punyCode->decode($v);
                     if ($conv) {
                         $arr[$k] = $conv;
@@ -231,9 +231,11 @@ class IdnaConvert {
             if (isset($parsed['host'])) {
                 $arr = explode('.', $parsed['host']);
                 foreach ($arr as $k => $v) {
-                    $conv = $punyCode->decode($v);
-                    if ($conv) {
-                        $arr[$k] = $conv;
+                    if (strpos($v, self::PunycodePrefix) === 0) {
+                        $conv = $punyCode->decode($v);
+                        if ($conv) {
+                            $arr[$k] = $conv;
+                        }
                     }
                 }
                 $parsed['host'] = join('.', $arr);
@@ -247,8 +249,12 @@ class IdnaConvert {
             } else { // parse_url seems to have failed, try without it
                 $arr = explode('.', $input);
                 foreach ($arr as $k => $v) {
-                    $conv = $punyCode->decode($v);
-                    $arr[$k] = ($conv) ? $conv : $v;
+                    if (strpos($v, self::PunycodePrefix) === 0) {
+                        $conv = $punyCode->decode($v);
+                        if ($conv) {
+                            $arr[$k] = $conv;
+                        }
+                    }
                 }
                 $return = join('.', $arr);
             }
