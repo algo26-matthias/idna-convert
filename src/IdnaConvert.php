@@ -54,12 +54,10 @@ namespace Mso\IdnaConvert;
 
 class IdnaConvert {
 
-    const Version = '1.0.2';
+    const Version = '1.1.0';
     const SubVersion = 'main';
 
     // Internal settings, do not touch!
-
-
     protected $encoding = 'utf8';          // Default input charset is UTF-8
     protected $strictMode = false;         // Behave strict or not
     protected $idnVersion = '2008';          // Can be either 2003 (old) or 2008 (default)
