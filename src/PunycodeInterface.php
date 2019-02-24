@@ -4,7 +4,7 @@
  * @copyright 2004-2016 phlyLabs Berlin, http://phlylabs.de
  */
 
-namespace Mso\IdnaConvert;
+namespace Algo26\IdnaConvert;
 
 interface PunycodeInterface 
 {

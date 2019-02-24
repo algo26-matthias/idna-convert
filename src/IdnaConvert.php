@@ -50,10 +50,10 @@
  * @version 1.0.1-dev 2016-01-12
  */
 
-namespace Mso\IdnaConvert;
+namespace Algo26\IdnaConvert;
 
-class IdnaConvert {
-
+class IdnaConvert
+{
     const Version = '1.1.0';
     const SubVersion = 'main';
 
@@ -345,13 +345,14 @@ class IdnaConvert {
             } else {
                 $output .= $this->UnicodeTranscoder->convert(array_slice($decoded, $last_begin, (($inp_len) - $last_begin)), 'ucs4array', 'utf8');
             }
+
             return $output;
         } else {
             if (false !== ($output = $punyCode->encode($decoded))) {
                 return $output;
-            } else {
-                return $this->UnicodeTranscoder->convert($decoded, 'ucs4array', 'utf8');
             }
+
+            return $this->UnicodeTranscoder->convert($decoded, 'ucs4array', 'utf8');
         }
     }
 
@@ -383,6 +384,7 @@ class IdnaConvert {
                 (empty($parsed['path']) ? '' : $parsed['path']).
                 (empty($parsed['query']) ? '' : '?' . $parsed['query']).
                 (empty($parsed['fragment']) ? '' : '#' . $parsed['fragment']);
+
         return $return;
     }
 
@@ -390,7 +392,7 @@ class IdnaConvert {
      * The actual punycode class is rather costly, as well as passing the huge nameprep database around.
      * This factory method allows to ease the burden when dealing with multiple IDN versions.
      *
-     * @return \Mso\IdnaConvert\Punycode
+     * @return \Algo26\IdnaConvert\Punycode
      */
     protected function punycodeFactory()
     {
@@ -399,6 +401,7 @@ class IdnaConvert {
         if (!isset($instances[$this->idnVersion])) {
             $instances[$this->idnVersion] = new Punycode($this->NamePrepData, $this->UnicodeTranscoder);
         }
+
         return $instances[$this->idnVersion];
     }
 

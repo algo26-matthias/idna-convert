@@ -16,12 +16,11 @@
  * @version 0.1.1 2016-01-24
  */
 
-namespace Mso\IdnaConvert;
+namespace Algo26\IdnaConvert;
 
 class UnicodeTranscoder implements UnicodeTranscoderInterface
 {
     private static $mechs = ['ucs4', 'ucs4array', 'utf8', 'utf7', 'utf7imap'];
-    // unsupported yet: 'ucs4le', 'ucs4be', 'utf16', 'utf16le', 'utf16be'
 
     private static $allow_overlong = false;
     private static $safe_mode;
@@ -247,6 +246,7 @@ class UnicodeTranscoder implements UnicodeTranscoderInterface
 
                     continue;
                 }
+
                 $output[$out_len] = ord($c);
                 $out_len++;
             }
@@ -290,7 +290,9 @@ class UnicodeTranscoder implements UnicodeTranscoderInterface
                     $mode = 'b';
                 }
             }
-            if (false === $v && $b64 == '') break;
+            if (false === $v && $b64 == '') {
+                break;
+            }
         }
 
         return $output;
@@ -353,6 +355,7 @@ class UnicodeTranscoder implements UnicodeTranscoderInterface
         if ((extension_loaded('mbstring') && (ini_get('mbstring.func_overload') & 0x02) === 0x02)) {
             return mb_strlen($string, '8bit');
         }
+
         return strlen((binary) $string);
     }    
 }

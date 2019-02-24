@@ -28,7 +28,7 @@
  * @version 1.0.1 2016-01-24
  */
 
-namespace Mso\IdnaConvert;
+namespace Algo26\IdnaConvert;
 
 class Punycode implements PunycodeInterface
 {
@@ -96,10 +96,12 @@ class Punycode implements PunycodeInterface
         if (strpos($encoded, self::punycodePrefix) !== 0) {
             return false;
         }
+
         // If nothing is left after the prefix, it is hopeless
         if (strlen(trim($encoded)) <= strlen(self::punycodePrefix)) {
             return false;
         }
+
         return true;
     }
 
@@ -154,6 +156,7 @@ class Punycode implements PunycodeInterface
             }
             $decoded[$idx++] = $char;
         }
+
         return $this->UnicodeTranscoder->ucs4array_utf8($decoded);
     }
 
@@ -183,15 +186,18 @@ class Punycode implements PunycodeInterface
         if (!$encodable) {
             return false;
         }
+
         // Do NAMEPREP
         $decoded = $this->namePrep($decoded);
         if (!$decoded || !is_array($decoded)) {
             return false; // NAMEPREP failed
         }
+
         $deco_len = count($decoded);
         if (!$deco_len) {
             return false; // Empty array
         }
+
         $codecount = 0; // How many chars have been consumed
         $encoded = '';
         // Copy all basic code points to output
@@ -209,6 +215,7 @@ class Punycode implements PunycodeInterface
         if ($codecount == $deco_len) {
             return $encoded; // All codepoints were basic ones
         }
+
         // Start with the prefix; copy it to output
         $encoded = self::punycodePrefix . $encoded;
         // If we have basic code points in output, add an hyphen to the end
@@ -257,6 +264,7 @@ class Punycode implements PunycodeInterface
             $delta++;
             $cur_code++;
         }
+
         return $encoded;
     }
 
@@ -274,6 +282,7 @@ class Punycode implements PunycodeInterface
         for ($k = 0; $delta > ((self::base - self::tMin) * self::tMax) / 2; $k += self::base) {
             $delta = intval($delta / (self::base - self::tMin));
         }
+
         return intval($k + (self::base - self::tMin + 1) * $delta / ($delta + self::skew));
     }
 
@@ -296,16 +305,14 @@ class Punycode implements PunycodeInterface
     {
         $cp = ord($cp);
         if ($cp - 48 < 10) {
-
             return $cp - 22;
         }
 
         if ($cp - 65 < 26) {
-
             return $cp - 65;
         }
-        if ($cp - 97 < 26) {
 
+        if ($cp - 97 < 26) {
             return $cp - 97;
         }
 
@@ -315,7 +322,7 @@ class Punycode implements PunycodeInterface
     /**
      * Do Nameprep according to RFC3491 and RFC3454
      * @param array $input Unicode Characters
-     * @return string  Unicode Characters, Nameprep'd
+     * @return string[]  Unicode Characters, Nameprep'd
      */
     protected function namePrep($input)
     {
@@ -390,6 +397,7 @@ class Punycode implements PunycodeInterface
             }
             $last_class = $class;
         }
+
         return $output;
     }
 
@@ -405,6 +413,7 @@ class Punycode implements PunycodeInterface
         if ($sindex < 0 || $sindex >= self::sCount) {
             return [$char];
         }
+
         $result = [];
         $result[] = (int) self::lBase + $sindex / self::nCount;
         $result[] = (int) self::vBase + ($sindex % self::nCount) / self::tCount;
@@ -412,6 +421,7 @@ class Punycode implements PunycodeInterface
         if ($T != self::tBase) {
             $result[] = $T;
         }
+
         return $result;
     }
 
@@ -427,6 +437,7 @@ class Punycode implements PunycodeInterface
         if (!$inp_len) {
             return [];
         }
+
         $result = [];
         $last = (int) $input[0];
         $result[] = $last; // copy first char from input to output
@@ -455,6 +466,7 @@ class Punycode implements PunycodeInterface
             $last = $char;
             $result[] = $char;
         }
+
         return $result;
     }
 
@@ -501,13 +513,14 @@ class Punycode implements PunycodeInterface
                 $last = $next;
             }
         }
+
         return $input;
     }
 
     /**
      * Do composition of a sequence of starter and non-starter
      * @param   array $input UCS4 Decomposed sequence
-     * @return  array  Ordered USC4 sequence
+     * @return  array|false  Ordered USC4 sequence
      */
     protected function combine($input)
     {
@@ -515,6 +528,7 @@ class Punycode implements PunycodeInterface
         if (0 == $inp_len) {
             return false;
         }
+
         foreach ($this->NamePrepData->replaceMaps as $np_src => $np_target) {
             if ($np_target[0] != $input[0]) {
                 continue;
@@ -535,6 +549,7 @@ class Punycode implements PunycodeInterface
                 return $np_src;
             }
         }
+
         return false;
     }
 
@@ -550,6 +565,7 @@ class Punycode implements PunycodeInterface
         if (self::$isMbStringOverload) {
             return mb_strlen($string, '8bit');
         }
+
         return strlen((binary) $string);
     }
 }
