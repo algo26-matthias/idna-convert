@@ -1,5 +1,5 @@
 {
-    "name": "mso/idna-convert",
+    "name": "algo26-matthias/idna-convert",
     "description": "A library for encoding and decoding internationalized domain names",
     "license": "LGPL-2.1+",
     "keywords": ["PHP","IDN","IDNA"],
@@ -7,7 +7,7 @@
     "authors": [
         {
             "name": "Matthias Sommerfeld",
-            "email": "matthias@sommerfeld.me",
+            "email": "matthias.sommerfeld@algo26.de",
             "role": "Developer"
         }
     ],
@@ -17,7 +17,7 @@
     },
     "autoload": {
         "psr-4": {
-            "Mso\\IdnaConvert\\": "src"
+            "Algo26\\IdnaConvert\\": "src"
         }
     }
 }
