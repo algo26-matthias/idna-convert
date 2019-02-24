@@ -203,7 +203,7 @@ echo UnicodeTranscoder::convert($mystring, 'utf8', 'utf7imap');
 
 For questions, bug reports and security issues just send me an email.
 
-algo26 Beratungs UG
+algo26 Beratungs UG<br>
 c/o Matthias Sommerfeld<br>
 Wichertstr. 5<br>
 D-10439 Berlin<br>
