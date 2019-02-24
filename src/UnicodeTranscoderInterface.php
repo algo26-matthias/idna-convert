@@ -16,7 +16,7 @@
  * @version 0.1.0 2016-01-08
  */
 
-namespace Mso\IdnaConvert;
+namespace Algo26\IdnaConvert;
 
 interface UnicodeTranscoderInterface
 {

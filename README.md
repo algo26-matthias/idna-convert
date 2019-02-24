@@ -1,7 +1,7 @@
 # IDNA Convert - pure PHP IDNA converter
 
 Project homepage: <http://idnaconv.net><br>
-by Matthias Sommerfeld <matthias@sommerfeld.me><br>
+by Matthias Sommerfeld <matthias.sommerfeld@algo36.de><br>
 
 ## Introduction
 
@@ -44,7 +44,7 @@ In older builds "ß" was mapped to "ss". Should you still need this behaviour, s
 ```php
 {
     "require" : {
-        "mso/idna-convert" : "1.*"
+        "algo26-matthias/idna-convert" : "1.*"
     }
 }
 ```
@@ -63,7 +63,7 @@ Say we wish to encode the domain name nörgler.com:
 ```php
 <?php  
 // Include the class
-use Mso\IdnaConvert\IdnaConvert;
+use Algo26\IdnaConvert\IdnaConvert;
 // Instantiate it
 $IDN = new IdnaConvert();
 // The input string, if input is not UTF-8 or UCS-4, it must be converted before  
@@ -82,7 +82,7 @@ We received an email from a punycoded domain and are willing to learn, how the d
 ```php
 <?php  
 // Include the class
-use Mso\IdnaConvert\IdnaConvert;
+use Algo26\IdnaConvert\IdnaConvert;
 // Instantiate it
 $IDN = new IdnaConvert();
 // The input string  
@@ -102,7 +102,7 @@ The input is read from a UCS-4 coded file and encoded line by line. By appending
 ```php
 <?php  
 // Include the class
-use Mso\IdnaConvert\IdnaConvert;
+use Algo26\IdnaConvert\IdnaConvert;
 // Instantiate it
 $IDN = new IdnaConvert();
 // Iterate through the input file line by line  
@@ -120,7 +120,7 @@ We wish to convert a whole URI into the IDNA form, but leave the path or query s
 ```php
 <?php  
 // Include the class
-use Mso\IdnaConvert\IdnaConvert;
+use Algo26\IdnaConvert\IdnaConvert;
 // Instantiate it
 $IDN = new IdnaConvert();
 // The input string, a whole URI in UTF-8 (!)  
@@ -139,7 +139,7 @@ Per default, the class converts strings according to IDNA version 2008. To suppo
 ```php
 <?php  
 // Include the class  
-use Mso\IdnaConvert\IdnaConvert;
+use Algo26\IdnaConvert\IdnaConvert;
 // Instantiate it, switching to IDNA 2003, the original, now outdated standard
 $IDN = new IdnaConvert(['idn_version' => 2003]);
 // Sth. containing the German letter ß  
@@ -171,8 +171,8 @@ Example usage:
 
 ```php
 <?php  
-use Mso\IdnaConvert\IdnaConvert;
-use Mso\IdnaConvert\EncodingHelper;
+use Algo26\IdnaConvert\IdnaConvert;
+use Algo26\IdnaConvert\EncodingHelper;
 $mystring = '<something in e.g. ISO-8859-15';  
 $mystring = EncodingHelper::toUtf8($mystring, 'ISO-8859-15');
 $IDN = new IdnaConvert();
@@ -193,7 +193,7 @@ Example usage:
 
 ```php
 <?php  
-use Mso\IdnaConvert\UnicodeTranscoder;
+use Algo26\IdnaConvert\UnicodeTranscoder;
 $mystring = 'nörgler.com';  
 echo UnicodeTranscoder::convert($mystring, 'utf8', 'utf7imap');
 ```

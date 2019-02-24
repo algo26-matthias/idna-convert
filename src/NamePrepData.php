@@ -1,6 +1,6 @@
 <?php
 
-namespace Mso\IdnaConvert;
+namespace Algo26\IdnaConvert;
 
 class NamePrepData implements NamePrepDataInterface
 {
