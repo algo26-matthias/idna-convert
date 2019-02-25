@@ -1,7 +1,7 @@
 # IDNA Convert - pure PHP IDNA converter
 
 Project homepage: <http://idnaconv.net><br>
-by Matthias Sommerfeld <matthias.sommerfeld@algo36.de><br>
+by Matthias Sommerfeld <matthias.sommerfeld@algo26.de><br>
 
 ## Introduction
 
