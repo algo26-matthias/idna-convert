@@ -44,14 +44,14 @@ In older builds "ß" was mapped to "ss". Should you still need this behaviour, s
 ```php
 {
     "require" : {
-        "algo26-matthias/idna-convert" : "1.*"
+        "algo26-matthias/idna-convert" : "2.*"
     }
 }
 ```
 
 ### Official ZIP Package
 
-Go to <http://idnaconv.net/get-it.html> for the ZIP package. Put the uncompressed files into the vendor/ dir fo your app. Then follow the examples below
+The official ZIP packages are discontinued. Stick to Composer or Github to acquire your copy, please.
 
 
 ## Examples
