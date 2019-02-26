@@ -45,16 +45,15 @@
  *
  * ACE input and output is always expected to be ASCII.
  *
- * @author  Matthias Sommerfeld <mso@phlylabs.de>
- * @copyright 2004-2016 phlyLabs Berlin, http://phlylabs.de
- * @version 1.0.1-dev 2016-01-12
+ * @author  Matthias Sommerfeld <matthias.sommerfeld@algo26.de>
+ * @copyright 2004-2019 algo26 Beratungs UG, Berlin, https://www.algo26.de
  */
 
 namespace Algo26\IdnaConvert;
 
 class IdnaConvert
 {
-    const Version = '1.1.0';
+    const Version = '2.0.1';
     const SubVersion = 'main';
 
     // Internal settings, do not touch!

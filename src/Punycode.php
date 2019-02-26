@@ -23,9 +23,8 @@
 // }}}
 
  /*
- * @author  Matthias Sommerfeld <mso@phlylabs.de>
- * @copyright 2004-2016 phlyLabs Berlin, http://phlylabs.de
- * @version 1.0.1 2016-01-24
+ * @author  Matthias Sommerfeld <matthias.sommerfeld@algo26.de>
+ * @copyright 2004-2019 algo26 Beratungs UG, Berlin, https://www.algo26.de
  */
 
 namespace Algo26\IdnaConvert;

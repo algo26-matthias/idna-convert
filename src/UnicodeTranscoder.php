@@ -11,9 +11,8 @@
  * - UTF-7 IMAP (modified UTF-7)
  *
  * @package IdnaConvert
- * @author Matthias Sommerfeld  <mso@phlyLabs.de>
- * @copyright 2003-2016 phlyLabs Berlin, http://phlylabs.de
- * @version 0.1.1 2016-01-24
+ * @author Matthias Sommerfeld  <matthias.sommerfeld@algo26.de>
+ * @copyright 2003-2019 algo26 Beratungs UG, Berlin, https://www.algo26.de
  */
 
 namespace Algo26\IdnaConvert;

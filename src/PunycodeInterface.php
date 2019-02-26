@@ -1,7 +1,7 @@
 <?php
  /*
  * @author  Matthias Sommerfeld <mso@phlylabs.de>
- * @copyright 2004-2016 phlyLabs Berlin, http://phlylabs.de
+ * @copyright 2004-2019 algo26 Beratungs UG, Berlin, https://www.algo26.de
  */
 
 namespace Algo26\IdnaConvert;

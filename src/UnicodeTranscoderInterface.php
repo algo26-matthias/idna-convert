@@ -1,21 +1,4 @@
 <?php
-/**
- * UCTC - The Unicode Transcoder
- *
- * Converts between various flavours of Unicode representations like UCS-4 or UTF-8
- * Supported schemes:
- * - UCS-4 Little Endian / Big Endian / Array (partially)
- * - UTF-16 Little Endian / Big Endian (not yet)
- * - UTF-8
- * - UTF-7
- * - UTF-7 IMAP (modified UTF-7)
- *
- * @package IdnaConvert
- * @author Matthias Sommerfeld  <mso@phlyLabs.de>
- * @copyright 2003-2016 phlyLabs Berlin, http://phlylabs.de
- * @version 0.1.0 2016-01-08
- */
-
 namespace Algo26\IdnaConvert;
 
 interface UnicodeTranscoderInterface
