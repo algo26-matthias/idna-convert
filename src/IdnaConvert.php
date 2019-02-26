@@ -118,7 +118,7 @@ class IdnaConvert
                 $this->encoding = $encoding;
                 break;
             default:
-                throw new \InvalidArgumentException(sprintf('Invalid encoding %s', $encoding));
+                throw new \InvalidArgumentException(sprintf('Invalid encoding %s', $encoding), 200);
         }
     }
 
@@ -163,7 +163,7 @@ class IdnaConvert
             $this->idnVersion = $idnVersion;
 
         } else {
-            throw new \InvalidArgumentException(sprintf('Invalid IDN version %d', $idnVersion));
+            throw new \InvalidArgumentException(sprintf('Invalid IDN version %d', $idnVersion), 201);
         }
     }
 
@@ -185,7 +185,7 @@ class IdnaConvert
                 case 'ucs4_array':
                     break;
                 default:
-                    throw new \InvalidArgumentException(sprintf('Invalid encoding %s', $one_time_encoding));
+                    throw new \InvalidArgumentException(sprintf('Invalid encoding %s', $one_time_encoding), 200);
             }
         }
         // Make sure to drop any newline characters around
@@ -196,7 +196,7 @@ class IdnaConvert
         if (strpos($input, '@')) { // Maybe it is an email address
             // No no in strict mode
             if ($this->strictMode) {
-                throw new \InvalidArgumentException('Only individual domain name parts can be handled in strict mode');
+                throw new \InvalidArgumentException('Only individual domain name parts can be handled in strict mode', 202);
             }
             list ($email_pref, $input) = explode('@', $input, 2);
             $arr = explode('.', $input);
@@ -219,7 +219,7 @@ class IdnaConvert
         } elseif (preg_match('![:\./]!', $input)) { // Or a complete domain name (with or without paths / parameters)
             // No no in strict mode
             if ($this->strictMode) {
-                throw new \InvalidArgumentException('Only individual domain name parts can be handled in strict mode');
+                throw new \InvalidArgumentException('Only individual domain name parts can be handled in strict mode', 202);
             }
             $parsed = parse_url($input);
             if (isset($parsed['host'])) {
@@ -265,7 +265,7 @@ class IdnaConvert
             case 'ucs4_array':
                 return $this->UnicodeTranscoder->convert($return, 'utf8', 'ucs4array');  // break;
             default:
-                throw new \InvalidArgumentException(sprintf('Unsupported output encoding %s', $outputEncoding));
+                throw new \InvalidArgumentException(sprintf('Unsupported output encoding %s', $outputEncoding), 203);
         }
     }
 
@@ -290,7 +290,7 @@ class IdnaConvert
             case 'ucs4_array':
                 break;
             default:
-                throw new \InvalidArgumentException(sprintf('Unsupported input encoding %s', $inputEncoding));
+                throw new \InvalidArgumentException(sprintf('Unsupported input encoding %s', $inputEncoding), 204);
         }
 
         // No input, no output, what else did you expect?
@@ -320,7 +320,7 @@ class IdnaConvert
                 case 0x40:
                     // Neither email addresses nor URLs allowed in strict mode
                     if ($this->strictMode) {
-                        throw new \InvalidArgumentException('Neither email addresses nor URLs are allowed in strict mode.');
+                        throw new \InvalidArgumentException('Neither email addresses nor URLs are allowed in strict mode.', 205);
                     } else {
                         // Skip first char
                         if ($k) {
@@ -367,7 +367,7 @@ class IdnaConvert
     {
         $parsed = parse_url($uri);
         if (!isset($parsed['host'])) {
-            throw new \InvalidArgumentException('The given string does not look like a URI');
+            throw new \InvalidArgumentException('The given string does not look like a URI', 206);
         }
         $arr = explode('.', $parsed['host']);
         foreach ($arr as $k => $v) {
