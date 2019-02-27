@@ -1,4 +1,2 @@
-/vendor/
-.htaccess
-.idea
-IdnaConvert-*.zip
+/.idea
+/tests/phpunit.phar

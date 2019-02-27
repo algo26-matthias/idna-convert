@@ -145,7 +145,7 @@ $IDN = new IdnaConvert(['idn_version' => 2003]);
 // Sth. containing the German letter ß  
 $input = 'meine-straße.de');  
 // Encode it to its punycode presentation  
-$output = $IDN->encode_uri($input);  
+$output = $IDN->encodeUri($input);  
 // Output, what we got now  
 echo $output; // xn--meine-strae-46a.de  
 // Switch back to IDNA 2008
@@ -163,7 +163,7 @@ echo $output; // meine-strasse.de
 
 In case you have strings in encodings other than ISO-8859-1 and UTF-8 you might need to translate these strings to UTF-8 before feeding the IDNA converter with it.
 PHP's built in functions `utf8_encode()` and `utf8_decode()` can only deal with ISO-8859-1.  
-Use the encoding helper class supplied with this pacagke for the conversion. It requires either iconv, libiconv or mbstring installed together with one of the relevant PHP extensions. The functions you will find useful are
+Use the encoding helper class supplied with this package for the conversion. It requires either iconv, libiconv or mbstring installed together with one of the relevant PHP extensions. The functions you will find useful are
 `toUtf8()` as a replacement for `utf8_encode()` and
 `fromUtf8()` as a replacement for `utf8_decode()`.
 
