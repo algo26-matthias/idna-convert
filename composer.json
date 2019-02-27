@@ -16,7 +16,7 @@
         "php": ">=5.6.0"
     },
     "suggest":  {
-        "ext-mbstring": "*"
+        "ext-mbstring": "Install ext/mbstring to leverage multi-byte support"
     },
     "autoload": {
         "psr-4": {
