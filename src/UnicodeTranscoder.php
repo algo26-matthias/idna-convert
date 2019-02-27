@@ -11,9 +11,8 @@
  * - UTF-7 IMAP (modified UTF-7)
  *
  * @package IdnaConvert
- * @author Matthias Sommerfeld  <mso@phlyLabs.de>
- * @copyright 2003-2016 phlyLabs Berlin, http://phlylabs.de
- * @version 0.1.1 2016-01-24
+ * @author Matthias Sommerfeld  <matthias.sommerfeld@algo26.de>
+ * @copyright 2003-2019 algo26 Beratungs UG, Berlin, https://www.algo26.de
  */
 
 namespace Algo26\IdnaConvert;
@@ -48,10 +47,10 @@ class UnicodeTranscoder implements UnicodeTranscoderInterface
             self::$allow_overlong = true;
         }
         if (!in_array($from, self::$mechs)) {
-            throw new \InvalidArgumentException(sprintf('Invalid input format %s', $from));
+            throw new \InvalidArgumentException(sprintf('Invalid input format %s', $from), 300);
         }
         if (!in_array($to, self::$mechs)) {
-            throw new \InvalidArgumentException(sprintf('Invalid output format %s', $to));
+            throw new \InvalidArgumentException(sprintf('Invalid output format %s', $to), 301);
         }
         if ($from != 'ucs4array') {
             $methodName = $from.'_ucs4array';
@@ -93,7 +92,7 @@ class UnicodeTranscoder implements UnicodeTranscoderInterface
                         $output[$out_len - 2] = self::$safe_char;
                         $mode = 'next';
                     } else {
-                        throw new \InvalidArgumentException(sprintf('Conversion from UTF-8 to UCS-4 failed: malformed input at byte %d', $k));
+                        throw new \InvalidArgumentException(sprintf('Conversion from UTF-8 to UCS-4 failed: malformed input at byte %d', $k), 302);
                     }
                 }
                 continue;
@@ -117,7 +116,7 @@ class UnicodeTranscoder implements UnicodeTranscoderInterface
                     ++$out_len;
                     continue;
                 } else {
-                    throw new \InvalidArgumentException(sprintf('This might be UTF-8, but I don\'t understand it at byte %d', $k));
+                    throw new \InvalidArgumentException(sprintf('This might be UTF-8, but I don\'t understand it at byte %d', $k), 303);
                 }
                 if ($inp_len - $k - $next_byte < 2) {
                     $output[$out_len] = self::$safe_char;
@@ -135,7 +134,7 @@ class UnicodeTranscoder implements UnicodeTranscoderInterface
                 if (!self::$allow_overlong && $test == 'range') {
                     $test = 'none';
                     if (($v < 0xA0 && $start_byte == 0xE0) || ($v < 0x90 && $start_byte == 0xF0) || ($v > 0x8F && $start_byte == 0xF4)) {
-                        throw new \InvalidArgumentException(sprintf('Bogus UTF-8 character detected (out of legal range) at byte %d', $k));
+                        throw new \InvalidArgumentException(sprintf('Bogus UTF-8 character detected (out of legal range) at byte %d', $k), 304);
                     }
                 }
                 if ($v >> 6 == 2) { // Bit mask must be 10xxxxxx
@@ -149,7 +148,7 @@ class UnicodeTranscoder implements UnicodeTranscoderInterface
                         $mode = 'next';
                         continue;
                     } else {
-                        throw new \InvalidArgumentException(sprintf('Conversion from UTF-8 to UCS-4 failed: malformed input at byte %d', $k));
+                        throw new \InvalidArgumentException(sprintf('Conversion from UTF-8 to UCS-4 failed: malformed input at byte %d', $k), 302);
                     }
                 }
                 if ($next_byte < 0) {
@@ -183,7 +182,7 @@ class UnicodeTranscoder implements UnicodeTranscoderInterface
             } elseif (self::$safe_mode) {
                 $output .= self::$safe_char;
             } else {
-                throw new \InvalidArgumentException(sprintf('Conversion from UCS-4 to UTF-8 failed: malformed input at byte %d', $k));
+                throw new \InvalidArgumentException(sprintf('Conversion from UCS-4 to UTF-8 failed: malformed input at byte %d', $k), 305);
             }
         }
 
@@ -327,7 +326,7 @@ class UnicodeTranscoder implements UnicodeTranscoderInterface
         $inp_len = self::byteLength($input);
         // Input length must be dividable by 4
         if ($inp_len % 4) {
-            throw new \InvalidArgumentException('Input UCS4 string is broken');
+            throw new \InvalidArgumentException('Input UCS4 string is broken', 306);
         }
         // Empty input - return empty output
         if (!$inp_len) return $output;

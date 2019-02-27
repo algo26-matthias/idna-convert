@@ -23,9 +23,8 @@
 // }}}
 
  /*
- * @author  Matthias Sommerfeld <mso@phlylabs.de>
- * @copyright 2004-2016 phlyLabs Berlin, http://phlylabs.de
- * @version 1.0.1 2016-01-24
+ * @author  Matthias Sommerfeld <matthias.sommerfeld@algo26.de>
+ * @copyright 2004-2019 algo26 Beratungs UG, Berlin, https://www.algo26.de
  */
 
 namespace Algo26\IdnaConvert;
@@ -173,7 +172,7 @@ class Punycode implements PunycodeInterface
         $check_deco = array_slice($decoded, 0, $extract);
 
         if ($check_pref == $check_deco) {
-            throw new \InvalidArgumentException('This is already a Punycode string');
+            throw new \InvalidArgumentException('This is already a Punycode string', 100);
         }
         // We will not try to encode strings consisting of basic code points only
         $encodable = false;
@@ -339,11 +338,11 @@ class Punycode implements PunycodeInterface
             }
             // Try to find prohibited input
             if (in_array($v, $this->NamePrepData->prohibit) || in_array($v, $this->NamePrepData->generalProhibited)) {
-                throw new \InvalidArgumentException(sprintf('NAMEPREP: Prohibited input U+%08X', $v));
+                throw new \InvalidArgumentException(sprintf('NAMEPREP: Prohibited input U+%08X', $v), 101);
             }
             foreach ($this->NamePrepData->prohibitRanges as $range) {
                 if ($range[0] <= $v && $v <= $range[1]) {
-                    throw new \InvalidArgumentException(sprintf('NAMEPREP: Prohibited input U+%08X', $v));
+                    throw new \InvalidArgumentException(sprintf('NAMEPREP: Prohibited input U+%08X', $v), 102);
                 }
             }
 

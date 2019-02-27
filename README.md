@@ -1,7 +1,7 @@
 # IDNA Convert - pure PHP IDNA converter
 
 Project homepage: <http://idnaconv.net><br>
-by Matthias Sommerfeld <matthias.sommerfeld@algo36.de><br>
+by Matthias Sommerfeld <matthias.sommerfeld@algo26.de><br>
 
 ## Introduction
 
@@ -44,14 +44,14 @@ In older builds "ß" was mapped to "ss". Should you still need this behaviour, s
 ```php
 {
     "require" : {
-        "algo26-matthias/idna-convert" : "1.*"
+        "algo26-matthias/idna-convert" : "2.*"
     }
 }
 ```
 
 ### Official ZIP Package
 
-Go to <http://idnaconv.net/get-it.html> for the ZIP package. Put the uncompressed files into the vendor/ dir fo your app. Then follow the examples below
+The official ZIP packages are discontinued. Stick to Composer or Github to acquire your copy, please.
 
 
 ## Examples
@@ -203,11 +203,12 @@ echo UnicodeTranscoder::convert($mystring, 'utf8', 'utf7imap');
 
 For questions, bug reports and security issues just send me an email.
 
-Matthias Sommerfeld<br>
-Trelleborger Str. 8<br>
-D-13189 Berlin<br>
+algo26 Beratungs UG<br>
+c/o Matthias Sommerfeld<br>
+Wichertstr. 5<br>
+D-10439 Berlin<br>
 <br>
 Germany<br>
 <br>
-mailto:matthias@sommerfeld.me
+mailto:matthias.sommerfeld@algo26.de
 
