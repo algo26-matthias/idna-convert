@@ -74,7 +74,7 @@ class IdnaConvert
     {
         $this->UnicodeTranscoder = new UnicodeTranscoder();
 
-        // Kept for backwarsds compatibility. Consider using the setter methods instead.
+        // Kept for backwards compatibility. Consider using the setter methods instead.
         if (!empty($params) && is_array($params)) {
             if (isset($params['encoding'])) {
                 $this->setEncoding($params['encoding']);
