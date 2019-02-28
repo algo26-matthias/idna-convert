@@ -2,6 +2,9 @@
 
 namespace Algo26\IdnaConvert;
 
+/**
+ * @codeCoverageIgnore character mapss
+ */
 class NamePrepData implements NamePrepDataInterface
 {
     public $mapToNothing = [

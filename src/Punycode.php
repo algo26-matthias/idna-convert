@@ -116,7 +116,7 @@ class Punycode implements PunycodeInterface
         }
 
         $decoded = [];
-        // Find last occurence of the delimiter
+        // Find last occurrence of the delimiter
         $delim_pos = strrpos($encoded, '-');
         if ($delim_pos > self::byteLength(self::punycodePrefix)) {
             for ($k = self::byteLength(self::punycodePrefix); $k < $delim_pos; ++$k) {
