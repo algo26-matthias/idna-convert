@@ -3,7 +3,7 @@
 namespace Algo26\IdnaConvert;
 
 /**
- * @codeCoverageIgnore character mapss
+ * @codeCoverageIgnore character maps
  */
 class NamePrepData implements NamePrepDataInterface
 {

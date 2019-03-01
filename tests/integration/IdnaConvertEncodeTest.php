@@ -1,5 +1,5 @@
 <?php
-namespace Algo26\IdnaConvert\test;
+namespace Algo26\IdnaConvert\Test;
 
 use Algo26\IdnaConvert\IdnaConvert;
 use PHPUnit\Framework\TestCase;
@@ -18,7 +18,7 @@ class IdnaConvertEncodeTest extends TestCase
             $expectEncoded,
             $encoded,
             sprintf(
-                'Strings "%s" and "$s" do not match',
+                'Strings "%s" and "%s" do not match',
                 $expectEncoded, $encoded
             )
         );
@@ -37,7 +37,7 @@ class IdnaConvertEncodeTest extends TestCase
             $expectEncoded,
             $encoded,
             sprintf(
-                'Strings "%s" and "$s" do not match',
+                'Strings "%s" and "%s" do not match',
                 $expectEncoded, $encoded
             )
         );
