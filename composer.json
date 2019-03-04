@@ -16,11 +16,17 @@
         "php": ">=5.6.0"
     },
     "suggest":  {
-        "ext-mbstring": "Install ext/mbstring to leverage multi-byte support"
+        "ext-mbstring": "Install ext/mbstring for using input / output other than UTF-8 or ISO-8859-1",
+        "ext-iconv": "Install ext/iconv for using input / output other than UTF-8 or ISO-8859-1"
     },
     "autoload": {
         "psr-4": {
-            "Algo26\\IdnaConvert\\": "src"
+            "Algo26\\IdnaConvert\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Algo26\\IdnaConvert\\Test\\": "tests/"
         }
     }
 }

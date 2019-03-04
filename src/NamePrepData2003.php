@@ -2,6 +2,9 @@
 
 namespace Algo26\IdnaConvert;
 
+/**
+ * @codeCoverageIgnore character maps
+ */
 class NamePrepData2003 extends NamePrepData implements NamePrepDataInterface
 {
     public $replaceMaps = [

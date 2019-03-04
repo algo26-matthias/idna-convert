@@ -53,13 +53,13 @@ namespace Algo26\IdnaConvert;
 
 class IdnaConvert
 {
-    const Version = '2.0.1';
+    const Version = '2.1.0';
     const SubVersion = 'main';
 
     // Internal settings, do not touch!
     protected $encoding = 'utf8';          // Default input charset is UTF-8
     protected $strictMode = false;         // Behave strict or not
-    protected $idnVersion = '2008';          // Can be either 2003 (old) or 2008 (default)
+    protected $idnVersion = '2008';        // Can be either 2003 (old) or 2008 (default)
 
     protected $NamePrepData = null;
     protected $UnicodeTranscoder = null;
@@ -74,7 +74,7 @@ class IdnaConvert
     {
         $this->UnicodeTranscoder = new UnicodeTranscoder();
 
-        // Kept for backwarsds compatibility. Consider using the setter methods instead.
+        // Kept for backwards compatibility. Consider using the setter methods instead.
         if (!empty($params) && is_array($params)) {
             if (isset($params['encoding'])) {
                 $this->setEncoding($params['encoding']);
@@ -346,13 +346,13 @@ class IdnaConvert
             }
 
             return $output;
-        } else {
-            if (false !== ($output = $punyCode->encode($decoded))) {
-                return $output;
-            }
-
-            return $this->UnicodeTranscoder->convert($decoded, 'ucs4array', 'utf8');
         }
+
+        if (false !== ($output = $punyCode->encode($decoded))) {
+            return $output;
+        }
+
+        return $this->UnicodeTranscoder->convert($decoded, 'ucs4array', 'utf8');
     }
 
     /**

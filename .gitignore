@@ -1,4 +1,6 @@
-/vendor/
-.htaccess
-.idea
-IdnaConvert-*.zip
+/.idea
+!.gitkeep
+/phpunit.phar
+/composer.phar
+/composer.lock
+/vendor
