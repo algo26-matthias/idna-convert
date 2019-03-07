@@ -1,6 +1,6 @@
 <?php
 
-namespace Algo26\IdnaConvert\Interfaces;
+namespace Algo26\IdnaConvert\NamePrep;
 
 interface NamePrepDataInterface
 {

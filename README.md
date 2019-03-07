@@ -19,24 +19,6 @@ You can query the occurred error by calling the method get_last_error().
 Unicode strings are expected to be either UTF-8 strings, UCS-4 strings or UCS-4 arrays. The default format is UTF-8. For setting different encodings, you can call the method setParams() - please see the inline documentation for details.  
 ACE strings (the Punycode form) are always 7bit ASCII strings.
 
-**ATTENTION:** As of version 0.6.0 this class is written in the OOP style of PHP5. Since PHP4 is no longer actively maintained, you should switch to PHP5 as fast as possible. We expect to see no compatibility issues with the upcoming PHP6, too.
-
-**ATTENTION:** BC break! As of version 0.6.4 the class per default allows the German ligature ß to be encoded as the DeNIC, the registry for .DE allows domains containing ß.  
-In older builds "ß" was mapped to "ss". Should you still need this behaviour, see example 5 below.
-
-**ATTENTION:** As of version 0.8.0 the class fully supports IDNA 2008. Thus the aforementioned parameter is deprecated and replaced by a parameter to switch between the standards. See the updated example 5 below.
-
-**ATTENTION:** BC break: As of version 1.0.0 the class closely follows the PSRs PSR-1, PSR-2 and PSR-4 of the PHP-FIG. As such the classes' naming has been changed, a namespace has been introduced and the default IDN version has changed from 2003 to 2008 and minimum PHP engine version raised to 5.6.0.
-
-## Files
-
-- **src/IdnaConvert.php** - The actual class
-- **src/EncodingHelper.php** - Convert various encodings to and from UTF-8, see below
-- **src/UnicodeTranscoder.php** - Transcode between various Unicode representations, see below
-- **README.md** - This file
-- **LICENCE** - The LGPL licence file
-
-
 ## Installation
 
 ### Via Composer
@@ -172,9 +154,9 @@ Example usage:
 ```php
 <?php  
 use Algo26\IdnaConvert\IdnaConvert;
-use Algo26\IdnaConvert\EncodingHelper;
+use Algo26\IdnaConvert\TranscodeIso;
 $mystring = '<something in e.g. ISO-8859-15';  
-$mystring = EncodingHelper::toUtf8($mystring, 'ISO-8859-15');
+$mystring = TranscodeIso::toUtf8($mystring, 'ISO-8859-15');
 $IDN = new IdnaConvert();
 echo $IDN->encode($mystring);
 ```
@@ -193,9 +175,9 @@ Example usage:
 
 ```php
 <?php  
-use Algo26\IdnaConvert\UnicodeTranscoder;
+use Algo26\IdnaConvert\TranscodeUnicode;
 $mystring = 'nörgler.com';  
-echo UnicodeTranscoder::convert($mystring, 'utf8', 'utf7imap');
+echo TranscodeUnicode::convert($mystring, 'utf8', 'utf7imap');
 ```
 
 

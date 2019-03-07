@@ -1,11 +1,11 @@
 <?php
 
-namespace Algo26\IdnaConvert;
+namespace Algo26\IdnaConvert\NamePrep;
 
 /**
  * @codeCoverageIgnore character mapss
  */
-class NamePrepData implements NamePrepDataInterface
+class NamePrepData2008 implements NamePrepDataInterface
 {
     public $mapToNothing = [
             0xAD, 0x34F, 0x1806, 0x180B, 0x180C, 0x180D, 0x200B, 0x200C,
