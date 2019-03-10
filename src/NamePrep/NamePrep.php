@@ -44,84 +44,91 @@ class NamePrep
         throw new InvalidIdnVersionException('IDN version must bei either 2003 or 2008');
     }
     
-    public function do(array $input)
+    public function do(array $inputArray): array
     {
-        $output = [];
-        //
-        // Mapping
-        // Walking through the input array, performing the required steps on each of
-        // the input chars and putting the result into the output array
-        // While mapping required chars we apply the canonical ordering
-        foreach ($input as $v) {
+        $outputArray = $this->applyCharacterMaps($inputArray);
+        $outputArray = $this->hangulCompose($outputArray);
+        $outputArray = $this->combineCodePoints($outputArray);
+
+        return $outputArray;
+    }
+
+    private function applyCharacterMaps(array $inputArray): array
+    {
+        $outputArray = [];
+        foreach ($inputArray as $codePoint) {
             // Map to nothing == skip that code point
-            if (in_array($v, $this->namePrepData->mapToNothing)) {
+            if (in_array($codePoint, $this->namePrepData->mapToNothing)) {
                 continue;
             }
             // Try to find prohibited input
-            if (in_array($v, $this->namePrepData->prohibit) || in_array($v, $this->namePrepData->generalProhibited)) {
-                throw new \InvalidArgumentException(sprintf('NAMEPREP: Prohibited input U+%08X', $v), 101);
+            if (in_array($codePoint, $this->namePrepData->prohibit) || in_array($codePoint, $this->namePrepData->generalProhibited)) {
+                throw new \InvalidArgumentException(sprintf('NAMEPREP: Prohibited input U+%08X', $codePoint), 101);
             }
             foreach ($this->namePrepData->prohibitRanges as $range) {
-                if ($range[0] <= $v && $v <= $range[1]) {
-                    throw new \InvalidArgumentException(sprintf('NAMEPREP: Prohibited input U+%08X', $v), 102);
+                if ($range[0] <= $codePoint && $codePoint <= $range[1]) {
+                    throw new \InvalidArgumentException(sprintf('NAMEPREP: Prohibited input U+%08X', $codePoint), 102);
                 }
             }
 
-            if (0xAC00 <= $v && $v <= 0xD7AF) {
+            if (0xAC00 <= $codePoint && $codePoint <= 0xD7AF) {
                 // Hangul syllable decomposition
-                foreach ($this->hangulDecompose($v) as $out) {
-                    $output[] = (int) $out;
+                foreach ($this->hangulDecompose($codePoint) as $decomposed) {
+                    $outputArray[] = (int) $decomposed;
                 }
-            } elseif (isset($this->namePrepData->replaceMaps[$v])) {
-                foreach ($this->applyCanonicalOrdering($this->namePrepData->replaceMaps[$v]) as $out) {
-                    $output[] = (int) $out;
+            } elseif (isset($this->namePrepData->replaceMaps[$codePoint])) {
+                foreach ($this->applyCanonicalOrdering($this->namePrepData->replaceMaps[$codePoint]) as $reordered) {
+                    $outputArray[] = (int) $reordered;
                 }
             } else {
-                $output[] = (int) $v;
+                $outputArray[] = (int) $codePoint;
             }
         }
-        // Before applying any Combining, try to rearrange any Hangul syllables
-        $output = $this->hangulCompose($output);
-        //
-        // Combine code points
-        //
-        $last_class = 0;
-        $last_starter = 0;
-        $out_len = count($output);
-        for ($i = 0; $i < $out_len; ++$i) {
-            $class = $this->getCombiningClass($output[$i]);
-            if ((!$last_class || $last_class > $class) && $class) {
+
+        return $outputArray;
+    }
+
+    private Function combineCodePoints(array $codePoints): array
+    {
+        $previousClass = 0;
+        $previousStarter = 0;
+        $outputLength = count($codePoints);
+        for ($outerIndex = 0; $outerIndex < $outputLength; ++$outerIndex) {
+            $combiningClass = $this->getCombiningClass($codePoints[$outerIndex]);
+            if ((!$previousClass || $previousClass > $combiningClass) && $combiningClass) {
                 // Try to match
-                $seq_len = $i - $last_starter;
-                $out = $this->combine(array_slice($output, $last_starter, $seq_len));
+                $sequenceLength = $outerIndex - $previousStarter;
+                $combined = $this->combine(array_slice($codePoints, $previousStarter, $sequenceLength));
                 // On match: Replace the last starter with the composed character and remove
                 // the now redundant non-starter(s)
-                if ($out) {
-                    $output[$last_starter] = $out;
-                    if (count($out) != $seq_len) {
-                        for ($j = $i + 1; $j < $out_len; ++$j) {
-                            $output[$j - 1] = $output[$j];
+                if ($combined) {
+                    $codePoints[$previousStarter] = $combined;
+                    if (count($combined) !== $sequenceLength) {
+                        for ($innerIndex = $outerIndex + 1; $innerIndex < $outputLength; ++$innerIndex) {
+                            $codePoints[$innerIndex - 1] = $codePoints[$innerIndex];
                         }
-                        unset($output[$out_len]);
+                        unset($codePoints[$outputLength]);
                     }
                     // Rewind the for loop by one, since there can be more possible compositions
-                    $i--;
-                    $out_len--;
-                    $last_class = ($i == $last_starter) ? 0 : $this->getCombiningClass($output[$i - 1]);
+                    $outerIndex--;
+                    $outputLength--;
+                    $previousClass = 0;
+                    if ($outerIndex !== $previousStarter) {
+                        $this->getCombiningClass($codePoints[$outerIndex - 1]);
+                    }
 
                     continue;
                 }
             }
-            // The current class is 0
-            if (!$class) {
-                $last_starter = $i;
+
+            if ($combiningClass === 0) {
+                $previousStarter = $outerIndex;
             }
-            $last_class = $class;
+            $previousClass = $combiningClass;
         }
 
-        return $output;
+        return $codePoints;
     }
-
 
     /**
      * Decomposes a Hangul syllable
@@ -129,17 +136,18 @@ class NamePrep
      * @param    integer  32bit UCS4 code point
      * @return   array    Either Hangul Syllable decomposed or original 32bit value as one value array
      */
-    private function hangulDecompose($char)
+    private function hangulDecompose(int $codePoint): array
     {
-        $sindex = (int) $char - self::sBase;
-        if ($sindex < 0 || $sindex >= self::sCount) {
-            return [$char];
+        $sIndex = (int) $codePoint - self::sBase;
+        if ($sIndex < 0 || $sIndex >= self::sCount) {
+            return [$codePoint];
         }
 
-        $result = [];
-        $result[] = (int) self::lBase + $sindex / self::nCount;
-        $result[] = (int) self::vBase + ($sindex % self::nCount) / self::tCount;
-        $T = intval(self::tBase + $sindex % self::tCount);
+        $result = [
+            (int) self::lBase + $sIndex / self::nCount,
+            (int) self::vBase + ($sIndex % self::nCount) / self::tCount,
+        ];
+        $T = intval(self::tBase + $sIndex % self::tCount);
         if ($T != self::tBase) {
             $result[] = $T;
         }
@@ -148,45 +156,58 @@ class NamePrep
     }
 
     /**
-     * Ccomposes a Hangul syllable
+     * Compose a Hangul syllable
      * (see http://www.unicode.org/unicode/reports/tr15/#Hangul
+     *
      * @param  array $input   Decomposed UCS4 sequence
      * @return array UCS4 sequence with syllables composed
      */
-    private function hangulCompose($input)
+    private function hangulCompose(array $input): array
     {
-        $inp_len = count($input);
-        if (!$inp_len) {
+        $inputLength = count($input);
+        if ($inputLength === 0) {
             return [];
         }
 
-        $result = [];
-        $last = (int) $input[0];
-        $result[] = $last; // copy first char from input to output
+        $previousCharCode = (int) $input[0];
 
-        for ($i = 1; $i < $inp_len; ++$i) {
-            $char = (int) $input[$i];
-            $sindex = $last - self::sBase;
-            $lindex = $last - self::lBase;
-            $vindex = $char - self::vBase;
-            $tindex = $char - self::tBase;
+        // copy first codepoint from input to output
+        $result = [
+            $previousCharCode,
+        ];
+
+        for ($i = 1; $i < $inputLength; ++$i) {
+            $charCode = (int) $input[$i];
+            $sIndex = $previousCharCode - self::sBase;
+            $lIndex = $previousCharCode - self::lBase;
+            $vIndex = $charCode - self::vBase;
+            $tIndex = $charCode - self::tBase;
+
             // Find out, whether two current characters are LV and T
-            if (0 <= $sindex && $sindex < self::sCount && ($sindex % self::tCount == 0) && 0 <= $tindex && $tindex <= self::tCount) {
+            if (0 <= $sIndex
+                && $sIndex < self::sCount
+                && ($sIndex % self::tCount == 0)
+                && 0 <= $tIndex
+                && $tIndex <= self::tCount
+            ) {
                 // create syllable of form LVT
-                $last += $tindex;
-                $result[(count($result) - 1)] = $last; // reset last
+                $previousCharCode += $tIndex;
+                $result[(count($result) - 1)] = $previousCharCode; // reset last
+
                 continue; // discard char
             }
+
             // Find out, whether two current characters form L and V
-            if (0 <= $lindex && $lindex < self::lCount && 0 <= $vindex && $vindex < self::vCount) {
+            if (0 <= $lIndex && $lIndex < self::lCount && 0 <= $vIndex && $vIndex < self::vCount) {
                 // create syllable of form LV
-                $last = (int) self::sBase + ($lindex * self::vCount + $vindex) * self::tCount;
-                $result[(count($result) - 1)] = $last; // reset last
+                $previousCharCode = (int) self::sBase + ($lIndex * self::vCount + $vIndex) * self::tCount;
+                $result[(count($result) - 1)] = $previousCharCode; // reset last
+
                 continue; // discard char
             }
             // if neither case was true, just add the character
-            $last = $char;
-            $result[] = $char;
+            $previousCharCode = $charCode;
+            $result[] = $charCode;
         }
 
         return $result;
@@ -197,7 +218,7 @@ class NamePrep
      * @param integer  $char  Wide char to check (32bit integer)
      * @return integer Combining class if found, else 0
      */
-    private function getCombiningClass($char)
+    private function getCombiningClass(int $char): int
     {
         return isset($this->namePrepData->normalizeCombiningClasses[$char])
             ? $this->namePrepData->normalizeCombiningClasses[$char]
@@ -209,30 +230,30 @@ class NamePrep
      * @param array  $input Decomposed UCS4 sequence
      * @return array Ordered USC4 sequence
      */
-    private function applyCanonicalOrdering($input)
+    private function applyCanonicalOrdering(array $input): array
     {
-        $swap = true;
-        $size = count($input);
-        while ($swap) {
-            $swap = false;
-            $last = $this->getCombiningClass(intval($input[0]));
-            for ($i = 0; $i < $size - 1; ++$i) {
-                $next = $this->getCombiningClass(intval($input[$i + 1]));
-                if ($next !== 0 && $last > $next) {
+        $needsSwapping = true;
+        $inputLength = count($input);
+        while ($needsSwapping) {
+            $needsSwapping = false;
+            $previousClass = $this->getCombiningClass(intval($input[0]));
+            for ($outerIndex = 0; $outerIndex < $inputLength - 1; ++$outerIndex) {
+                $nextClass = $this->getCombiningClass(intval($input[$outerIndex + 1]));
+                if ($nextClass !== 0 && $previousClass > $nextClass) {
                     // Move item leftward until it fits
-                    for ($j = $i + 1; $j > 0; --$j) {
-                        if ($this->getCombiningClass(intval($input[$j - 1])) <= $next) {
+                    for ($innerIndex = $outerIndex + 1; $innerIndex > 0; --$innerIndex) {
+                        if ($this->getCombiningClass(intval($input[$innerIndex - 1])) <= $nextClass) {
                             break;
                         }
-                        $t = intval($input[$j]);
-                        $input[$j] = intval($input[$j - 1]);
-                        $input[$j - 1] = $t;
-                        $swap = true;
+                        $charToMove = intval($input[$innerIndex]);
+                        $input[$innerIndex] = intval($input[$innerIndex - 1]);
+                        $input[$innerIndex - 1] = $charToMove;
+                        $needsSwapping = true;
                     }
                     // Reentering the loop looking at the old character again
-                    $next = $last;
+                    $nextClass = $previousClass;
                 }
-                $last = $next;
+                $previousClass = $nextClass;
             }
         }
 
@@ -244,23 +265,23 @@ class NamePrep
      * @param   array $input UCS4 Decomposed sequence
      * @return  array|false  Ordered USC4 sequence
      */
-    private function combine($input)
+    private function combine(array $input)
     {
-        $inp_len = count($input);
-        if (0 === $inp_len) {
+        $inputLength = count($input);
+        if (0 === $inputLength) {
             return false;
         }
 
-        foreach ($this->namePrepData->replaceMaps as $np_src => $np_target) {
-            if ($np_target[0] !== $input[0]) {
+        foreach ($this->namePrepData->replaceMaps as $namePrepSource => $namePrepTarget) {
+            if ($namePrepTarget[0] !== $input[0]) {
                 continue;
             }
-            if (count($np_target) !== $inp_len) {
+            if (count($namePrepTarget) !== $inputLength) {
                 continue;
             }
             $hit = false;
             foreach ($input as $k2 => $v2) {
-                if ($v2 === $np_target[$k2]) {
+                if ($v2 === $namePrepTarget[$k2]) {
                     $hit = true;
                 } else {
                     $hit = false;
@@ -268,7 +289,7 @@ class NamePrep
                 }
             }
             if ($hit) {
-                return $np_src;
+                return $namePrepSource;
             }
         }
 
