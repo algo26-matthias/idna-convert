@@ -23,18 +23,13 @@ ACE strings (the Punycode form) are always 7bit ASCII strings.
 
 ### Via Composer
 
-```php
-{
-    "require" : {
-        "algo26-matthias/idna-convert" : "2.*"
-    }
-}
+```
+composer require algo26-matthias/idna-convert
 ```
 
 ### Official ZIP Package
 
 The official ZIP packages are discontinued. Stick to Composer or Github to acquire your copy, please.
-
 
 ## Examples
 

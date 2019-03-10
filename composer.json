@@ -21,7 +21,12 @@
     },
     "autoload": {
         "psr-4": {
-            "Algo26\\IdnaConvert\\": "src"
+            "Algo26\\IdnaConvert\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Algo26\\IdnaConvert\\Test\\": "tests/"
         }
     }
 }
