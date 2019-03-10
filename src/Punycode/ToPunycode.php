@@ -14,7 +14,7 @@ class ToPunycode extends AbstractPunycode implements PunycodeInterface
     /**
      * @throws InvalidIdnVersionException
      */
-    public function __construct(string $idnVersion)
+    public function __construct(?string $idnVersion = null)
     {
         $this->namePrep = new NamePrep($idnVersion);
         parent::__construct();

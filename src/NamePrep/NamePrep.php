@@ -3,6 +3,8 @@
 namespace Algo26\IdnaConvert\NamePrep;
 
 use Algo26\IdnaConvert\Exception\InvalidIdnVersionException;
+use Algo26\IdnaConvert\NamePrep\NamePrepData2003;
+use Algo26\IdnaConvert\NamePrep\NamePrepData2008;
 
 class NamePrep
 {
@@ -25,15 +27,21 @@ class NamePrep
      *
      * @throws \Algo26\IdnaConvert\Exception\InvalidIdnVersionException
      */
-    public function __construct($idnVersion = 2008)
+    public function __construct(string $idnVersion = null)
     {
-        if ($idnVersion !== 2003
-            && $idnVersion !== 2008) {
-            throw new InvalidIdnVersionException('IDN version must bei either 2003 or 2008');
+        if ($idnVersion === null || $idnVersion == 2008) {
+            $this->namePrepData = new NamePrepData2008();
+
+            return;
         }
 
-        $namePrepDataClass = sprintf('NamePrepData%d', $idnVersion);
-        $this->namePrepData = new $namePrepDataClass();
+        if ($idnVersion == 2003) {
+            $this->namePrepData = new NamePrepData2003();
+
+            return;
+        }
+
+        throw new InvalidIdnVersionException('IDN version must bei either 2003 or 2008');
     }
     
     public function do(array $input)

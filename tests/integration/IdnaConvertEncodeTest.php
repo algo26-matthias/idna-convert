@@ -1,24 +1,32 @@
 <?php
 namespace Algo26\IdnaConvert\test;
 
-use Algo26\IdnaConvert\IdnaConvert;
+use Algo26\IdnaConvert\Exception\AlreadyPunycodeException;
+use Algo26\IdnaConvert\Exception\InvalidCharacterException;
+use Algo26\IdnaConvert\Exception\InvalidIdnVersionException;
+use Algo26\IdnaConvert\ToIdn;
 use PHPUnit\Framework\TestCase;
 
 class IdnaConvertEncodeTest extends TestCase
 {
+
     /**
      * @dataProvider providerUtf8
+     *
+     * @throws AlreadyPunycodeException
+     * @throws InvalidCharacterException
+     * @throws InvalidIdnVersionException
      */
     public function testEncodeUtf8($decoded, $expectEncoded)
     {
-        $idnaConv = new IdnaConvert();
-        $encoded = $idnaConv->encode($decoded);
+        $idnaConv = new ToIdn();
+        $encoded = $idnaConv->convert($decoded);
 
         $this->assertEquals(
             $expectEncoded,
             $encoded,
             sprintf(
-                'Strings "%s" and "$s" do not match',
+                'Strings "%s" and "%s" do not match',
                 $expectEncoded, $encoded
             )
         );
@@ -26,18 +34,21 @@ class IdnaConvertEncodeTest extends TestCase
 
     /**
      * @dataProvider providerUtf8Idna2003
+     *
+     * @throws AlreadyPunycodeException
+     * @throws InvalidCharacterException
+     * @throws InvalidIdnVersionException
      */
     public function testEncodeUtf8Idna2003($decoded, $expectEncoded)
     {
-        $idnaConv = new IdnaConvert();
-        $idnaConv->setIdnVersion(2003);
-        $encoded = $idnaConv->encode($decoded);
+        $idnaConv = new ToIdn(2003);
+        $encoded = $idnaConv->convert($decoded);
 
         $this->assertEquals(
             $expectEncoded,
             $encoded,
             sprintf(
-                'Strings "%s" and "$s" do not match',
+                'Strings "%s" and "%s" do not match',
                 $expectEncoded, $encoded
             )
         );

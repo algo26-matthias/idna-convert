@@ -1,24 +1,27 @@
 <?php
 namespace Algo26\IdnaConvert\test;
 
-use Algo26\IdnaConvert\IdnaConvert;
+use Algo26\IdnaConvert\Exception\InvalidIdnVersionException;
+use Algo26\IdnaConvert\ToUnicode;
 use PHPUnit\Framework\TestCase;
 
 class IdnaConvertDecodeTest extends TestCase
 {
+
     /**
      * @dataProvider providerUtf8
+     * @throws InvalidIdnVersionException
      */
     public function testEncodeUtf8($decoded, $expectEncoded)
     {
-        $idnaConv = new IdnaConvert();
-        $encoded = $idnaConv->decode($decoded);
+        $idnaConv = new ToUnicode();
+        $encoded = $idnaConv->convert($decoded);
 
         $this->assertEquals(
             $expectEncoded,
             $encoded,
             sprintf(
-                'Strings "%s" and "$s" do not match',
+                'Strings "%s" and "%s" do not match',
                 $expectEncoded, $encoded
             )
         );

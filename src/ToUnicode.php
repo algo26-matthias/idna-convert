@@ -4,7 +4,7 @@ namespace Algo26\IdnaConvert;
 use Algo26\IdnaConvert\Punycode\FromPunycode;
 use Algo26\IdnaConvert\TranscodeUnicode\TranscodeUnicode;
 
-class toUnicode extends AbstractIdnaConvert implements IdnaConvertInterface
+class ToUnicode extends AbstractIdnaConvert implements IdnaConvertInterface
 {
     /** @var TranscodeUnicode */
     private $unicodeTransCoder;
@@ -15,22 +15,27 @@ class toUnicode extends AbstractIdnaConvert implements IdnaConvertInterface
     /**
      * @throws Exception\InvalidIdnVersionException
      */
-    public function __construct($idnVersion = null)
+    public function __construct()
     {
         $this->unicodeTransCoder = new TranscodeUnicode();
-        $this->punycodeEncoder = new FromPunycode($idnVersion);
+        $this->punycodeEncoder = new FromPunycode();
     }
 
     public function convert(string $host): string
     {
         // Make sure to drop any newline characters around
         $input = trim($host);
-        $return = $this->punycodeEncoder->convert($input);
-        if (!$return) {
-            $return = $input;
+
+        $hostLabels = explode('.', $input);
+        foreach ($hostLabels as $index => $label) {
+            $return = $this->punycodeEncoder->convert($label);
+            if (!$return) {
+                $return = $label;
+            }
+            $hostLabels[$index] = $return;
         }
 
-        return $return;
+        return implode('.', $hostLabels);
     }
 
 }

@@ -9,16 +9,11 @@ class ComposerStaticInitc7d4cd5bd39df3cf1d49095eec34add2
     public static $prefixLengthsPsr4 = array (
         'A' => 
         array (
-            'Algo26\\IdnaConvert\\Test\\' => 24,
             'Algo26\\IdnaConvert\\' => 19,
         ),
     );
 
     public static $prefixDirsPsr4 = array (
-        'Algo26\\IdnaConvert\\Test\\' => 
-        array (
-            0 => __DIR__ . '/../..' . '/tests',
-        ),
         'Algo26\\IdnaConvert\\' => 
         array (
             0 => __DIR__ . '/../..' . '/src',

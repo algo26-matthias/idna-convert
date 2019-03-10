@@ -29,6 +29,9 @@ class TranscodeUnicode implements TranscodeUnicodeInterface
         $this->safeMode = ($safeMode) ? true : false;
         $this->safeCodepoint = ($safeCodepoint) ? $safeCodepoint : 0xFFFC;
 
+        $from = strtolower($from);
+        $to   = strtolower($to);
+
         if (!in_array($from, self::encodings)) {
             throw new \InvalidArgumentException(sprintf('Invalid input format %s', $from), 300);
         }

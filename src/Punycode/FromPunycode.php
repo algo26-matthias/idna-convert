@@ -4,7 +4,7 @@ namespace Algo26\IdnaConvert\Punycode;
 
 class FromPunycode extends AbstractPunycode implements PunycodeInterface
 {
-    public function __construct(string $idnVersion)
+    public function __construct(?string $idnVersion = null)
     {
         parent::__construct();
     }
@@ -25,7 +25,7 @@ class FromPunycode extends AbstractPunycode implements PunycodeInterface
         $delimiterPosition = strrpos($encoded, '-');
         if ($delimiterPosition > self::byteLength(self::punycodePrefix)) {
             for ($k = $this->byteLength(self::punycodePrefix); $k < $delimiterPosition; ++$k) {
-                $decoded[] = ord($encoded{$k});
+                $decoded[] = ord($encoded[$k]);
             }
         }
         $decodedLength = count($decoded);
@@ -39,7 +39,7 @@ class FromPunycode extends AbstractPunycode implements PunycodeInterface
 
         for ($encodedIndex = ($delimiterPosition) ? ($delimiterPosition + 1) : 0; $encodedIndex < $encodedLength; ++$decodedLength) {
             for ($oldIndex = $currentIndex, $w = 1, $k = self::base; 1; $k += self::base) {
-                $digit = $this->decodeDigit($encoded{$encodedIndex++});
+                $digit = $this->decodeDigit($encoded[$encodedIndex++]);
                 $currentIndex += $digit * $w;
                 $t = ($k <= $bias)
                     ? self::tMin
@@ -66,7 +66,7 @@ class FromPunycode extends AbstractPunycode implements PunycodeInterface
             $decoded[$currentIndex++] = $char;
         }
 
-        return $this->UnicodeTranscoder->ucs4array_utf8($decoded);
+        return $this->unicodeTransCoder->convert($decoded, 'ucs4array', 'utf8');
     }
 
 
@@ -90,7 +90,7 @@ class FromPunycode extends AbstractPunycode implements PunycodeInterface
         return true;
     }
 
-    private function decodeDigit(int $cp): int
+    private function decodeDigit(string $cp): int
     {
         $cp = ord($cp);
         if ($cp - 48 < 10) {

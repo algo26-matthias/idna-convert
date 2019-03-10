@@ -1,3 +1,6 @@
 /.idea
-/tests/phpunit.phar
 !.gitkeep
+/phpunit.phar
+/composer.phar
+/composer.lock
+/vendor

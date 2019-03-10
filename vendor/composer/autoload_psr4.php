@@ -6,6 +6,5 @@ $vendorDir = dirname(dirname(__FILE__));
 $baseDir = dirname($vendorDir);
 
 return array(
-    'Algo26\\IdnaConvert\\Test\\' => array($baseDir . '/tests'),
     'Algo26\\IdnaConvert\\' => array($baseDir . '/src'),
 );
