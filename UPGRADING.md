@@ -8,7 +8,7 @@ As such the single class `IdnaConvert` has been broken down into `ToIdn` and `To
 the format of the outcome, so it's more clear to distinguish, what you need. This should be easier to grasp then the old method names `encode()` and `decode()`.
 Usually you will only need one conversion direction per script run, so why bother loading and parsing all the other unused code, then?  
 
-Also the handling of host names (simple labels like `exämple` or FQHNs like `www.exämple.cöm`) is now separated from 
+Also the handling of host names (simple labels like `my-hostname` or FQHNs like `some-host.my-domain.example`) is now separated from 
 that of email addresses and URLs. 
 Both classes offer the same set of public methods:
 
@@ -16,7 +16,7 @@ Both classes offer the same set of public methods:
 | `convertEmailAddress()` |  To convert email addresses         | 
 | `convertUrl()`          |  To convert the host name of an URL | 
 
-There's no "strict mode" anymore, this is achieved by the separate methods above. The IDN version is stated when instantiating the class, no more setting during runtime.
+There's no "strict mode" anymore, this is achieved by the separate methods above. The IDN version is selected when instantiating the class, no more setting during runtime.
 Also the encoding (for the Unicode side of things) is now **always UTF-8**. Use `TransCodeUnicode` or `EncodingHelper` for converting to and from various encodings to UTF-8.
 
 All actual sub classes like that for NamePrep and the actual Punycode transformation are put in their own namespaces under `Algo26\IdnaConvert`, e.g. `Algo26\IdnaConvert\NamePrep`. 
@@ -26,6 +26,8 @@ The class `EncodingHelper` is now called separated into the two classes `ToUtf8`
 The class `UnicodeTranscoder` is now called `TransCodeUnicode` under the namespace `Algo26\idnaConvert\TransCodeUnicode`.
 
 All examples are updated to reflect the new usage. See the ReadMe for more details.
+
+Also the **minimum PHP version is now 7.2**.
 
 ## 2.0
 The library has been handed over to actively maintained GitHub and Packagist accounts. This lead to a change in the namespace.

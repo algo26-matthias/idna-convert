@@ -1,23 +1,28 @@
 # IDNA Convert - pure PHP IDNA converter
 
+![latest stable version](https://img.shields.io/github/tag/algo26-matthias/idna-convert.svg)
+
 Project homepage: <http://idnaconv.net><br>
 by Matthias Sommerfeld <matthias.sommerfeld@algo26.de><br>
 
 ## Introduction
 
-The class IdnaConvert allows to convert internationalized domain names (see RFC 3490, 3491, 3492 and 3454 for details) as they can be used with various registries worldwide to be translated between their original (localized) form and their encoded form as it will be used in the DNS (Domain Name System).
+The library IdnaConvert allows to convert internationalized domain names (see 
+[RFC 3492](http://www.ietf.org/rfc/rfc3492.txt), 
+[RFC 5890](http://www.ietf.org/rfc/rfc5890.txt),
+[RFC 5891](http://www.ietf.org/rfc/rfc5891.txt),
+[RFC 5892](http://www.ietf.org/rfc/rfc5892.txt),
+[RFC 5893](http://www.ietf.org/rfc/rfc5893.txt),
+[RFC 5894](http://www.ietf.org/rfc/rfc5894.txt),
+[RFC 6452](http://www.ietf.org/rfc/rfc6452.txt), 
+for details) as they can be used with various registries worldwide to be translated between their original (localized) form and their encoded form as it will be used in the DNS (Domain Name System).
 
-The class provides two public methods, encode() and decode(), which do exactly what you would expect them to do. You are allowed to use complete domain names, simple strings and complete email addresses as well. That means, that you might use any of the following notations:
+The library provides two classes (`ToIdn` and `ToUnicode` respectively), which expose three public methods to convert between the respective forms. See the Example section below. 
+This allows you to convert host names (simple labels like `localhost` or FQHNs like `some-host.domain.example`), email addresses and complete URLs.
 
-- www.nörgler.com
-- xn--nrgler-wxa
-- xn--brse-5qa.xn--knrz-1ra.info
+Errors, incorrectly encoded or invalid strings will lead to various exceptions.  They should help you to find out, what went wrong.  
 
-Errors, incorrectly encoded or invalid strings will lead to either a FALSE response (when in strict mode) or to only partially converted strings.  
-You can query the occurred error by calling the method get_last_error().
-
-Unicode strings are expected to be either UTF-8 strings, UCS-4 strings or UCS-4 arrays. The default format is UTF-8. For setting different encodings, you can call the method setParams() - please see the inline documentation for details.  
-ACE strings (the Punycode form) are always 7bit ASCII strings.
+Unicode strings are expected to be UTF-8 strings. ACE strings (the Punycode form) are always 7bit ASCII strings.
 
 ## Installation
 
@@ -31,6 +36,11 @@ composer require algo26-matthias/idna-convert
 
 The official ZIP packages are discontinued. Stick to Composer or Github to acquire your copy, please.
 
+## Upgrading from a previous version
+
+See [the upgrading notes](./UPGRADING.md) to learn about upgrading from a previous version.
+
+
 ## Examples
 
 ### Example 1. 
@@ -40,13 +50,13 @@ Say we wish to encode the domain name nörgler.com:
 ```php
 <?php  
 // Include the class
-use Algo26\IdnaConvert\IdnaConvert;
+use Algo26\IdnaConvert\ToIdn;
 // Instantiate it
-$IDN = new IdnaConvert();
+$IDN = new ToIdn();
 // The input string, if input is not UTF-8 or UCS-4, it must be converted before  
 $input = utf8_encode('nörgler.com');  
 // Encode it to its punycode presentation  
-$output = $IDN->encode($input);  
+$output = $IDN->convert($input);  
 // Output, what we got now  
 echo $output; // This will read: xn--nrgler-wxa.com
 ```
@@ -54,18 +64,18 @@ echo $output; // This will read: xn--nrgler-wxa.com
 
 ### Example 2. 
 
-We received an email from a punycoded domain and are willing to learn, how the domain name reads originally
+We received an email from a internationalized domain and are want to decode it to its Unicode form.
 
 ```php
 <?php  
 // Include the class
-use Algo26\IdnaConvert\IdnaConvert;
+use Algo26\IdnaConvert\ToUnicode;
 // Instantiate it
-$IDN = new IdnaConvert();
+$IDN = new ToUnicode();
 // The input string  
 $input = 'andre@xn--brse-5qa.xn--knrz-1ra.info';  
 // Encode it to its punycode presentation  
-$output = $IDN->decode($input);  
+$output = $IDN->convertEmailAddress($input);  
 // Output, what we got now, if output should be in a format different to UTF-8  
 // or UCS-4, you will have to convert it before outputting it  
 echo utf8_decode($output); // This will read: andre@börse.knörz.info
@@ -79,13 +89,16 @@ The input is read from a UCS-4 coded file and encoded line by line. By appending
 ```php
 <?php  
 // Include the class
-use Algo26\IdnaConvert\IdnaConvert;
-// Instantiate it
-$IDN = new IdnaConvert();
+use Algo26\IdnaConvert\ToIdn;
+use Algo26\IdnaConvert\TranscodeUnicode\TranscodeUnicode;
+// Instantiate
+$IDN = new ToIdn();
+$UCTC = new TranscodeUnicode();
 // Iterate through the input file line by line  
-foreach (file('ucs4-domains.txt') as $line) {  
-    echo $IDN->encode(trim($line), 'ucs4_string');  
-    echo "\n";  
+foreach (file('ucs4-domains.txt') as $line) {
+    $utf8String = $UCTC->convert(trim($line), 'ucs4', 'utf8');
+    echo $IDN->convert($utf8String);
+    echo "\n";
 }
 ```
 
@@ -97,13 +110,13 @@ We wish to convert a whole URI into the IDNA form, but leave the path or query s
 ```php
 <?php  
 // Include the class
-use Algo26\IdnaConvert\IdnaConvert;
+use Algo26\IdnaConvert\ToIdn;
 // Instantiate it
-$IDN = new IdnaConvert();
+$IDN = new ToIdn();
 // The input string, a whole URI in UTF-8 (!)  
 $input = 'http://nörgler:secret@nörgler.com/my_päth_is_not_ÄSCII/');  
 // Encode it to its punycode presentation  
-$output = $IDN->encodeUri($input);
+$output = $IDN->convertUrl($input);
 // Output, what we got now  
 echo $output; // http://nörgler:secret@xn--nrgler-wxa.com/my_päth_is_not_ÄSCII/
 ```
@@ -111,28 +124,29 @@ echo $output; // http://nörgler:secret@xn--nrgler-wxa.com/my_päth_is_not_ÄSCI
 
 ### Example 5. 
 
-Per default, the class converts strings according to IDNA version 2008. To support IDNA 2003, the class needs to be invoked with an additional parameter. This can also be achieved on an instance.
+Per default, the class converts strings according to IDNA version 2008. To support IDNA 2003, the class needs to be invoked with an additional parameter.
 
 ```php
 <?php  
 // Include the class  
-use Algo26\IdnaConvert\IdnaConvert;
+use Algo26\IdnaConvert\ToIdn;
 // Instantiate it, switching to IDNA 2003, the original, now outdated standard
-$IDN = new IdnaConvert(['idn_version' => 2003]);
+$IDN = new ToIdn(2008);
 // Sth. containing the German letter ß  
-$input = 'meine-straße.de');  
+$input = 'meine-straße.example';
 // Encode it to its punycode presentation  
-$output = $IDN->encodeUri($input);  
+$output = $IDN->convert($input);  
 // Output, what we got now  
-echo $output; // xn--meine-strae-46a.de  
+echo $output; // xn--meine-strae-46a.example
+  
 // Switch back to IDNA 2008
-$IDN->setIdnVersion(2003);
+$IDN = new ToIdn(2003);
 // Sth. containing the German letter ß  
-$input = 'meine-straße.de');  
+$input = 'meine-straße.example';  
 // Encode it to its punycode presentation  
-$output = $IDN->encodeUri($input);
+$output = $IDN->convert($input);
 // Output, what we got now  
-echo $output; // meine-strasse.de
+echo $output; // meine-strasse.example
 ```
 
 
@@ -148,12 +162,14 @@ Example usage:
 
 ```php
 <?php  
-use Algo26\IdnaConvert\IdnaConvert;
-use Algo26\IdnaConvert\TranscodeIso;
-$mystring = '<something in e.g. ISO-8859-15';  
-$mystring = TranscodeIso::toUtf8($mystring, 'ISO-8859-15');
-$IDN = new IdnaConvert();
-echo $IDN->encode($mystring);
+use Algo26\IdnaConvert\ToIdn;
+use Algo26\IdnaConvert\EncodingHelper\ToUtf8;
+
+$IDN = new ToIdn();
+$encodingHelper = new ToUtf8();
+
+$mystring = $encodingHelper->convert('<something in e.g. ISO-8859-15', 'ISO-8859-15');
+echo $IDN->convert($mystring);
 ```
 
 
@@ -170,11 +186,25 @@ Example usage:
 
 ```php
 <?php  
-use Algo26\IdnaConvert\TranscodeUnicode;
+use Algo26\IdnaConvert\TranscodeUnicode\TranscodeUnicode;
+$transcodeUnicode = new TranscodeUnicode();
+
 $mystring = 'nörgler.com';  
-echo TranscodeUnicode::convert($mystring, 'utf8', 'utf7imap');
+echo $transcodeUnicode->convert($mystring, 'utf8', 'utf7imap');
 ```
 
+## Run PHPUnit tests
+
+The library is supplied with a `docker-compose.yml`, that allows to run the supplied tests. This assumes, you have Docker installed and docker-compose available as a command. Just issue
+
+```
+docker-compuse up
+```
+in you local command line and see the output of PHPUnit.
+
+## Reporting bugs
+
+Please use the [issues tab on GitHub](https://github.com/algo26-matthias/idna-convert/issues) to report any bugs or feature requests.
 
 ## Contact the author
 
