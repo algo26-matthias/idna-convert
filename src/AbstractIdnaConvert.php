@@ -20,7 +20,7 @@ abstract class AbstractIdnaConvert
         $parts = explode('@', $emailAddress);
 
         return sprintf(
-            '%s@∆%s',
+            '%s@%s',
             $parts[0],
             $this->convert($parts[1])
         );
@@ -34,8 +34,13 @@ abstract class AbstractIdnaConvert
     public function convertUrl(string $url): string
     {
         $parsed = parse_url($url);
-        if (!isset($parsed['host'])) {
+        if ($parsed === false) {
             throw new \InvalidArgumentException('The given string does not look like a URL', 206);
+        }
+
+        // Nothing to do
+        if ($parsed['host'] === null) {
+            return $url;
         }
 
         return sprintf(
