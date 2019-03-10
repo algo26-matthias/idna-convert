@@ -3,8 +3,6 @@
 namespace Algo26\IdnaConvert\NamePrep;
 
 use Algo26\IdnaConvert\Exception\InvalidIdnVersionException;
-use Algo26\IdnaConvert\NamePrep\NamePrepData2003;
-use Algo26\IdnaConvert\NamePrep\NamePrepData2008;
 
 class NamePrep
 {
@@ -198,7 +196,11 @@ class NamePrep
             }
 
             // Find out, whether two current characters form L and V
-            if (0 <= $lIndex && $lIndex < self::lCount && 0 <= $vIndex && $vIndex < self::vCount) {
+            if (0 <= $lIndex
+                && $lIndex < self::lCount
+                && 0 <= $vIndex
+                && $vIndex < self::vCount
+            ) {
                 // create syllable of form LV
                 $previousCharCode = (int) self::sBase + ($lIndex * self::vCount + $vIndex) * self::tCount;
                 $result[(count($result) - 1)] = $previousCharCode; // reset last
