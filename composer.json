@@ -13,7 +13,7 @@
     ],
     "require": {
         "ext-pcre": "*",
-        "php": ">=7.2.0"
+        "php": "^7.2.0"
     },
     "suggest":  {
         "ext-mbstring": "Install ext/mbstring for using input / output other than UTF-8 or ISO-8859-1",
