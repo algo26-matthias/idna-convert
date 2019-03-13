@@ -66,7 +66,11 @@ class FromPunycode extends AbstractPunycode implements PunycodeInterface
             $decoded[$currentIndex++] = $char;
         }
 
-        return $this->unicodeTransCoder->convert($decoded, 'ucs4array', 'utf8');
+        return $this->unicodeTransCoder->convert(
+            $decoded,
+            $this->unicodeTransCoder::ENCODING_UCS4_ARRAY,
+            $this->unicodeTransCoder::ENCODING_UTF8
+        );
     }
 
 

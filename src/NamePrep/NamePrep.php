@@ -23,7 +23,7 @@ class NamePrep
     /**
      * @param int
      *
-     * @throws \Algo26\IdnaConvert\Exception\InvalidIdnVersionException
+     * @throws InvalidIdnVersionException
      */
     public function __construct(string $idnVersion = null)
     {

@@ -19,7 +19,19 @@ use Algo26\IdnaConvert\Exception\InvalidCharacterException;
 
 class TranscodeUnicode implements TranscodeUnicodeInterface
 {
-    private const encodings = ['ucs4', 'ucs4array', 'utf8', 'utf7', 'utf7imap'];
+    public const ENCODING_UCS4       = 'ucs4';
+    public const ENCODING_UCS4_ARRAY = 'ucs4array';
+    public const ENCODING_UTF8       = 'utf8';
+    public const ENCODING_UTF7       = 'utf7';
+    public const ENCODING_UTF7_IMAP  = 'utf7imap';
+
+    private const encodings = [
+        self::ENCODING_UCS4,
+        self::ENCODING_UCS4_ARRAY,
+        self::ENCODING_UTF8,
+        self::ENCODING_UTF7,
+        self::ENCODING_UTF7_IMAP
+    ];
 
     private $safeMode;
     private $safeCodepoint;
@@ -38,12 +50,12 @@ class TranscodeUnicode implements TranscodeUnicodeInterface
         if (!in_array($to, self::encodings)) {
             throw new \InvalidArgumentException(sprintf('Invalid output format %s', $to), 301);
         }
-        if ($from != 'ucs4array') {
-            $methodName = $from.'_ucs4array';
+        if ($from !== self::ENCODING_UCS4_ARRAY) {
+            $methodName = sprintf('%s_%s', $from, self::ENCODING_UCS4_ARRAY);
             $data = $this->$methodName($data);
         }
-        if ($to != 'ucs4array') {
-            $methodName = 'ucs4array_'.$to;
+        if ($to !== self::ENCODING_UCS4_ARRAY) {
+            $methodName = sprintf('%s_%s', self::ENCODING_UCS4_ARRAY, $to);
             $data = $this->$methodName($data);
         }
 

@@ -39,8 +39,8 @@ abstract class AbstractPunycode
         if (self::$prefixAsArray === null) {
             self::$prefixAsArray = $this->unicodeTransCoder->convert(
                 self::punycodePrefix,
-                'utf8',
-                'ucs4array'
+                $this->unicodeTransCoder::ENCODING_UTF8,
+                $this->unicodeTransCoder::ENCODING_UCS4_ARRAY
             );
             self::$prefixLength = $this->byteLength(self::punycodePrefix);
         }

@@ -1,5 +1,5 @@
 <?php
-namespace Algo26\IdnaConvert\test;
+namespace Algo26\IdnaConvert\Test;
 
 use Algo26\IdnaConvert\Exception\InvalidIdnVersionException;
 use Algo26\IdnaConvert\ToUnicode;
