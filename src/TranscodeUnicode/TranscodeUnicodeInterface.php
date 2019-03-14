@@ -5,8 +5,8 @@ interface TranscodeUnicodeInterface
 {
     public function convert(
         $data,
-        string $from,
-        string $to,
+        string $fromEncoding,
+        string $toEncoding,
         bool $safeMode = false,
         int $safeCodepoint = 0xFFFC
     );

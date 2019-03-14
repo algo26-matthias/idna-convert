@@ -2,6 +2,7 @@
 
 namespace Algo26\IdnaConvert\NamePrep;
 
+use Algo26\IdnaConvert\Exception\InvalidCharacterException;
 use Algo26\IdnaConvert\Exception\InvalidIdnVersionException;
 
 class NamePrep
@@ -41,7 +42,10 @@ class NamePrep
 
         throw new InvalidIdnVersionException('IDN version must bei either 2003 or 2008');
     }
-    
+
+    /**
+     * @throws InvalidCharacterException
+     */
     public function do(array $inputArray): array
     {
         $outputArray = $this->applyCharacterMaps($inputArray);
@@ -51,6 +55,9 @@ class NamePrep
         return $outputArray;
     }
 
+    /**
+     * @throws InvalidCharacterException
+     */
     private function applyCharacterMaps(array $inputArray): array
     {
         $outputArray = [];
@@ -60,12 +67,14 @@ class NamePrep
                 continue;
             }
             // Try to find prohibited input
-            if (in_array($codePoint, $this->namePrepData->prohibit) || in_array($codePoint, $this->namePrepData->generalProhibited)) {
-                throw new \InvalidArgumentException(sprintf('NAMEPREP: Prohibited input U+%08X', $codePoint), 101);
+            if (in_array($codePoint, $this->namePrepData->prohibit)
+                || in_array($codePoint, $this->namePrepData->generalProhibited)
+            ) {
+                throw new InvalidCharacterException(sprintf('Prohibited input U+%08X', $codePoint), 101);
             }
             foreach ($this->namePrepData->prohibitRanges as $range) {
                 if ($range[0] <= $codePoint && $codePoint <= $range[1]) {
-                    throw new \InvalidArgumentException(sprintf('NAMEPREP: Prohibited input U+%08X', $codePoint), 102);
+                    throw new InvalidCharacterException(sprintf('Prohibited input U+%08X', $codePoint), 102);
                 }
             }
 
@@ -86,22 +95,25 @@ class NamePrep
         return $outputArray;
     }
 
-    private Function combineCodePoints(array $codePoints): array
+    private function combineCodePoints(array $codePoints): array
     {
         $previousClass = 0;
         $previousStarter = 0;
         $outputLength = count($codePoints);
         for ($outerIndex = 0; $outerIndex < $outputLength; ++$outerIndex) {
             $combiningClass = $this->getCombiningClass($codePoints[$outerIndex]);
-            if ((!$previousClass || $previousClass > $combiningClass) && $combiningClass) {
+            if (
+                ($previousClass === 0 || $previousClass > $combiningClass)
+                && $combiningClass !== 0
+            ) {
                 // Try to match
                 $sequenceLength = $outerIndex - $previousStarter;
                 $combined = $this->combine(array_slice($codePoints, $previousStarter, $sequenceLength));
                 // On match: Replace the last starter with the composed character and remove
                 // the now redundant non-starter(s)
-                if ($combined) {
+                if (false !== $combined) {
                     $codePoints[$previousStarter] = $combined;
-                    if (count($combined) !== $sequenceLength) {
+                    if ($sequenceLength > 1) {
                         for ($innerIndex = $outerIndex + 1; $innerIndex < $outputLength; ++$innerIndex) {
                             $codePoints[$innerIndex - 1] = $codePoints[$innerIndex];
                         }

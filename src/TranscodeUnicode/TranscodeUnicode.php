@@ -36,26 +36,36 @@ class TranscodeUnicode implements TranscodeUnicodeInterface
     private $safeMode;
     private $safeCodepoint;
 
-    public function convert($data, string $from, string $to, bool $safeMode = false, int $safeCodepoint = 0xFFFC)
-    {
+    public function convert(
+        $data,
+        string $fromEncoding,
+        string $toEncoding,
+        bool $safeMode = false,
+        int $safeCodepoint = 0xFFFC
+    ) {
         $this->safeMode = ($safeMode) ? true : false;
         $this->safeCodepoint = ($safeCodepoint) ? $safeCodepoint : 0xFFFC;
 
-        $from = strtolower($from);
-        $to   = strtolower($to);
+        $fromEncoding = strtolower($fromEncoding);
+        $toEncoding   = strtolower($toEncoding);
 
-        if (!in_array($from, self::encodings)) {
-            throw new \InvalidArgumentException(sprintf('Invalid input format %s', $from), 300);
+        if ($fromEncoding === $toEncoding) {
+            return $data;
         }
-        if (!in_array($to, self::encodings)) {
-            throw new \InvalidArgumentException(sprintf('Invalid output format %s', $to), 301);
+
+        if (!in_array($fromEncoding, self::encodings)) {
+            throw new \InvalidArgumentException(sprintf('Invalid input format %s', $fromEncoding), 300);
         }
-        if ($from !== self::ENCODING_UCS4_ARRAY) {
-            $methodName = sprintf('%s_%s', $from, self::ENCODING_UCS4_ARRAY);
+        if (!in_array($toEncoding, self::encodings)) {
+            throw new \InvalidArgumentException(sprintf('Invalid output format %s', $toEncoding), 301);
+        }
+
+        if ($fromEncoding !== self::ENCODING_UCS4_ARRAY) {
+            $methodName = sprintf('%s_%s', $fromEncoding, self::ENCODING_UCS4_ARRAY);
             $data = $this->$methodName($data);
         }
-        if ($to !== self::ENCODING_UCS4_ARRAY) {
-            $methodName = sprintf('%s_%s', self::ENCODING_UCS4_ARRAY, $to);
+        if ($toEncoding !== self::ENCODING_UCS4_ARRAY) {
+            $methodName = sprintf('%s_%s', self::ENCODING_UCS4_ARRAY, $toEncoding);
             $data = $this->$methodName($data);
         }
 
@@ -92,24 +102,30 @@ class TranscodeUnicode implements TranscodeUnicodeInterface
                         $output[$outputLength - 2] = $this->safeCodepoint;
                         $mode = 'next';
                     } else {
-                        throw new InvalidCharacterException(sprintf('Conversion from UTF-8 to UCS-4 failed: malformed input at byte %d', $k), 302);
+                        throw new InvalidCharacterException(
+                            sprintf(
+                                'Conversion from UTF-8 to UCS-4 failed: malformed input at byte %d',
+                                $k
+                            ),
+                            302
+                        );
                     }
                 }
 
                 continue;
             }
 
-            if ('next' == $mode) { // Try to find the next start byte; determine the width of the Unicode char
+            if ('next' === $mode) { // Try to find the next start byte; determine the width of the Unicode char
                 $startByte = $v;
                 $mode = 'add';
                 $test = 'range';
-                if ($v >> 5 == 6) { // &110xxxxx 10xxxxx
+                if ($v >> 5 === 6) { // &110xxxxx 10xxxxx
                     $nextByte = 0; // Tells, how many times subsequent bitmasks must rotate 6bits to the left
                     $v = ($v - 192) << 6;
-                } elseif ($v >> 4 == 14) { // &1110xxxx 10xxxxxx 10xxxxxx
+                } elseif ($v >> 4 === 14) { // &1110xxxx 10xxxxxx 10xxxxxx
                     $nextByte = 1;
                     $v = ($v - 224) << 12;
-                } elseif ($v >> 3 == 30) { // &11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
+                } elseif ($v >> 3 === 30) { // &11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
                     $nextByte = 2;
                     $v = ($v - 240) << 18;
                 } elseif ($this->safeMode) {
@@ -119,7 +135,13 @@ class TranscodeUnicode implements TranscodeUnicodeInterface
 
                     continue;
                 } else {
-                    throw new InvalidCharacterException(sprintf('This might be UTF-8, but I don\'t understand it at byte %d', $k), 303);
+                    throw new InvalidCharacterException(
+                        sprintf(
+                            'This might be UTF-8, but I don\'t understand it at byte %d',
+                            $k
+                        ),
+                        303
+                    );
                 }
                 if (($inputLength - $k - $nextByte) < 2) {
                     $output[$outputLength] = $this->safeCodepoint;
@@ -138,14 +160,20 @@ class TranscodeUnicode implements TranscodeUnicodeInterface
             if ('add' == $mode) {
                 if (!$this->safeMode && $test === 'range') {
                     $test = 'none';
-                    if (($v < 0xA0 && $startByte == 0xE0)
-                        || ($v < 0x90 && $startByte == 0xF0)
-                        || ($v > 0x8F && $startByte == 0xF4)
+                    if (($v < 0xA0 && $startByte === 0xE0)
+                        || ($v < 0x90 && $startByte === 0xF0)
+                        || ($v > 0x8F && $startByte === 0xF4)
                     ) {
-                        throw new InvalidCharacterException(sprintf('Bogus UTF-8 character detected (out of legal range) at byte %d', $k), 304);
+                        throw new InvalidCharacterException(
+                            sprintf(
+                                'Bogus UTF-8 character (out of legal range) at byte %d',
+                                $k
+                            ),
+                            304
+                        );
                     }
                 }
-                if ($v >> 6 == 2) { // Bit mask must be 10xxxxxx
+                if ($v >> 6 === 2) { // Bit mask must be 10xxxxxx
                     $v = ($v - 128) << ($nextByte * 6);
                     $output[($outputLength - 1)] += $v;
                     --$nextByte;
@@ -157,7 +185,13 @@ class TranscodeUnicode implements TranscodeUnicodeInterface
 
                         continue;
                     } else {
-                        throw new InvalidCharacterException(sprintf('Conversion from UTF-8 to UCS-4 failed: malformed input at byte %d', $k), 302);
+                        throw new InvalidCharacterException(
+                            sprintf(
+                                'Conversion from UTF-8 to UCS-4 failed: malformed input at byte %d',
+                                $k
+                            ),
+                            302
+                        );
                     }
                 }
                 if ($nextByte < 0) {
@@ -186,15 +220,36 @@ class TranscodeUnicode implements TranscodeUnicodeInterface
             if ($v < 128) { // 7bit are transferred literally
                 $output .= chr($v);
             } elseif ($v < (1 << 11)) { // 2 bytes
-                $output .= chr(192 + ($v >> 6)) . chr(128 + ($v & 63));
+                $output .= sprintf(
+                    '%s%s',
+                    chr(192 + ($v >> 6)),
+                    chr(128 + ($v & 63))
+                );
             } elseif ($v < (1 << 16)) { // 3 bytes
-                $output .= chr(224 + ($v >> 12)) . chr(128 + (($v >> 6) & 63)) . chr(128 + ($v & 63));
+                $output .= sprintf(
+                    '%s%s%s',
+                    chr(224 + ($v >> 12)),
+                    chr(128 + (($v >> 6) & 63)),
+                    chr(128 + ($v & 63))
+                );
             } elseif ($v < (1 << 21)) { // 4 bytes
-                $output .= chr(240 + ($v >> 18)) . chr(128 + (($v >> 12) & 63)) . chr(128 + (($v >> 6) & 63)) . chr(128 + ($v & 63));
+                $output .= sprintf(
+                    '%s%s%s%s',
+                    chr(240 + ($v >> 18)),
+                    chr(128 + (($v >> 12) & 63)),
+                    chr(128 + (($v >> 6) & 63)),
+                    chr(128 + ($v & 63))
+                );
             } elseif ($this->safeMode) {
                 $output .= $this->safeCodepoint;
             } else {
-                throw new InvalidCharacterException(sprintf('Conversion from UCS-4 to UTF-8 failed: malformed input at byte %d', $k), 305);
+                throw new InvalidCharacterException(
+                    sprintf(
+                        'Conversion from UCS-4 to UTF-8 failed: malformed input at byte %d',
+                        $k
+                    ),
+                    305
+                );
             }
         }
 
@@ -218,14 +273,14 @@ class TranscodeUnicode implements TranscodeUnicodeInterface
             $c = $input{$k};
 
             // Ignore zero bytes
-            if (0 == ord($c)) {
+            if (0 === ord($c)) {
                 continue;
             }
-            if ('b' == $mode) {
+            if ('b' === $mode) {
                 // Sequence got terminated
-                if (!preg_match('![A-Za-z0-9/' . preg_quote($sc, '!') . ']!', $c)) {
+                if (!preg_match('![A-Za-z0-9/'.preg_quote($sc, '!').']!', $c)) {
                     if ('-' == $c) {
-                        if ($b64 == '') {
+                        if ($b64 === '') {
                             $output[$outputLength] = ord($sc);
                             $outputLength++;
                             $mode = 'd';
@@ -251,8 +306,8 @@ class TranscodeUnicode implements TranscodeUnicodeInterface
                     $b64 .= $c;
                 }
             }
-            if ('d' == $mode) {
-                if ($sc == $c) {
+            if ('d' === $mode) {
+                if ($sc === $c) {
                     $mode = 'b';
 
                     continue;
@@ -268,7 +323,11 @@ class TranscodeUnicode implements TranscodeUnicodeInterface
 
     private function ucs4array_utf7imap($input)
     {
-        return str_replace('/', ',', $this->ucs4array_utf7($input, '&'));
+        return str_replace(
+            '/',
+            ',',
+            $this->ucs4array_utf7($input, '&')
+        );
     }
 
     private function ucs4array_utf7($input, $sc = '+')
@@ -278,30 +337,32 @@ class TranscodeUnicode implements TranscodeUnicodeInterface
         $b64 = '';
         while (true) {
             $v = (!empty($input)) ? array_shift($input) : false;
-            $isDirect = (false !== $v) ? (0x20 <= $v && $v <= 0x7e && $v != ord($sc)) : true;
-            if ($mode == 'b') {
+            $isDirect = (false !== $v)
+                ? (0x20 <= $v && $v <= 0x7e && $v !== ord($sc))
+                : true;
+            if ($mode === 'b') {
                 if ($isDirect) {
-                    if ($b64 == chr(0) . $sc) {
-                        $output .= $sc . '-';
+                    if ($b64 === chr(0).$sc) {
+                        $output .= $sc.'-';
                         $b64 = '';
                     } elseif ($b64) {
-                        $output .= $sc . str_replace('=', '', base64_encode($b64)) . '-';
+                        $output .= $sc.str_replace('=', '', base64_encode($b64)).'-';
                         $b64 = '';
                     }
                     $mode = 'd';
                 } elseif (false !== $v) {
-                    $b64 .= chr(($v >> 8) & 255) . chr($v & 255);
+                    $b64 .= chr(($v >> 8) & 255).chr($v & 255);
                 }
             }
-            if ($mode == 'd' && false !== $v) {
+            if ($mode === 'd' && false !== $v) {
                 if ($isDirect) {
                     $output .= chr($v);
                 } else {
-                    $b64 = chr(($v >> 8) & 255) . chr($v & 255);
+                    $b64 = chr(($v >> 8) & 255).chr($v & 255);
                     $mode = 'b';
                 }
             }
-            if (false === $v && $b64 == '') {
+            if (false === $v && $b64 === '') {
                 break;
             }
         }
@@ -319,7 +380,13 @@ class TranscodeUnicode implements TranscodeUnicodeInterface
     {
         $output = '';
         foreach ($input as $v) {
-            $output .= chr(($v >> 24) & 255) . chr(($v >> 16) & 255) . chr(($v >> 8) & 255) . chr($v & 255);
+            $output .= sprintf(
+                '%s%s%s%s',
+                chr(($v >> 24) & 255),
+                chr(($v >> 16) & 255),
+                chr(($v >> 8) & 255),
+                chr($v & 255)
+            );
         }
 
         return $output;
@@ -344,7 +411,9 @@ class TranscodeUnicode implements TranscodeUnicodeInterface
             throw new InvalidCharacterException('Input UCS4 string is broken', 306);
         }
         // Empty input - return empty output
-        if (!$inputLength) return $output;
+        if (!$inputLength) {
+            return $output;
+        }
 
         for ($i = 0, $outputLength = -1; $i < $inputLength; ++$i) {
             if (!($i % 4)) { // Increment output position every 4 input bytes
