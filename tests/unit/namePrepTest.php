@@ -16,13 +16,16 @@ class namePrepTest extends TestCase
     /** @var NamePrep */
     private $namePrep2003;
 
-    /**
-     * @throws InvalidIdnVersionException
-     */
     public function setup()
     {
         $this->uctc = new TranscodeUnicode();
         $this->namePrep2003 = new NamePrep(2003);
+    }
+
+    public function testInvalidIdnVersion()
+    {
+        $this->expectException(InvalidIdnVersionException::class);
+        new NamePrep(1999);
     }
 
     /**
