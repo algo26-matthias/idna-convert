@@ -4,48 +4,42 @@ namespace Algo26\IdnaConvert\EncodingHelper;
 
 class ToUtf8 implements EncodingHelperInterface
 {
+    private const DEFAULT_ENCODING = 'ISO-8859-1';
+
+    private $encoding = self::DEFAULT_ENCODING;
+
     public function convert(
-        string $string,
-        string $encoding = 'ISO-8859-1',
-        bool $safeMode = false
+        string $sourceString,
+        ?string $encoding = self::DEFAULT_ENCODING,
+        ?bool $safeMode = false
     ) {
-        $safe = ($safeMode) ? $string : false;
+        $safe = ($safeMode) ? $sourceString : false;
 
-        if (strtoupper($encoding) === 'UTF-8' || strtoupper($encoding) === 'UTF8') {
-            return $string;
+        if ($encoding !== null) {
+            $this->encoding = strtoupper($encoding);
+        } else {
+            $this->encoding = 'ISO-8859-1';
         }
 
-        if (strtoupper($encoding) === 'ISO-8859-1') {
-            return \utf8_encode($string);
+        if ($this->encoding === 'UTF-8' || $this->encoding === 'UTF8') {
+            return $sourceString;
         }
 
-        if (strtoupper($encoding) === 'WINDOWS-1252') {
-            return \utf8_encode($this->mapWindows1252ToIso8859_1($string));
+        if ($this->encoding === 'ISO-8859-1') {
+            return utf8_encode($sourceString);
         }
 
-        if (strtoupper($encoding) === 'UNICODE-1-1-UTF-7') {
-            $encoding = 'utf-7';
+        if ($this->encoding === 'WINDOWS-1252') {
+            return utf8_encode($this->mapWindows1252ToIso8859_1($sourceString));
         }
 
-        if (function_exists('mb_convert_encoding')) {
-            $converted = @mb_convert_encoding($string, 'UTF-8', strtoupper($encoding));
-
-            if ($converted) {
-                return $converted;
-            }
+        if ($this->encoding === 'UNICODE-1-1-UTF-7') {
+            $this->encoding = 'UTF-7';
         }
 
-        if (function_exists('iconv')) {
-            $converted = @iconv(strtoupper($encoding), 'UTF-8', $string);
-            if ($converted) {
-                return $converted;
-            }
-        }
-        if (function_exists('libiconv')) {
-            $converted = @libiconv(strtoupper($encoding), 'UTF-8', $string);
-            if ($converted) {
-                return $converted;
-            }
+        $converted = $this->convertWithLibraries($sourceString);
+        if (false !== $converted) {
+            return $converted;
         }
 
         return $safe;
@@ -53,7 +47,7 @@ class ToUtf8 implements EncodingHelperInterface
 
     /**
      * Special treatment for our guys in Redmond
-     * Windows-1252 is basically ISO-8859-1 -- with some exceptions, which get accounted for here
+     * Windows-1252 is basically ISO-8859-1 -- with some exceptions, which get dealt with here
      *
      * @param  string $string Your input in Win1252
      *
@@ -62,15 +56,10 @@ class ToUtf8 implements EncodingHelperInterface
      */
     private function mapWindows1252ToIso8859_1($string = '')
     {
-        if ($string === '') {
-            return '';
-        }
-
         $return = '';
-
         for ($i = 0; $i < strlen($string); ++$i) {
-            $c = ord($string{$i});
-            switch ($c) {
+            $codePoint = ord($string{$i});
+            switch ($codePoint) {
                 case 129:
                     $return .= chr(252);
                     break;
@@ -93,10 +82,36 @@ class ToUtf8 implements EncodingHelperInterface
                     $return .= chr(223);
                     break;
                 default:
-                    $return .= chr($c);
+                    $return .= chr($codePoint);
             }
         }
 
         return $return;
+    }
+
+    private function convertWithLibraries(string $string): ?string
+    {
+        if (function_exists('mb_convert_encoding')) {
+            $converted = @mb_convert_encoding($string, 'UTF-8', $this->encoding);
+            if (false !== $converted) {
+                return $converted;
+            }
+        }
+
+        if (function_exists('iconv')) {
+            $converted = @iconv($this->encoding, 'UTF-8', $string);
+            if (false !== $converted) {
+                return $converted;
+            }
+        }
+
+        if (function_exists('libiconv')) {
+            $converted = @libiconv($this->encoding, 'UTF-8', $string);
+            if (false !== $converted) {
+                return $converted;
+            }
+        }
+
+        return false;
     }
 }

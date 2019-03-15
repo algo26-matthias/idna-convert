@@ -12,9 +12,6 @@ class ToUnicode extends AbstractIdnaConvert implements IdnaConvertInterface
     /** @var FromPunycode */
     private $punycodeEncoder;
 
-    /**
-     * @throws Exception\InvalidIdnVersionException
-     */
     public function __construct()
     {
         $this->unicodeTransCoder = new TranscodeUnicode();
@@ -23,7 +20,7 @@ class ToUnicode extends AbstractIdnaConvert implements IdnaConvertInterface
 
     public function convert(string $host): string
     {
-        // Make sure to drop any newline characters around
+        // Drop any whitespace around
         $input = trim($host);
 
         $hostLabels = explode('.', $input);
@@ -37,5 +34,4 @@ class ToUnicode extends AbstractIdnaConvert implements IdnaConvertInterface
 
         return implode('.', $hostLabels);
     }
-
 }

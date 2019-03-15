@@ -16,35 +16,38 @@
 namespace Algo26\IdnaConvert\TranscodeUnicode;
 
 use Algo26\IdnaConvert\Exception\InvalidCharacterException;
+use InvalidArgumentException;
 
 class TranscodeUnicode implements TranscodeUnicodeInterface
 {
-    public const ENCODING_UCS4       = 'ucs4';
-    public const ENCODING_UCS4_ARRAY = 'ucs4array';
-    public const ENCODING_UTF8       = 'utf8';
-    public const ENCODING_UTF7       = 'utf7';
-    public const ENCODING_UTF7_IMAP  = 'utf7imap';
+    public const FORMAT_UCS4       = 'ucs4';
+    public const FORMAT_UCS4_ARRAY = 'ucs4array';
+    public const FORMAT_UTF8       = 'utf8';
+    public const FORMAT_UTF7       = 'utf7';
+    public const FORMAT_UTF7_IMAP  = 'utf7imap';
 
     private const encodings = [
-        self::ENCODING_UCS4,
-        self::ENCODING_UCS4_ARRAY,
-        self::ENCODING_UTF8,
-        self::ENCODING_UTF7,
-        self::ENCODING_UTF7_IMAP
+        self::FORMAT_UCS4,
+        self::FORMAT_UCS4_ARRAY,
+        self::FORMAT_UTF8,
+        self::FORMAT_UTF7,
+        self::FORMAT_UTF7_IMAP
     ];
 
     private $safeMode;
-    private $safeCodepoint;
+    private $safeCodepoint = 0xFFFC;
 
     public function convert(
         $data,
         string $fromEncoding,
         string $toEncoding,
         bool $safeMode = false,
-        int $safeCodepoint = 0xFFFC
+        ?int $safeCodepoint = null
     ) {
-        $this->safeMode = ($safeMode) ? true : false;
-        $this->safeCodepoint = ($safeCodepoint) ? $safeCodepoint : 0xFFFC;
+        $this->safeMode = $safeMode;
+        if ($safeCodepoint !== null) {
+            $this->safeCodepoint = $safeCodepoint;
+        }
 
         $fromEncoding = strtolower($fromEncoding);
         $toEncoding   = strtolower($toEncoding);
@@ -54,18 +57,18 @@ class TranscodeUnicode implements TranscodeUnicodeInterface
         }
 
         if (!in_array($fromEncoding, self::encodings)) {
-            throw new \InvalidArgumentException(sprintf('Invalid input format %s', $fromEncoding), 300);
+            throw new InvalidArgumentException(sprintf('Invalid input format %s', $fromEncoding), 300);
         }
         if (!in_array($toEncoding, self::encodings)) {
-            throw new \InvalidArgumentException(sprintf('Invalid output format %s', $toEncoding), 301);
+            throw new InvalidArgumentException(sprintf('Invalid output format %s', $toEncoding), 301);
         }
 
-        if ($fromEncoding !== self::ENCODING_UCS4_ARRAY) {
-            $methodName = sprintf('%s_%s', $fromEncoding, self::ENCODING_UCS4_ARRAY);
+        if ($fromEncoding !== self::FORMAT_UCS4_ARRAY) {
+            $methodName = sprintf('%s_%s', $fromEncoding, self::FORMAT_UCS4_ARRAY);
             $data = $this->$methodName($data);
         }
-        if ($toEncoding !== self::ENCODING_UCS4_ARRAY) {
-            $methodName = sprintf('%s_%s', self::ENCODING_UCS4_ARRAY, $toEncoding);
+        if ($toEncoding !== self::FORMAT_UCS4_ARRAY) {
+            $methodName = sprintf('%s_%s', self::FORMAT_UCS4_ARRAY, $toEncoding);
             $data = $this->$methodName($data);
         }
 
@@ -94,7 +97,7 @@ class TranscodeUnicode implements TranscodeUnicodeInterface
         for ($k = 0; $k < $inputLength; ++$k) {
             $v = ord($input{$k}); // Extract byte from input string
 
-            if ($v < 128) { // We found an ASCII char - put into stirng as is
+            if ($v < 128) { // We found an ASCII char - put into string as is
                 $output[$outputLength] = $v;
                 ++$outputLength;
                 if ('add' === $mode) {
@@ -120,7 +123,7 @@ class TranscodeUnicode implements TranscodeUnicodeInterface
                 $mode = 'add';
                 $test = 'range';
                 if ($v >> 5 === 6) { // &110xxxxx 10xxxxx
-                    $nextByte = 0; // Tells, how many times subsequent bitmasks must rotate 6bits to the left
+                    $nextByte = 0; // How many times subsequent bit masks must rotate 6bits to the left
                     $v = ($v - 192) << 6;
                 } elseif ($v >> 4 === 14) { // &1110xxxx 10xxxxxx 10xxxxxx
                     $nextByte = 1;
@@ -136,10 +139,7 @@ class TranscodeUnicode implements TranscodeUnicodeInterface
                     continue;
                 } else {
                     throw new InvalidCharacterException(
-                        sprintf(
-                            'This might be UTF-8, but I don\'t understand it at byte %d',
-                            $k
-                        ),
+                        sprintf('This might be UTF-8, but I don\'t understand it at byte %d', $k),
                         303
                     );
                 }
@@ -165,10 +165,7 @@ class TranscodeUnicode implements TranscodeUnicodeInterface
                         || ($v > 0x8F && $startByte === 0xF4)
                     ) {
                         throw new InvalidCharacterException(
-                            sprintf(
-                                'Bogus UTF-8 character (out of legal range) at byte %d',
-                                $k
-                            ),
+                            sprintf('Bogus UTF-8 character (out of legal range) at byte %d', $k),
                             304
                         );
                     }
@@ -186,10 +183,7 @@ class TranscodeUnicode implements TranscodeUnicodeInterface
                         continue;
                     } else {
                         throw new InvalidCharacterException(
-                            sprintf(
-                                'Conversion from UTF-8 to UCS-4 failed: malformed input at byte %d',
-                                $k
-                            ),
+                            sprintf('Conversion from UTF-8 to UCS-4 failed: malformed input at byte %d', $k),
                             302
                         );
                     }
@@ -244,10 +238,7 @@ class TranscodeUnicode implements TranscodeUnicodeInterface
                 $output .= $this->safeCodepoint;
             } else {
                 throw new InvalidCharacterException(
-                    sprintf(
-                        'Conversion from UCS-4 to UTF-8 failed: malformed input at byte %d',
-                        $k
-                    ),
+                    sprintf('Conversion from UCS-4 to UTF-8 failed: malformed input at byte %d', $k),
                     305
                 );
             }

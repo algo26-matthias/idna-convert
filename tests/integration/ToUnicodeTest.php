@@ -5,7 +5,7 @@ use Algo26\IdnaConvert\Exception\InvalidIdnVersionException;
 use Algo26\IdnaConvert\ToUnicode;
 use PHPUnit\Framework\TestCase;
 
-class IdnaConvertDecodeTest extends TestCase
+class ToUnicodeTest extends TestCase
 {
     /**
      * @dataProvider providerUtf8

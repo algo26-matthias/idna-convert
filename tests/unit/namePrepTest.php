@@ -32,7 +32,7 @@ class namePrepTest extends TestCase
      * @param array|string $from provided original string
      * @param array|string $expectedTo expected result
      *
-     * @dataProvider providerCases2003
+     * @dataProvider providerMapping2003
      */
     public function testSuccess2003($from, $expectedTo)
     {
@@ -71,7 +71,7 @@ class namePrepTest extends TestCase
         $this->namePrep2003->do($sequence);
     }
 
-    public function providerCases2003()
+    public function providerMapping2003()
     {
         return [
             [
@@ -196,8 +196,8 @@ class namePrepTest extends TestCase
     {
         return $this->uctc->convert(
             $string,
-            $this->uctc::ENCODING_UTF8,
-            $this->uctc::ENCODING_UCS4_ARRAY
+            $this->uctc::FORMAT_UTF8,
+            $this->uctc::FORMAT_UCS4_ARRAY
         );
     }
 
@@ -205,8 +205,8 @@ class namePrepTest extends TestCase
     {
         return $this->uctc->convert(
             $array,
-            $this->uctc::ENCODING_UCS4_ARRAY,
-            $this->uctc::ENCODING_UTF8
+            $this->uctc::FORMAT_UCS4_ARRAY,
+            $this->uctc::FORMAT_UTF8
         );
     }
 }

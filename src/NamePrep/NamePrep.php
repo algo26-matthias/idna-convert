@@ -5,7 +5,7 @@ namespace Algo26\IdnaConvert\NamePrep;
 use Algo26\IdnaConvert\Exception\InvalidCharacterException;
 use Algo26\IdnaConvert\Exception\InvalidIdnVersionException;
 
-class NamePrep
+class NamePrep implements NamePrepInterface
 {
     const sBase = 0xAC00;
     const lBase = 0x1100;
@@ -22,11 +22,11 @@ class NamePrep
     private $namePrepData;
 
     /**
-     * @param int
+     * @param string|null $idnVersion
      *
      * @throws InvalidIdnVersionException
      */
-    public function __construct(string $idnVersion = null)
+    public function __construct(?string $idnVersion = null)
     {
         if ($idnVersion === null || $idnVersion == 2008) {
             $this->namePrepData = new NamePrepData2008();
@@ -44,6 +44,9 @@ class NamePrep
     }
 
     /**
+     * @param array $inputArray
+     *
+     * @return array
      * @throws InvalidCharacterException
      */
     public function do(array $inputArray): array
@@ -56,6 +59,9 @@ class NamePrep
     }
 
     /**
+     * @param array $inputArray
+     *
+     * @return array
      * @throws InvalidCharacterException
      */
     private function applyCharacterMaps(array $inputArray): array

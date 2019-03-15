@@ -3,6 +3,7 @@
 namespace Algo26\IdnaConvert\Punycode;
 
 use Algo26\IdnaConvert\Exception\AlreadyPunycodeException;
+use Algo26\IdnaConvert\Exception\InvalidCharacterException;
 use Algo26\IdnaConvert\Exception\InvalidIdnVersionException;
 use Algo26\IdnaConvert\NamePrep\NamePrep;
 
@@ -25,6 +26,7 @@ class ToPunycode extends AbstractPunycode implements PunycodeInterface
      *
      * @return string
      * @throws AlreadyPunycodeException
+     * @throws InvalidCharacterException
      */
     public function convert(array $decoded): string
     {

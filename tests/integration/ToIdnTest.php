@@ -7,9 +7,8 @@ use Algo26\IdnaConvert\Exception\InvalidIdnVersionException;
 use Algo26\IdnaConvert\ToIdn;
 use PHPUnit\Framework\TestCase;
 
-class IdnaConvertEncodeTest extends TestCase
+class ToIdnTest extends TestCase
 {
-
     /**
      * @dataProvider providerUtf8
      *

@@ -2,6 +2,8 @@
 
 namespace Algo26\IdnaConvert;
 
+use InvalidArgumentException;
+
 abstract class AbstractIdnaConvert
 {
     abstract public function convert(string $host): string;
@@ -14,7 +16,7 @@ abstract class AbstractIdnaConvert
     public function convertEmailAddress(string $emailAddress): string
     {
         if (strpos($emailAddress, '@') === false) {
-            throw new \InvalidArgumentException('The given string does not look like an email address', 206);
+            throw new InvalidArgumentException('The given string does not look like an email address', 206);
         }
 
         $parts = explode('@', $emailAddress);
@@ -35,25 +37,15 @@ abstract class AbstractIdnaConvert
     {
         $parsed = parse_url($url);
         if ($parsed === false) {
-            throw new \InvalidArgumentException('The given string does not look like a URL', 206);
+            throw new InvalidArgumentException('The given string does not look like a URL', 206);
         }
 
         // Nothing to do
         if ($parsed['host'] === null) {
             return $url;
         }
+        $parsed['host'] = $this->convert($parsed['host']);
 
-        return sprintf(
-            '%s%s%s%s%s%s%s%s%s',
-            empty($parsed['scheme']) ? '' : $parsed['scheme'] . (strtolower($parsed['scheme']) == 'mailto' ? ':' : '://'),
-            empty($parsed['user']) ? '' : $parsed['user'],
-            empty($parsed['pass']) ? '' : ':' . $parsed['pass'],
-            empty($parsed['user']) && empty($parsed['pass']) ? '' :  '@',
-            $this->convert($parsed['host']),
-            empty($parsed['port']) ? '' : ':' . $parsed['port'],
-            empty($parsed['path']) ? '' : $parsed['path'],
-            empty($parsed['query']) ? '' : '?' . $parsed['query'],
-            empty($parsed['fragment']) ? '' : '#' . $parsed['fragment']
-        );
+        return http_build_url($parsed);
     }
 }

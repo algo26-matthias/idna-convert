@@ -18,9 +18,7 @@ abstract class AbstractPunycode
     const initialN = 0x80;
 
     protected static $isMbStringOverload;
-
     protected static $prefixAsArray;
-
     protected static $prefixLength;
 
     /** @var TranscodeUnicode */
@@ -39,8 +37,8 @@ abstract class AbstractPunycode
         if (self::$prefixAsArray === null) {
             self::$prefixAsArray = $this->unicodeTransCoder->convert(
                 self::punycodePrefix,
-                $this->unicodeTransCoder::ENCODING_UTF8,
-                $this->unicodeTransCoder::ENCODING_UCS4_ARRAY
+                $this->unicodeTransCoder::FORMAT_UTF8,
+                $this->unicodeTransCoder::FORMAT_UCS4_ARRAY
             );
             self::$prefixLength = $this->byteLength(self::punycodePrefix);
         }
