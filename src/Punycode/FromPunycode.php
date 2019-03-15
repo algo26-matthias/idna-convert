@@ -79,7 +79,7 @@ class FromPunycode extends AbstractPunycode implements PunycodeInterface
      * @param string $encoded
      * @return boolean
      */
-    private function validate($encoded)
+    private function validate($encoded): bool
     {
         // Check for existence of the prefix
         if (strpos($encoded, self::punycodePrefix) !== 0) {
