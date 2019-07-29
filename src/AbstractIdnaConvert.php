@@ -41,7 +41,7 @@ abstract class AbstractIdnaConvert
         }
 
         // Nothing to do
-        if ($parsed['host'] === null) {
+        if (!isset($parsed['host']) || $parsed['host'] === null) {
             return $url;
         }
         $parsed['host'] = $this->convert($parsed['host']);
