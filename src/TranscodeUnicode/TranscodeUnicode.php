@@ -95,7 +95,7 @@ class TranscodeUnicode implements TranscodeUnicodeInterface
         $mode = 'next';
         $test = 'none';
         for ($k = 0; $k < $inputLength; ++$k) {
-            $v = ord($input{$k}); // Extract byte from input string
+            $v = ord($input[$k]); // Extract byte from input string
 
             if ($v < 128) { // We found an ASCII char - put into string as is
                 $output[$outputLength] = $v;
@@ -261,7 +261,7 @@ class TranscodeUnicode implements TranscodeUnicodeInterface
         $b64 = '';
 
         for ($k = 0; $k < $inputLength; ++$k) {
-            $c = $input{$k};
+            $c = $input[$k];
 
             // Ignore zero bytes
             if (0 === ord($c)) {
@@ -283,10 +283,10 @@ class TranscodeUnicode implements TranscodeUnicodeInterface
                     $tmp = substr($tmp, -1 * (strlen($tmp) % 2));
                     for ($i = 0; $i < strlen($tmp); $i++) {
                         if ($i % 2) {
-                            $output[$outputLength] += ord($tmp{$i});
+                            $output[$outputLength] += ord($tmp[$i]);
                             $outputLength++;
                         } else {
-                            $output[$outputLength] = ord($tmp{$i}) << 8;
+                            $output[$outputLength] = ord($tmp[$i]) << 8;
                         }
                     }
                     $mode = 'd';
@@ -411,7 +411,7 @@ class TranscodeUnicode implements TranscodeUnicodeInterface
                 $outputLength++;
                 $output[$outputLength] = 0;
             }
-            $output[$outputLength] += ord($input{$i}) << (8 * (3 - ($i % 4)));
+            $output[$outputLength] += ord($input[$i]) << (8 * (3 - ($i % 4)));
         }
 
         return $output;
