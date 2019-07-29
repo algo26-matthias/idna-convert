@@ -1,6 +1,7 @@
 # IDNA Convert - pure PHP IDNA converter
 
 ![latest stable version](https://img.shields.io/github/tag/algo26-matthias/idna-convert.svg)
+![Travis CI status](https://img.shields.io/travis/algo26-matthias/idna-convert.svg)
 
 Project homepage: <http://idnaconv.net><br>
 by Matthias Sommerfeld <matthias.sommerfeld@algo26.de><br>
