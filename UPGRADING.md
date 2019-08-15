@@ -12,6 +12,8 @@ Also the handling of host names (simple labels like `my-hostname` or FQHNs like 
 that of email addresses and URLs. 
 Both classes offer the same set of public methods:
 
+| Method                  |                                     |
+|-------------------------|-------------------------------------|
 | `convert()`             |  To convert host names              | 
 | `convertEmailAddress()` |  To convert email addresses         | 
 | `convertUrl()`          |  To convert the host name of an URL | 
