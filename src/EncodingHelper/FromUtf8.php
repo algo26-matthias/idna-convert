@@ -58,7 +58,7 @@ class FromUtf8 implements EncodingHelperInterface
     {
         $return = '';
         for ($i = 0; $i < strlen($string); ++$i) {
-            $codePoint = ord($string{$i});
+            $codePoint = ord($string[$i]);
             switch ($codePoint) {
                 case 196:
                     $return .= chr(142);

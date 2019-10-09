@@ -58,7 +58,7 @@ class ToUtf8 implements EncodingHelperInterface
     {
         $return = '';
         for ($i = 0; $i < strlen($string); ++$i) {
-            $codePoint = ord($string{$i});
+            $codePoint = ord($string[$i]);
             switch ($codePoint) {
                 case 129:
                     $return .= chr(252);
