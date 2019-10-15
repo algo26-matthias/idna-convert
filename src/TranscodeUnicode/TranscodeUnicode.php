@@ -10,7 +10,7 @@
  *
  * @package IdnaConvert
  * @author Matthias Sommerfeld  <matthias.sommerfeld@algo26.de>
- * @copyright 2003-2019 algo26 Beratungs UG, Berlin, https://www.algo26.de
+ * @copyright 2003-2019 algo26 Beratungs GmbH, Berlin, https://www.algo26.de
  */
 
 namespace Algo26\IdnaConvert\TranscodeUnicode;

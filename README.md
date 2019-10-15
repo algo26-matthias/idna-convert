@@ -211,7 +211,7 @@ Please use the [issues tab on GitHub](https://github.com/algo26-matthias/idna-co
 
 For questions, bug reports and security issues just send me an email.
 
-algo26 Beratungs UG<br>
+algo26 Beratungs GmbH<br>
 c/o Matthias Sommerfeld<br>
 Wichertstr. 5<br>
 D-10439 Berlin<br>
