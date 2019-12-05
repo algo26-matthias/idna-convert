@@ -106,7 +106,7 @@ foreach (file('ucs4-domains.txt') as $line) {
 
 ### Example 4. 
 
-We wish to convert a whole URI into the IDNA form, but leave the path or query string component of it alone. Just using encode() would lead to mangled paths or query strings. Here the public method encode_uri() comes into play:
+We wish to convert a whole URI into the IDNA form, but leave the path or query string component of it alone. Just using encode() would lead to mangled paths or query strings. Here the public method convertUrl() comes into play:
 
 ```php
 <?php  
