@@ -199,7 +199,7 @@ echo $transcodeUnicode->convert($mystring, 'utf8', 'utf7imap');
 The library is supplied with a `docker-compose.yml`, that allows to run the supplied tests. This assumes, you have Docker installed and docker-compose available as a command. Just issue
 
 ```
-docker-compuse up
+docker-compose up
 ```
 in you local command line and see the output of PHPUnit.
 
