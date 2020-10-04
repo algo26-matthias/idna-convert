@@ -7,6 +7,9 @@ use Algo26\IdnaConvert\Exception\InvalidIdnVersionException;
 use Algo26\IdnaConvert\ToIdn;
 use PHPUnit\Framework\TestCase;
 
+/**
+ * @covers \Algo26\IdnaConvert\ToIdn
+ */
 class ToIdnTest extends TestCase
 {
     /**
