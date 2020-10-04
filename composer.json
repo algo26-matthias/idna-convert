@@ -13,7 +13,7 @@
     ],
     "require": {
         "ext-pcre": "*",
-        "php": "^7.2.0",
+        "php": ">=7.2.0",
         "jakeasmith/http_build_url": "^1"
     },
     "require-dev": {
