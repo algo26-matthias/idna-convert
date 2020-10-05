@@ -5,6 +5,9 @@ use Algo26\IdnaConvert\Exception\InvalidIdnVersionException;
 use Algo26\IdnaConvert\ToUnicode;
 use PHPUnit\Framework\TestCase;
 
+/**
+ * @covers \Algo26\IdnaConvert\ToUnicode
+ */
 class ToUnicodeTest extends TestCase
 {
     /**
