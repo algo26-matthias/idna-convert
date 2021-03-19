@@ -120,7 +120,7 @@ class Punycode implements PunycodeInterface
         $delim_pos = strrpos($encoded, '-');
         if ($delim_pos > self::byteLength(self::punycodePrefix)) {
             for ($k = self::byteLength(self::punycodePrefix); $k < $delim_pos; ++$k) {
-                $decoded[] = ord($encoded{$k});
+                $decoded[] = ord($encoded[$k]);
             }
         }
         $deco_len = count($decoded);
@@ -134,7 +134,7 @@ class Punycode implements PunycodeInterface
 
         for ($enco_idx = ($delim_pos) ? ($delim_pos + 1) : 0; $enco_idx < $enco_len; ++$deco_len) {
             for ($old_idx = $idx, $w = 1, $k = self::base; 1; $k += self::base) {
-                $digit = $this->decodeDigit($encoded{$enco_idx++});
+                $digit = $this->decodeDigit($encoded[$enco_idx++]);
                 $idx += $digit * $w;
                 $t = ($k <= $bias) ? self::tMin :
                         (($k >= $bias + self::tMax) ? self::tMax : ($k - $bias));

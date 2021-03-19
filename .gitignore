@@ -4,3 +4,38 @@
 /composer.phar
 /composer.lock
 /vendor
+
+
+
+##################################
+#                                #
+#   Editors + OS related files   #
+#                                #
+##################################
+
+
+# Eclipse
+/.settings
+/.buildpath
+/.project
+
+
+# PhpStorm
+/.idea
+
+
+# NetBeans
+/nbproject
+
+
+# MS Code
+/.vscode
+
+
+# Mac OS
+*.DS_Store
+*.swp
+*.orig
+*.tar
+*.cpgz
+
