@@ -82,7 +82,7 @@ class UnicodeTranscoder implements UnicodeTranscoderInterface
         $mode = 'next';
         $test = 'none';
         for ($k = 0; $k < $inp_len; ++$k) {
-            $v = ord($input{$k}); // Extract byte from input string
+            $v = ord($input[$k]); // Extract byte from input string
 
             if ($v < 128) { // We found an ASCII char - put into stirng as is
                 $output[$out_len] = $v;
@@ -203,7 +203,7 @@ class UnicodeTranscoder implements UnicodeTranscoderInterface
         $b64 = '';
 
         for ($k = 0; $k < $inp_len; ++$k) {
-            $c = $input{$k};
+            $c = $input[$k];
 
             // Ignore zero bytes
             if (0 == ord($c)) {
@@ -225,10 +225,10 @@ class UnicodeTranscoder implements UnicodeTranscoderInterface
                     $tmp = substr($tmp, -1 * (strlen($tmp) % 2));
                     for ($i = 0; $i < strlen($tmp); $i++) {
                         if ($i % 2) {
-                            $output[$out_len] += ord($tmp{$i});
+                            $output[$out_len] += ord($tmp[$i]);
                             $out_len++;
                         } else {
-                            $output[$out_len] = ord($tmp{$i}) << 8;
+                            $output[$out_len] = ord($tmp[$i]) << 8;
                         }
                     }
                     $mode = 'd';
@@ -336,7 +336,7 @@ class UnicodeTranscoder implements UnicodeTranscoderInterface
                 $out_len++;
                 $output[$out_len] = 0;
             }
-            $output[$out_len] += ord($input{$i}) << (8 * (3 - ($i % 4)));
+            $output[$out_len] += ord($input[$i]) << (8 * (3 - ($i % 4)));
         }
 
         return $output;
