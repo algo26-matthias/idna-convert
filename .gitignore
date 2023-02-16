@@ -1,5 +1,7 @@
 /.idea
 !.gitkeep
+.phpunit.result.cache
+.phpunit.cache
 /phpunit.phar
 /composer.phar
 /composer.lock
