@@ -153,6 +153,8 @@ class ToIdnTest extends TestCase
             ['fußball.example', 'xn--fuball-cta.example'],
             ['היפא18פאטאם', 'xn--18-uldcat6ad6bydd'],
             ['فرس18النهر', 'xn--18-dtd1bdi0h3ask'],
+            ["\u{33c7}", 'xn--czk'],
+            ["\u{37a}", 'xn--1va'],
         ];
     }
 
@@ -165,6 +167,8 @@ class ToIdnTest extends TestCase
             ['weißenbach', 'weissenbach'],
             ['☃.example', 'xn--n3h.example'],
             ['fußball.example', 'fussball.example'],
+            ["\u{33c7}", 'co.'],
+            ["\u{37a}", 'xn-- -gmb'],
         ];
     }
 
