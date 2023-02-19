@@ -1,5 +1,5 @@
 <?php
-namespace Algo26\IdnaConvert\Test;
+namespace Algo26\IdnaConvert\Test\integration;
 
 use Algo26\IdnaConvert\Exception\AlreadyPunycodeException;
 use Algo26\IdnaConvert\Exception\InvalidCharacterException;
