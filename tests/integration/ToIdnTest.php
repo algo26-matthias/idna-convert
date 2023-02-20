@@ -294,6 +294,9 @@ class ToIdnTest extends TestCase
         return [
             ['xn--ïdn', 2003],
             ['ⅹn--ädn', 2008],
+            ['xN--ïdn', 2003],
+            ['Xn--ïdn', 2003],
+            ['XN--ïdn', 2003],
         ];
     }
 
