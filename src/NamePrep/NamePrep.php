@@ -39,7 +39,7 @@ class NamePrep implements NamePrepInterface
             return;
         }
 
-        throw new InvalidIdnVersionException('IDN version must bei either 2003 or 2008', 400);
+        throw new InvalidIdnVersionException('IDN version must be either 2003 or 2008', 400);
     }
 
     /**
