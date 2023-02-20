@@ -1,15 +1,32 @@
 # Upgrading from previous versions
 
-## 3.2
+## 4.0.0
 
-**The minimum PHP version is now 8.0.**
+**The minimum PHP version is now 8.1.**
 
-## 3.1
+**BC break:**
+We changed the behaviour of the encoding step a bit to be more in line with the actual RFCs. This means that the NAMEPREP step is now performed on ANY label
+being passed to the `ToPunycode::convert()` method. This means, that case mangling (transforming UPPERCASE to lowercase) will always happen, even for ASCII only labels.
+
+**BC break:**
+Also, we added the flag `useStd3AsciiRules` (default: false) to `ToPunycode::__construct()` (and to `ToIdn::__construct()` as well) in order to allow control over this specific behaviour.
+Enabling this flag will lead to a stricter rule set of characters being allowed (only the range [-a-zA-Z0-9]) and enforcing the absence of leading and trailing
+hyphens in labels. In case of violating these rules a new `Std3AsciiRulesViolationException` will be thrown.
+
+**BC break:**
+When stating the IDNA version (2003 or 2008) one must always use an integer. From now on strict type checking is in place.
+
+**BC break:**
+In older version labels containing characters prohibited according to NAMEPREP were silently ignored. Now we are throwing an `InvalidCharacterException`.
+
+
+## 3.1.0
 
 We changed the behaviour of the Punycode algorithm to now include all basic ASCII characters in the output when using `ToPunycode->convert()`.
 This change is expected to have no negative effect, but work more closely to the respective RFCs. The old behaviour even led to some endless loops for a few Unicode characters.
 
-## 3.0
+
+## 3.0.0
 
 The library has been broken down into various specific classes, thus more closely following SOLID principles.
 
@@ -40,24 +57,29 @@ All examples are updated to reflect the new usage. See the ReadMe for more detai
 
 Finally, the **minimum PHP version is now 7.2**.
 
-## 2.0
+
+## 2.0.0
 The library has been handed over to actively maintained GitHub and Packagist accounts. This led to a change in the namespace.
 Replace all occurrences of 
 `Mso\IdnaConvert` or `PhlyLabs\IdnaConvert` to `Algo26\IdnaConvert`.
 There's no further changes to the class signatures. 
 
-## 1.0
+
+## 1.0.0
 **BC break:**
 As of version 1.0.0 the class closely follows the PSRs PSR-1, PSR-2 and PSR-4 of the PHP-FIG. 
 As such the classes' naming has been changed, a namespace has been introduced and the default IDN version has changed from 2003 to 2008 and minimum PHP engine version raised to 5.6.0.
+
 
 ## 0.8.0
 As of version 0.8.0 the class fully supports IDNA 2008. 
 Thus, the aforementioned parameter is deprecated and replaced by a parameter to switch between the standards. See the updated example 5 in the ReadMe.
 
+
 ## 0.6.4
 **BC break:** 
 As of version 0.6.4 the class per default allows the German ligature ß to be encoded as the DeNIC, the registry for .DE allows domains containing ß.  
+
 
 ## 0.6.0
 **ATTENTION:** As of version 0.6.0 this class is written in the OOP style of PHP 5. 
