@@ -1,6 +1,6 @@
 <?php
 
-namespace Algo26\IdnaConvert\Test;
+namespace Algo26\IdnaConvert\Test\unit;
 
 use Algo26\IdnaConvert\Exception\InvalidCharacterException;
 use Algo26\IdnaConvert\Exception\InvalidIdnVersionException;
