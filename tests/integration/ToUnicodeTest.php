@@ -1,6 +1,7 @@
 <?php
 namespace Algo26\IdnaConvert\Test\integration;
 
+use Algo26\IdnaConvert\Exception\InvalidCharacterException;
 use Algo26\IdnaConvert\Exception\InvalidIdnVersionException;
 use Algo26\IdnaConvert\ToUnicode;
 use PHPUnit\Framework\TestCase;
@@ -28,6 +29,16 @@ class ToUnicodeTest extends TestCase
                 $encoded
             )
         );
+    }
+    /**
+     * @dataProvider providerException
+     */
+    public function testDecodeUtf8Exception($encoded)
+    {
+        self::expectException(InvalidCharacterException::class);
+
+        $idnaConvert = new ToUnicode();
+        $idnaConvert->convert($encoded);
     }
 
     /**
@@ -75,7 +86,7 @@ class ToUnicodeTest extends TestCase
     /**
      * @return array
      */
-    public function providerUtf8()
+    public static function providerUtf8(): array
     {
         return [
             ['xn--mller-kva', 'müller'],
@@ -129,7 +140,23 @@ class ToUnicodeTest extends TestCase
         ];
     }
 
-    public function providerEmailAddress()
+    public static function providerException(): array
+    {
+        return [
+            ['xn--style-321'],
+            ['xn--54_461_1'],
+            ['xn--54_52932'],
+            ['xn--54?312'],
+            ['xn--250[143'],
+            ['xn--250;143'],
+            ["xn--9\n1595402"],
+            ['xn--898:0106'],
+            ['xn--algo26'],
+            ['xn--algo26-cc'],
+        ];
+    }
+
+    public static function providerEmailAddress(): array
     {
         return [
             ['some.user@xn--d1abegsede9b0e.example', 'some.user@мениджмънт.example'],
@@ -139,32 +166,32 @@ class ToUnicodeTest extends TestCase
         ];
     }
 
-    public function providerUrl()
+    public static function providerUrl(): array
     {
         return [
             [
                 'https://user:password@xn--d1abegsede9b0e.example/home/international/test.html',
-                'https://user:password@мениджмънт.example/home/international/test.html'
+                'https://user:password@мениджмънт.example/home/international/test.html',
             ],
             [
                 'https://üser:päßword@xn--uxan.example/gnörz/lörz/',
-                'https://üser:päßword@πι.example/gnörz/lörz/'
+                'https://üser:päßword@πι.example/gnörz/lörz/',
             ],
             [
                 'https://user:password@xn--da-hia.example/',
-                'https://user:password@daß.example/'
+                'https://user:password@daß.example/',
             ],
             [
                 'https://user:password@foo.xn--bcdf-9na9b.example',
-                'https://user:password@foo.âbcdéf.example'
+                'https://user:password@foo.âbcdéf.example',
             ],
             [
                 'http://xn--and-6ma2c.example',
-                'http://ñandú.example'
+                'http://ñandú.example',
             ],
             [
                 'file:///some/path/xn--somewhere/',
-                'file:///some/path/xn--somewhere/'
+                'file:///some/path/xn--somewhere/',
             ],
         ];
     }
