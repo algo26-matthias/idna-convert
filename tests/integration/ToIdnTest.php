@@ -134,7 +134,7 @@ class ToIdnTest extends TestCase
         $idnaConvert->convert($sequence);
     }
 
-    public function providerUtf8(): array
+    public static function providerUtf8(): array
     {
         return [
             ['', ''],
@@ -235,7 +235,7 @@ class ToIdnTest extends TestCase
         ];
     }
 
-    public function providerUtf8Idna2003(): array
+    public static function providerUtf8Idna2003(): array
     {
         return [
             ['daß.example', 'dass.example'],
@@ -249,7 +249,7 @@ class ToIdnTest extends TestCase
         ];
     }
 
-    public function providerEmailAddress(): array
+    public static function providerEmailAddress(): array
     {
         return [
             ['some.user@мениджмънт.example', 'some.user@xn--d1abegsede9b0e.example'],
@@ -259,7 +259,7 @@ class ToIdnTest extends TestCase
         ];
     }
 
-    public function providerUrl(): array
+    public static function providerUrl(): array
     {
         return [
             [
@@ -289,7 +289,7 @@ class ToIdnTest extends TestCase
         ];
     }
 
-    public function providerAlreadyPunycode(): array
+    public static function providerAlreadyPunycode(): array
     {
         return [
             ['xn--ïdn', 2003],
@@ -300,7 +300,7 @@ class ToIdnTest extends TestCase
         ];
     }
 
-    public function providerInvalidCharacter(): array
+    public static function providerInvalidCharacter(): array
     {
         return [
             ['3+1'],
@@ -310,7 +310,7 @@ class ToIdnTest extends TestCase
         ];
     }
 
-    public function providerStd3AsciiRulesViolation(): array
+    public static function providerStd3AsciiRulesViolation(): array
     {
         return [
             ['-hyphenated'],

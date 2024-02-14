@@ -11,7 +11,7 @@ use PHPUnit\Framework\TestCase;
 /**
  * @covers \Algo26\IdnaConvert\NamePrep\NamePrep
  */
-class namePrepTest extends TestCase
+class NamePrepTest extends TestCase
 {
     /** @var TranscodeUnicode */
     private $uctc;
@@ -74,7 +74,7 @@ class namePrepTest extends TestCase
         $this->namePrep2003->do($sequence);
     }
 
-    public function providerMapping2003()
+    public static function providerMapping2003(): array
     {
         return [
             [
@@ -129,7 +129,7 @@ class namePrepTest extends TestCase
         ];
     }
 
-    public function providerProhibited()
+    public static function providerProhibited(): array
     {
         return [
             [
