@@ -1,6 +1,7 @@
 <?php
 namespace Algo26\IdnaConvert\Test;
 
+use Algo26\IdnaConvert\Exception\InvalidCharacterException;
 use Algo26\IdnaConvert\Exception\InvalidIdnVersionException;
 use Algo26\IdnaConvert\ToUnicode;
 use PHPUnit\Framework\TestCase;
@@ -28,6 +29,17 @@ class ToUnicodeTest extends TestCase
                 $encoded
             )
         );
+    }
+
+    /**
+     * @dataProvider providerException
+     */
+    public function testDecodeUtf8Exception($encoded)
+    {
+        self::expectException(InvalidCharacterException::class);
+
+        $idnaConvert = new ToUnicode();
+        $idnaConvert->convert($encoded);
     }
 
     /**
@@ -126,6 +138,22 @@ class ToUnicodeTest extends TestCase
             ['xn--fuball-cta.example', 'fußball.example'],
             ['xn--18-uldcat6ad6bydd', 'היפא18פאטאם'],
             ['xn--18-dtd1bdi0h3ask', 'فرس18النهر'],
+        ];
+    }
+
+    public function providerException(): array
+    {
+        return [
+            ['xn--style-321'],
+            ['xn--54_461_1'],
+            ['xn--54_52932'],
+            ['xn--54?312'],
+            ['xn--250[143'],
+            ['xn--250;143'],
+            ["xn--9\n1595402"],
+            ['xn--898:0106'],
+            ['xn--algo26'],
+            ['xn--algo26-cc'],
         ];
     }
 
