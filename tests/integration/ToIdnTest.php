@@ -232,6 +232,10 @@ class ToIdnTest extends TestCase
             ['3002-test。ídn', '3002-test.xn--dn-mja'],
             ['ff0e-test．ídn', 'ff0e-test.xn--dn-mja'],
             ['ff61-test｡ídn', 'ff61-test.xn--dn-mja'],
+            ['tɛ̈st', 'xn--tst-ltb97f'],
+            ['tɛ̱̈st', 'xn--tst-ltb97f9g'],
+            ['aကျွန်ုပ်d', 'xn--ad-fzj2ef9m0cceu'],
+            ['ªa', 'aa'],
         ];
     }
 
