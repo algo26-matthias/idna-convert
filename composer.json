@@ -13,7 +13,6 @@
     ],
     "require": {
         "ext-pcre": "*",
-        "ext-intl": "*",
         "php": ">=8.1",
         "jakeasmith/http_build_url": "^1"
     },
@@ -22,7 +21,8 @@
     },
     "suggest":  {
         "ext-mbstring": "Install ext/mbstring for using input / output other than UTF-8 or ISO-8859-1",
-        "ext-iconv": "Install ext/iconv for using input / output other than UTF-8 or ISO-8859-1"
+        "ext-iconv": "Install ext/iconv for using input / output other than UTF-8 or ISO-8859-1",
+		"ext-intl": "Install ext/intl for better case folding"
     },
     "autoload": {
         "psr-4": {
