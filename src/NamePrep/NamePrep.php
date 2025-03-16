@@ -60,7 +60,7 @@ class NamePrep implements NamePrepInterface
 
     private function applyCaseFolding(array $inputArray): array
     {
-        if ($this->namePrepData->version !== 2008) {
+        if ($this->namePrepData->version !== 2008 || !class_exists(IntlChar::class)) {
             return $inputArray;
         }
 
