@@ -22,7 +22,10 @@
     "suggest":  {
         "ext-mbstring": "Install ext/mbstring for using input / output other than UTF-8 or ISO-8859-1",
         "ext-iconv": "Install ext/iconv for using input / output other than UTF-8 or ISO-8859-1",
-		"ext-intl": "Install ext/intl for better case folding"
+		"ext-intl": "Install ext/intl to properly transform all Unicode characters supported with IDNA 2008"
+    },
+    "replace": {
+        "symfony/polyfill-mbstring": "*"
     },
     "autoload": {
         "psr-4": {
