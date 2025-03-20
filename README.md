@@ -32,6 +32,13 @@ Unicode strings are expected to be UTF-8 strings. ACE strings (the Punycode form
 ```
 composer require algo26-matthias/idna-convert
 ```
+**Important note:** To cover all possible supported characters you will need to have either PHP's 
+[Internationalization Functions](https://www.php.net/manual/en/book.intl.php) or 
+[Multibyte Strings](https://www.php.net/manual/de/book.mbstring.php) 
+extension installed and configured. _Intl_ is preferred.
+
+** ⚠ If neither of these are available you might experience wrong results!** 
+
 
 ### Official ZIP Package
 

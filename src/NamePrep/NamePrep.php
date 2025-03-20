@@ -172,7 +172,7 @@ class NamePrep implements NamePrepInterface
                     $outputLength--;
                     $previousClass = 0;
                     if ($outerIndex !== $previousStarter) {
-                        $this->getCombiningClass($codePoints[$outerIndex - 1]);
+                        $previousClass = $this->getCombiningClass($codePoints[$outerIndex - 1]);
                     }
 
                     continue;
