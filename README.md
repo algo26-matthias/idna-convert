@@ -139,21 +139,21 @@ Per default, the class converts strings according to IDNA version 2008. To suppo
 // Include the class  
 use Algo26\IdnaConvert\ToIdn;
 // Instantiate it, switching to IDNA 2003, the original, now outdated standard
-$IDN = new ToIdn(2008);
-// Sth. containing the German letter ß  
+$IDN = new ToIdn(2003);
+// Something containing the German letter ß  
 $input = 'meine-straße.example';
-// Encode it to its punycode presentation  
+// Encode it to its punycode representation  
 $output = $IDN->convert($input);  
-// Output, what we got now  
+// Output what we got now  
 echo $output; // xn--meine-strae-46a.example
   
 // Switch back to IDNA 2008
-$IDN = new ToIdn(2003);
-// Sth. containing the German letter ß  
+$IDN = new ToIdn(2008);
+// Something containing the German letter ß  
 $input = 'meine-straße.example';  
-// Encode it to its punycode presentation  
+// Encode it to its punycode representation  
 $output = $IDN->convert($input);
-// Output, what we got now  
+// Output what we got now  
 echo $output; // meine-strasse.example
 ```
 
