@@ -1,0 +1,35 @@
+name: CI
+
+on:
+    push:
+        branches: [master]
+    pull_request:
+        branches: [master]
+
+jobs:
+    test:
+        runs-on: ubuntu-latest
+
+        strategy:
+            fail-fast: false
+            matrix:
+                php-version: [8.1, 8.2, 8.3, 8.4, nightly]
+                include:
+                - php-version: nightly
+                  allow-failure: true
+
+        steps:
+        - uses: actions/checkout@v3
+
+        - name: Set up PHP
+          uses: shivammathur/setup-php@v2
+          with:
+              php-version: ${{ matrix.php-version }}
+              tools: composer
+
+        - name: Install dependencies (before_install)
+          run: composer install
+
+        - name: Run tests
+          run: vendor/bin/phpunit
+          continue-on-error: ${{ matrix.allow-failure == true }}
