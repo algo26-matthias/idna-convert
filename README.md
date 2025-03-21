@@ -37,7 +37,7 @@ composer require algo26-matthias/idna-convert
 [Multibyte Strings](https://www.php.net/manual/de/book.mbstring.php) 
 extension installed and configured. _Intl_ is preferred.
 
-** ⚠ If neither of these are available you might experience wrong results!** 
+**⚠ If neither of these are available you might experience wrong results!** 
 
 
 ### Official ZIP Package
