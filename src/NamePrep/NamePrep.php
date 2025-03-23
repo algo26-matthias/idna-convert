@@ -6,8 +6,6 @@ namespace Algo26\IdnaConvert\NamePrep;
 
 use Algo26\IdnaConvert\Exception\InvalidCharacterException;
 use Algo26\IdnaConvert\Exception\InvalidIdnVersionException;
-use Algo26\IdnaConvert\TranscodeUnicode\TranscodeUnicode;
-use IntlChar;
 
 class NamePrep implements NamePrepInterface
 {
@@ -22,14 +20,14 @@ class NamePrep implements NamePrepInterface
     private const S_COUNT = 11172; // L_COUNT * T_COUNT * V_COUNT
 
     private NamePrepDataInterface $namePrepData;
-    private TranscodeUnicode $unicodeTransCoder;
+    private CaseFolding $caseFolding;
 
     /**
      * @throws InvalidIdnVersionException
      */
     public function __construct(?int $idnVersion = null)
     {
-        $this->unicodeTransCoder = new TranscodeUnicode();
+        $this->caseFolding = new CaseFolding();
 
         if ($idnVersion === null || $idnVersion === 2008) {
             $this->namePrepData = new NamePrepData2008();
@@ -55,56 +53,10 @@ class NamePrep implements NamePrepInterface
         $outputArray = $this->hangulCompose($outputArray);
         $outputArray = $this->combineCodePoints($outputArray);
 
-        return $this->applyCaseFolding($outputArray);
-    }
-
-    private function applyCaseFolding(array $inputArray): array
-    {
-        if ($this->namePrepData->version === 2003) {
-            return $inputArray;
-        }
-
-        if (class_exists(IntlChar::class)) {
-            return $this->caseFoldIcu($inputArray);
-        }
-
-        if (function_exists('mb_strtolower')) {
-            return $this->caseFoldMbString($inputArray);
-        }
-
-        return $inputArray;
-    }
-
-    private function caseFoldIcu(array $inputArray): array
-    {
-        $outputArray = [];
-        foreach ($inputArray as $codePoint) {
-            $outputArray[] = IntlChar::tolower($codePoint);
-        }
-
-        return $outputArray;
-    }
-
-    private function caseFoldMbString(array $inputArray): array
-    {
-        $outputArray = [];
-        foreach ($inputArray as $codePoint) {
-            $codePointAsString = $this->unicodeTransCoder->convert(
-                [$codePoint],
-                TranscodeUnicode::FORMAT_UCS4_ARRAY,
-                TranscodeUnicode::FORMAT_UTF8,
-            );
-            $lowerCased = mb_strtolower($codePointAsString);
-            $lowerCasedAsArray = $this->unicodeTransCoder->convert(
-                $lowerCased,
-                TranscodeUnicode::FORMAT_UTF8,
-                TranscodeUnicode::FORMAT_UCS4_ARRAY,
-            );
-
-            $outputArray[] = $lowerCasedAsArray[0];
-        }
-
-        return $outputArray;
+        return $this->caseFolding->apply(
+            $outputArray,
+            $this->namePrepData->version,
+        );
     }
 
     /**
