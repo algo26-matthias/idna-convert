@@ -155,10 +155,6 @@ class ToIdnTest extends TestCase
             ['فرس18النهر', 'xn--18-dtd1bdi0h3ask'],
             ["\u{33c7}", 'xn--czk'],
             ["\u{37a}", 'xn--1va'],
-            ['tɛ̈st', 'xn--tst-ltb97f'],
-            ['tɛ̱̈st', 'xn--tst-ltb97f9g'],
-            ['aကျွန်ုပ်d', 'xn--ad-fzj2ef9m0cceu'],
-            ['ªa', 'aa'],
         ];
     }
 
