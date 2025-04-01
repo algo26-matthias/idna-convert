@@ -4,7 +4,6 @@ namespace Algo26\IdnaConvert\NamePrep;
 
 use Algo26\IdnaConvert\Exception\InvalidCharacterException;
 use Algo26\IdnaConvert\Exception\InvalidIdnVersionException;
-use IntlChar;
 
 class NamePrep implements NamePrepInterface
 {
@@ -22,6 +21,9 @@ class NamePrep implements NamePrepInterface
     /** @var NamePrepDataInterface */
     private $namePrepData;
 
+    /** @var CaseFolding */
+    private $caseFolding;
+
     /**
      * @param string|null $idnVersion
      *
@@ -29,6 +31,8 @@ class NamePrep implements NamePrepInterface
      */
     public function __construct(?string $idnVersion = null)
     {
+        $this->caseFolding = new CaseFolding();
+
         if ($idnVersion === null || $idnVersion == 2008) {
             $this->namePrepData = new NamePrepData2008();
 
@@ -56,21 +60,10 @@ class NamePrep implements NamePrepInterface
         $outputArray = $this->hangulCompose($outputArray);
         $outputArray = $this->combineCodePoints($outputArray);
 
-        return $this->applyCaseFolding($outputArray);
-    }
-
-    private function applyCaseFolding(array $inputArray): array
-    {
-        if ($this->namePrepData->version !== 2008) {
-            return $inputArray;
-        }
-
-        $outputArray = [];
-        foreach ($inputArray as $codePoint) {
-            $outputArray[] = IntlChar::tolower($codePoint);
-        }
-
-        return $outputArray;
+        return $this->caseFolding->apply(
+            $outputArray,
+            $this->namePrepData->version
+        );
     }
 
     /**
