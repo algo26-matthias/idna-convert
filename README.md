@@ -2,9 +2,6 @@
 
 ![latest stable version](https://img.shields.io/github/tag/algo26-matthias/idna-convert.svg)
 
-Project homepage: <http://idnaconv.net><br>
-by Matthias Sommerfeld <matthias.sommerfeld@algo26.de><br>
-
 ## Introduction
 
 The library IdnaConvert allows to convert internationalized domain names (see 
@@ -205,17 +202,3 @@ in you local command line and see the output of PHPUnit.
 ## Reporting bugs
 
 Please use the [issues tab on GitHub](https://github.com/algo26-matthias/idna-convert/issues) to report any bugs or feature requests.
-
-## Contact the author
-
-For questions, bug reports and security issues just drop me a line.
-
-algo26 Beratungs GmbH<br>
-c/o Matthias Sommerfeld<br>
-Zedernweg 1<br>
-D-16348 Wandlitz<br>
-<br>
-Germany<br>
-<br>
-mailto:matthias.sommerfeld@algo26.de
-
