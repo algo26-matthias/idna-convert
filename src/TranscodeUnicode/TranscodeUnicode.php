@@ -6,6 +6,7 @@ namespace Algo26\IdnaConvert\TranscodeUnicode;
 
 use Algo26\IdnaConvert\Exception\InvalidCharacterException;
 use InvalidArgumentException;
+use LogicException;
 
 class TranscodeUnicode implements TranscodeUnicodeInterface
 {
@@ -28,46 +29,120 @@ class TranscodeUnicode implements TranscodeUnicodeInterface
     private bool $safeMode;
     private int $safeCodepoint = 0xFFFC;
 
+    /**
+     * @param string|list<int> $data
+     *
+     * @return string|list<int>
+     * @throws InvalidCharacterException
+     */
     public function convert(
         $data,
         string $fromEncoding,
         string $toEncoding,
         bool $safeMode = false,
         int $safeCodepoint = 0xFFFC
-    ) {
+    ): array|string {
         $this->safeMode = $safeMode;
         $this->safeCodepoint = $safeCodepoint;
 
         $fromEncoding = strtolower($fromEncoding);
         $toEncoding   = strtolower($toEncoding);
 
+        if (!in_array($fromEncoding, self::VALID_ENCODINGS, true)) {
+            throw new InvalidArgumentException(sprintf('Invalid input format %s', $fromEncoding), 300);
+        }
+        if (!in_array($toEncoding, self::VALID_ENCODINGS, true)) {
+            throw new InvalidArgumentException(sprintf('Invalid output format %s', $toEncoding), 301);
+        }
+
+        if ($fromEncoding === self::FORMAT_UCS4_ARRAY && !is_array($data)) {
+            throw new InvalidArgumentException('UCS-4 array input must be an array');
+        }
+        if ($fromEncoding !== self::FORMAT_UCS4_ARRAY && !is_string($data)) {
+            throw new InvalidArgumentException('Encoded input must be a string');
+        }
+
         if ($fromEncoding === $toEncoding) {
             return $data;
         }
 
-        if (!in_array($fromEncoding, self::VALID_ENCODINGS)) {
-            throw new InvalidArgumentException(sprintf('Invalid input format %s', $fromEncoding), 300);
-        }
-        if (!in_array($toEncoding, self::VALID_ENCODINGS)) {
-            throw new InvalidArgumentException(sprintf('Invalid output format %s', $toEncoding), 301);
-        }
-
-        if ($fromEncoding !== self::FORMAT_UCS4_ARRAY) {
-            $methodName = sprintf('%s_%s', $fromEncoding, self::FORMAT_UCS4_ARRAY);
-            $data = $this->$methodName($data);
-        }
-        if ($toEncoding !== self::FORMAT_UCS4_ARRAY) {
-            $methodName = sprintf('%s_%s', self::FORMAT_UCS4_ARRAY, $toEncoding);
-            $data = $this->$methodName($data);
+        if (is_array($data)) {
+            $codePoints = $data;
+        } else {
+            $codePoints = match ($fromEncoding) {
+                self::FORMAT_UCS4 => $this->ucs4ToUcs4Array($data),
+                self::FORMAT_UTF8 => $this->utf8ToUcs4Array($data),
+                self::FORMAT_UTF7 => $this->utf7ToUcs4Array($data),
+                self::FORMAT_UTF7_IMAP => $this->utf7ImapToUcs4Array($data),
+            };
         }
 
-        return $data;
+        if ($toEncoding === self::FORMAT_UCS4_ARRAY) {
+            return $codePoints;
+        }
+
+        return match ($toEncoding) {
+            self::FORMAT_UCS4 => $this->ucs4ArrayToUcs4($codePoints),
+            self::FORMAT_UTF8 => $this->ucs4ArrayToUtf8($codePoints),
+            self::FORMAT_UTF7 => $this->ucs4ArrayToUtf7($codePoints),
+            self::FORMAT_UTF7_IMAP => $this->ucs4ArrayToUtf7Imap($codePoints),
+        };
+    }
+
+    /** @return list<int>
+     * @throws InvalidCharacterException
+     */
+    public function toUcs4Array(
+        string $data,
+        string $fromEncoding,
+        bool $safeMode = false,
+        int $safeCodepoint = 0xFFFC
+    ): array {
+        $converted = $this->convert(
+            $data,
+            $fromEncoding,
+            self::FORMAT_UCS4_ARRAY,
+            $safeMode,
+            $safeCodepoint,
+        );
+        if (!is_array($converted)) {
+            throw new LogicException('Conversion to a UCS-4 array returned an invalid result');
+        }
+
+        return $converted;
     }
 
     /**
+     * @param list<int> $data
+     *
      * @throws InvalidCharacterException
      */
-    private function utf8_ucs4array(string $input): array
+    public function fromUcs4Array(
+        array $data,
+        string $toEncoding,
+        bool $safeMode = false,
+        int $safeCodepoint = 0xFFFC
+    ): string {
+        $converted = $this->convert(
+            $data,
+            self::FORMAT_UCS4_ARRAY,
+            $toEncoding,
+            $safeMode,
+            $safeCodepoint,
+        );
+        if (!is_string($converted)) {
+            throw new LogicException('Conversion from a UCS-4 array returned an invalid result');
+        }
+
+        return $converted;
+    }
+
+    /**
+     * @return list<int>
+     *
+     * @throws InvalidCharacterException
+     */
+    private function utf8ToUcs4Array(string $input): array
     {
         $startByte = 0;
         $nextByte = 0;
@@ -181,16 +256,31 @@ class TranscodeUnicode implements TranscodeUnicodeInterface
             }
         }
 
-        return $output;
+        return array_values($output);
     }
 
     /**
+     * @param list<int> $input
+     *
      * @throws InvalidCharacterException
      */
-    private function ucs4array_utf8($input): string
+    private function ucs4ArrayToUtf8(array $input): string
     {
         $output = '';
         foreach ($input as $k => $v) {
+            if ($v < 0) {
+                if ($this->safeMode) {
+                    $output .= $this->ucs4ArrayToUtf8([$this->safeCodepoint]);
+
+                    continue;
+                }
+
+                throw new InvalidCharacterException(
+                    sprintf('Conversion from UCS-4 to UTF-8 failed: malformed input at byte %d', $k),
+                    305,
+                );
+            }
+
             if ($v < 128) { // 7bit are transferred literally
                 $output .= chr($v);
             } elseif ($v < (1 << 11)) { // 2 bytes
@@ -215,7 +305,7 @@ class TranscodeUnicode implements TranscodeUnicodeInterface
                     chr(128 + ($v & 63))
                 );
             } elseif ($this->safeMode) {
-                $output .= $this->ucs4array_utf8([$this->safeCodepoint]);
+                $output .= $this->ucs4ArrayToUtf8([$this->safeCodepoint]);
             } else {
                 throw new InvalidCharacterException(
                     sprintf('Conversion from UCS-4 to UTF-8 failed: malformed input at byte %d', $k),
@@ -227,12 +317,14 @@ class TranscodeUnicode implements TranscodeUnicodeInterface
         return $output;
     }
 
-    private function utf7imap_ucs4array(string $input): array
+    /** @return list<int> */
+    private function utf7ImapToUcs4Array(string $input): array
     {
-        return $this->utf7_ucs4array(str_replace(',', '/', $input), '&');
+        return $this->utf7ToUcs4Array(str_replace(',', '/', $input), '&');
     }
 
-    private function utf7_ucs4array(string $input, $sc = '+'): array
+    /** @return list<int> */
+    private function utf7ToUcs4Array(string $input, string $sc = '+'): array
     {
         $output = [];
         $outputLength = 0;
@@ -289,19 +381,25 @@ class TranscodeUnicode implements TranscodeUnicodeInterface
             }
         }
 
-        return $output;
+        return array_values($output);
     }
 
-    private function ucs4array_utf7imap(array $input): string
+    /**
+     * @param list<int> $input
+     */
+    private function ucs4ArrayToUtf7Imap(array $input): string
     {
         return str_replace(
             '/',
             ',',
-            $this->ucs4array_utf7($input, '&')
+            $this->ucs4ArrayToUtf7($input, '&')
         );
     }
 
-    private function ucs4array_utf7(array $input, string $sc = '+'): string
+    /**
+     * @param list<int> $input
+     */
+    private function ucs4ArrayToUtf7(array $input, string $sc = '+'): string
     {
         $output = '';
         $mode = 'd';
@@ -326,7 +424,7 @@ class TranscodeUnicode implements TranscodeUnicodeInterface
                 }
             }
             if ($mode === 'd' && false !== $v) {
-                if ($isDirect) {
+                if (0x20 <= $v && $v <= 0x7e && $v !== ord($sc)) {
                     $output .= chr($v);
                 } else {
                     $b64 = chr(($v >> 8) & 255) . chr($v & 255);
@@ -342,9 +440,11 @@ class TranscodeUnicode implements TranscodeUnicodeInterface
     }
 
     /**
-     * Convert UCS-4 array into UCS-4 string (Little Endian at the moment)
+     * Convert UCS-4 array into UCS-4 string (Little Endian)
+     *
+     * @param list<int> $input
      */
-    private function ucs4array_ucs4(array $input): string
+    private function ucs4ArrayToUcs4(array $input): string
     {
         $output = '';
         foreach ($input as $v) {
@@ -363,18 +463,20 @@ class TranscodeUnicode implements TranscodeUnicodeInterface
     /**
      * Convert UCS-4 string (LE only) to UCS-4 array
      *
+     * @return list<int>
+     *
      * @throws InvalidCharacterException
      */
-    private function ucs4_ucs4array(string $input): array
+    private function ucs4ToUcs4Array(string $input): array
     {
         $output = [];
 
         $inputLength = $this->getByteLength($input);
-        // Input length must be dividable by 4
+
         if ($inputLength % 4) {
             throw new InvalidCharacterException('Input UCS4 string is broken', 306);
         }
-        // Empty input - return empty output
+
         if (!$inputLength) {
             return $output;
         }
@@ -387,6 +489,6 @@ class TranscodeUnicode implements TranscodeUnicodeInterface
             $output[$outputLength] += ord($input[$i]) << (8 * (3 - ($i % 4)));
         }
 
-        return $output;
+        return array_values($output);
     }
 }

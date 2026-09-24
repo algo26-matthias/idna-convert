@@ -12,11 +12,10 @@ abstract class AbstractIdnaConvert
 
     public function convertEmailAddress(string $emailAddress): string
     {
-        if (!str_contains($emailAddress, '@')) {
+        $separatorPosition = strrpos($emailAddress, '@');
+        if ($separatorPosition === false) {
             throw new InvalidArgumentException('The given string does not look like an email address', 206);
         }
-
-        $separatorPosition = strrpos($emailAddress, '@');
 
         return sprintf(
             '%s@%s',

@@ -51,10 +51,9 @@ class ToIdn extends AbstractIdnaConvert implements IdnaConvertInterface
         // Operate per label
         $hostLabels = explode('.', $host);
         foreach ($hostLabels as $index => $label) {
-            $asUcs4Array = $this->unicodeTransCoder->convert(
+            $asUcs4Array = $this->unicodeTransCoder->toUcs4Array(
                 $label,
                 $this->unicodeTransCoder::FORMAT_UTF8,
-                $this->unicodeTransCoder::FORMAT_UCS4_ARRAY
             );
             $encoded = $this->punycodeEncoder->convert($asUcs4Array);
             if ($encoded) {

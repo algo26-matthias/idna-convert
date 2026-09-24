@@ -45,6 +45,10 @@ class NamePrep implements NamePrepInterface
     }
 
     /**
+     * @param list<int> $inputArray
+     *
+     * @return list<int>
+     *
      * @throws InvalidCharacterException
      */
     public function do(array $inputArray): array
@@ -60,6 +64,10 @@ class NamePrep implements NamePrepInterface
     }
 
     /**
+     * @param list<int> $inputArray
+     *
+     * @return list<int>
+     *
      * @throws InvalidCharacterException
      */
     private function applyCharacterMaps(array $inputArray): array
@@ -97,6 +105,11 @@ class NamePrep implements NamePrepInterface
         return $outputArray;
     }
 
+    /**
+     * @param list<int> $codePoints
+     *
+     * @return list<int>
+     */
     private function combineCodePoints(array $codePoints): array
     {
         $previousClass = 0;
@@ -139,13 +152,14 @@ class NamePrep implements NamePrepInterface
             $previousClass = $combiningClass;
         }
 
-        return $codePoints;
+        return array_values($codePoints);
     }
 
     /**
      * Decomposes a Hangul syllable
      * (see http://www.unicode.org/unicode/reports/tr15/#Hangul
      */
+    /** @return list<int> */
     private function hangulDecompose(int $codePoint): array
     {
         $sIndex = $codePoint - self::S_BASE;
@@ -164,6 +178,11 @@ class NamePrep implements NamePrepInterface
     /**
      * Compose a Hangul syllable
      * (see http://www.unicode.org/unicode/reports/tr15/#Hangul
+     */
+    /**
+     * @param list<int> $input
+     *
+     * @return list<int>
      */
     private function hangulCompose(array $input): array
     {
@@ -224,6 +243,11 @@ class NamePrep implements NamePrepInterface
         return $this->namePrepData->normalizeCombiningClasses[$char] ?? 0;
     }
 
+    /**
+     * @param list<int> $input
+     *
+     * @return list<int>
+     */
     private function applyCanonicalOrdering(array $input): array
     {
         $needsSwapping = true;
@@ -251,9 +275,10 @@ class NamePrep implements NamePrepInterface
             }
         }
 
-        return $input;
+        return array_values($input);
     }
 
+    /** @param list<int> $input */
     private function combine(array $input): ?int
     {
         if ($input === []) {

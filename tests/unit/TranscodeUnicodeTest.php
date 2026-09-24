@@ -37,6 +37,17 @@ final class TranscodeUnicodeTest extends TestCase
         self::assertSame("\xFF", $this->transcoder->convert("\xFF", 'UTF8', 'utf8'));
     }
 
+    public function testTypedUcs4ConversionMethodsRoundTrip(): void
+    {
+        $codePoints = $this->transcoder->toUcs4Array('Aä', TranscodeUnicode::FORMAT_UTF8);
+
+        self::assertSame([0x41, 0xE4], $codePoints);
+        self::assertSame(
+            'Aä',
+            $this->transcoder->fromUcs4Array($codePoints, TranscodeUnicode::FORMAT_UTF8),
+        );
+    }
+
     public function testInvalidInputEncodingIsRejected(): void
     {
         self::expectException(InvalidArgumentException::class);
@@ -101,6 +112,27 @@ final class TranscodeUnicodeTest extends TestCase
             [1 << 21],
             TranscodeUnicode::FORMAT_UCS4_ARRAY,
             TranscodeUnicode::FORMAT_UTF8,
+        );
+    }
+
+    public function testNegativeUcs4IsRejected(): void
+    {
+        self::expectException(InvalidCharacterException::class);
+        self::expectExceptionCode(305);
+
+        $this->transcoder->fromUcs4Array([-1], TranscodeUnicode::FORMAT_UTF8);
+    }
+
+    public function testSafeModeReplacesNegativeUcs4WithTheConfiguredCodePoint(): void
+    {
+        self::assertSame(
+            "A\xEF\xBF\xBDB",
+            $this->transcoder->fromUcs4Array(
+                [0x41, -1, 0x42],
+                TranscodeUnicode::FORMAT_UTF8,
+                true,
+                0xFFFD,
+            ),
         );
     }
 

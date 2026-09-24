@@ -9,6 +9,7 @@ use Algo26\IdnaConvert\Exception\InvalidCharacterException;
 use Algo26\IdnaConvert\Exception\InvalidIdnVersionException;
 use Algo26\IdnaConvert\Exception\Std3AsciiRulesViolationException;
 use Algo26\IdnaConvert\NamePrep\NamePrep;
+use OutOfBoundsException;
 
 class ToPunycode extends AbstractPunycode implements PunycodeInterface
 {
@@ -26,6 +27,8 @@ class ToPunycode extends AbstractPunycode implements PunycodeInterface
     }
 
     /**
+     * @param list<int> $decoded
+     *
      * @throws AlreadyPunycodeException
      * @throws InvalidCharacterException
      * @throws Std3AsciiRulesViolationException
@@ -47,7 +50,7 @@ class ToPunycode extends AbstractPunycode implements PunycodeInterface
         for ($i = 0; $i < $decodedLength; ++$i) {
             $test = $decoded[$i];
             if (0x01 <= $test && $test <= 0x7f) {
-                $encoded .= chr($decoded[$i]);
+                $encoded .= chr($test);
                 $codeCount++;
             }
         }
@@ -121,10 +124,16 @@ class ToPunycode extends AbstractPunycode implements PunycodeInterface
 
     private function encodeDigit(int $digit): string
     {
+        if ($digit < 0 || $digit >= self::BASE) {
+            throw new OutOfBoundsException(sprintf('Invalid Punycode digit %d', $digit));
+        }
+
         return chr($digit + 22 + 75 * ($digit < 26));
     }
 
     /**
+     * @param non-empty-list<int> $decoded
+     *
      * @throws AlreadyPunycodeException
      * @throws Std3AsciiRulesViolationException
      */

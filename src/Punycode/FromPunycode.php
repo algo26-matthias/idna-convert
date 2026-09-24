@@ -19,7 +19,7 @@ class FromPunycode extends AbstractPunycode implements PunycodeInterface
     /**
      * @throws InvalidCharacterException
      */
-    public function convert(string $encoded)
+    public function convert(string $encoded): string|false
     {
         if (!$this->isValidPunycodeString($encoded)) {
             return false;
@@ -89,23 +89,17 @@ class FromPunycode extends AbstractPunycode implements PunycodeInterface
             $isFirst = false;
             $char += (int) ($currentIndex / ($decodedLength + 1));
             $currentIndex %= ($decodedLength + 1);
-            if ($decodedLength > 0) {
-                // Make room for the decoded char
-                for ($i = $decodedLength; $i > $currentIndex; $i--) {
-                    $decoded[$i] = $decoded[($i - 1)];
-                }
-            }
-            $decoded[$currentIndex++] = $char;
+            array_splice($decoded, $currentIndex, 0, [$char]);
+            ++$currentIndex;
         }
 
-        return $this->unicodeTransCoder->convert(
+        return $this->unicodeTransCoder->fromUcs4Array(
             $decoded,
-            $this->unicodeTransCoder::FORMAT_UCS4_ARRAY,
-            $this->unicodeTransCoder::FORMAT_UTF8
+            $this->unicodeTransCoder::FORMAT_UTF8,
         );
     }
 
-    private function isValidPunycodeString($encoded): bool
+    private function isValidPunycodeString(string $encoded): bool
     {
         // Check for existence of the prefix
         if (!str_starts_with($encoded, self::PUNYCODE_PREFIX)) {

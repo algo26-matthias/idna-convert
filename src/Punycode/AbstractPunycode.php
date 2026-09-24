@@ -21,6 +21,7 @@ abstract class AbstractPunycode
     public const INITIAL_BIAS = 72;
     public const INITIAL_N = 0x80;
 
+    /** @var list<int>|null */
     protected static ?array $prefixAsArray = null;
     protected static int $prefixLength;
 
@@ -31,10 +32,9 @@ abstract class AbstractPunycode
         $this->unicodeTransCoder = new TranscodeUnicode();
 
         if (self::$prefixAsArray === null) {
-            self::$prefixAsArray = $this->unicodeTransCoder->convert(
+            self::$prefixAsArray = $this->unicodeTransCoder->toUcs4Array(
                 self::PUNYCODE_PREFIX,
                 $this->unicodeTransCoder::FORMAT_UTF8,
-                $this->unicodeTransCoder::FORMAT_UCS4_ARRAY
             );
             self::$prefixLength = $this->getByteLength(self::PUNYCODE_PREFIX);
         }
