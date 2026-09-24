@@ -9,7 +9,10 @@ use Algo26\IdnaConvert\TranscodeUnicode\TranscodeUnicode;
 use PHPUnit\Framework\TestCase;
 
 /**
+ * @covers \Algo26\IdnaConvert\NamePrep\CaseFolding
  * @covers \Algo26\IdnaConvert\NamePrep\NamePrep
+ * @covers \Algo26\IdnaConvert\TranscodeUnicode\ByteLengthTrait
+ * @covers \Algo26\IdnaConvert\TranscodeUnicode\TranscodeUnicode
  */
 class NamePrepTest extends TestCase
 {

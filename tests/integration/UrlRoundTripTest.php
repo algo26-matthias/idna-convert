@@ -11,8 +11,15 @@ use PHPUnit\Framework\TestCase;
 
 /**
  * @covers \Algo26\IdnaConvert\AbstractIdnaConvert
+ * @covers \Algo26\IdnaConvert\NamePrep\CaseFolding
+ * @covers \Algo26\IdnaConvert\NamePrep\NamePrep
+ * @covers \Algo26\IdnaConvert\Punycode\AbstractPunycode
+ * @covers \Algo26\IdnaConvert\Punycode\FromPunycode
+ * @covers \Algo26\IdnaConvert\Punycode\ToPunycode
  * @covers \Algo26\IdnaConvert\ToIdn
  * @covers \Algo26\IdnaConvert\ToUnicode
+ * @covers \Algo26\IdnaConvert\TranscodeUnicode\ByteLengthTrait
+ * @covers \Algo26\IdnaConvert\TranscodeUnicode\TranscodeUnicode
  */
 final class UrlRoundTripTest extends TestCase
 {

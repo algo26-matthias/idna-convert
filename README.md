@@ -190,14 +190,15 @@ $mystring = 'nörgler.com';
 echo $transcodeUnicode->convert($mystring, 'utf8', 'utf7imap');
 ```
 
-## Run PHPUnit tests
+## Running tests
 
-The library is supplied with a `docker-compose.yml`, that allows to run the supplied tests. This assumes, you have Docker installed and docker-compose available as a command. Just issue
+The library is supplied with a `docker-compose.yml`, that allows to run the supplied tests. This assumes, you have Docker installed and docker compose available as a command. Just issue
 
 ```
-docker compose up
+docker compose run --rm idna-convert-tests # Unit tests
+docker compose run --rm idna-convert-infection # Mutation tests
 ```
-in you local command line and see the output of PHPUnit.
+in you local command line and see the output of PHPUnit / Infection.
 
 ## Reporting bugs
 

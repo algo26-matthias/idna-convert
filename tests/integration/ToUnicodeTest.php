@@ -8,7 +8,12 @@ use Algo26\IdnaConvert\ToUnicode;
 use PHPUnit\Framework\TestCase;
 
 /**
+ * @covers \Algo26\IdnaConvert\AbstractIdnaConvert
+ * @covers \Algo26\IdnaConvert\Punycode\AbstractPunycode
+ * @covers \Algo26\IdnaConvert\Punycode\FromPunycode
  * @covers \Algo26\IdnaConvert\ToUnicode
+ * @covers \Algo26\IdnaConvert\TranscodeUnicode\ByteLengthTrait
+ * @covers \Algo26\IdnaConvert\TranscodeUnicode\TranscodeUnicode
  */
 class ToUnicodeTest extends TestCase
 {

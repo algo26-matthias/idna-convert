@@ -25,6 +25,28 @@ jobs:
         - name: Check code quality
           run: composer quality
 
+    mutation:
+        runs-on: ubuntu-latest
+
+        steps:
+        - uses: actions/checkout@v3
+
+        - name: Set up PHP
+          uses: shivammathur/setup-php@v2
+          with:
+              php-version: 8.5
+              coverage: pcov
+              ini-values: pcov.exclude="~/src/NamePrep/(CaseFoldingData|NamePrepData2003|NamePrepData2008)\.php$~"
+              tools: composer, infection:0.34.2
+          env:
+              fail-fast: true
+
+        - name: Install dependencies
+          run: composer install --no-interaction
+
+        - name: Run mutation tests
+          run: infection --configuration=infection.json5.dist --only-covering-test-cases --min-msi=75 --min-covered-msi=75 --no-progress --no-interaction
+
     test:
         runs-on: ubuntu-latest
 
