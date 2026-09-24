@@ -1,4 +1,5 @@
 <?php
+
 namespace Algo26\IdnaConvert\Test\integration;
 
 use Algo26\IdnaConvert\Exception\AlreadyPunycodeException;
@@ -6,6 +7,7 @@ use Algo26\IdnaConvert\Exception\InvalidCharacterException;
 use Algo26\IdnaConvert\Exception\InvalidIdnVersionException;
 use Algo26\IdnaConvert\Exception\Std3AsciiRulesViolationException;
 use Algo26\IdnaConvert\ToIdn;
+use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -99,6 +101,24 @@ class ToIdnTest extends TestCase
                 $encoded
             )
         );
+    }
+
+    /**
+     * @dataProvider providerInvalidUrl
+     */
+    public function testEncodeUrlRejectsInvalidUrl(string $url): void
+    {
+        self::expectException(InvalidArgumentException::class);
+        self::expectExceptionCode(206);
+
+        (new ToIdn())->convertUrl($url);
+    }
+
+    public function testEncodeUrlRejectsInvalidUtf8InHost(): void
+    {
+        self::expectException(InvalidCharacterException::class);
+
+        (new ToIdn())->convertUrl("https://invalid.\xFF.example/path");
     }
 
     /**
@@ -290,9 +310,26 @@ class ToIdnTest extends TestCase
                 'http://xn--and-6ma2c.example'
             ],
             [
+                'https://müller.example:8443/path?redirect=müller.example#section',
+                'https://xn--mller-kva.example:8443/path?redirect=müller.example#section'
+            ],
+            [
+                '//müller.example/path?#',
+                '//xn--mller-kva.example/path?#'
+            ],
+            [
                 'file:///some/path/sömewhere/',
                 'file:///some/path/sömewhere/'
             ],
+        ];
+    }
+
+    public static function providerInvalidUrl(): array
+    {
+        return [
+            ['https://müller.example:99999/path'],
+            ['https://müller.example:not-a-port/path'],
+            ['https:///path'],
         ];
     }
 

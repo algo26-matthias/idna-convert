@@ -1,4 +1,5 @@
 <?php
+
 namespace Algo26\IdnaConvert\Test\integration;
 
 use Algo26\IdnaConvert\Exception\InvalidCharacterException;
@@ -188,6 +189,14 @@ class ToUnicodeTest extends TestCase
             [
                 'http://xn--and-6ma2c.example',
                 'http://ñandú.example',
+            ],
+            [
+                'https://xn--mller-kva.example:8443/path?redirect=xn--mller-kva.example#section',
+                'https://müller.example:8443/path?redirect=xn--mller-kva.example#section',
+            ],
+            [
+                '//xn--mller-kva.example/path?#',
+                '//müller.example/path?#',
             ],
             [
                 'file:///some/path/xn--somewhere/',

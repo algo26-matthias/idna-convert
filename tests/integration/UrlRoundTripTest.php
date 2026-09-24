@@ -1,0 +1,45 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Algo26\IdnaConvert\Test\integration;
+
+use Algo26\IdnaConvert\AbstractIdnaConvert;
+use Algo26\IdnaConvert\ToIdn;
+use Algo26\IdnaConvert\ToUnicode;
+use PHPUnit\Framework\TestCase;
+
+/**
+ * @covers \Algo26\IdnaConvert\AbstractIdnaConvert
+ * @covers \Algo26\IdnaConvert\ToIdn
+ * @covers \Algo26\IdnaConvert\ToUnicode
+ */
+final class UrlRoundTripTest extends TestCase
+{
+    /**
+     * @dataProvider providerUrl
+     */
+    public function testUrlSurvivesIdnRoundTrip(string $url): void
+    {
+        $encoded = (new ToIdn(2008))->convertUrl($url);
+        $decoded = (new ToUnicode())->convertUrl($encoded);
+
+        self::assertSame($url, $decoded);
+    }
+
+    public static function providerUrl(): array
+    {
+        return [
+            'all URL components' => [
+                'https://üser:päßword@müller.example:8443/'
+                . 'müller.example?next=müller.example#müller.example',
+            ],
+            'network path reference' => [
+                '//πι.example/gnörz/lörz/?next=πι.example#fragment',
+            ],
+            'empty query and fragment' => [
+                'https://ñandú.example/path?#',
+            ],
+        ];
+    }
+}
