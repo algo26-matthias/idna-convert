@@ -31,7 +31,29 @@ class NamePrepTest extends TestCase
     public function testInvalidIdnVersion()
     {
         $this->expectException(InvalidIdnVersionException::class);
+        $this->expectExceptionCode(400);
+        $this->expectExceptionMessage('IDN version must be either 2003 or 2008');
         new NamePrep(1999);
+    }
+
+    public function testDirectlyProhibitedCharacterReportsItsCategory(): void
+    {
+        self::expectException(InvalidCharacterException::class);
+        self::expectExceptionCode(101);
+        self::expectExceptionMessage('Prohibited input U+000000A0');
+
+        $this->namePrep2003->do([0xA0]);
+    }
+
+    /**
+     * @dataProvider providerProhibitedRangeBoundaries
+     */
+    public function testProhibitedRangeBoundariesReportTheirCategory(int $codePoint): void
+    {
+        self::expectException(InvalidCharacterException::class);
+        self::expectExceptionCode(102);
+
+        $this->namePrep2003->do([$codePoint]);
     }
 
     /**
@@ -195,6 +217,16 @@ class NamePrepTest extends TestCase
             [
                 [0x202A]
             ],
+        ];
+    }
+
+    public static function providerProhibitedRangeBoundaries(): array
+    {
+        return [
+            'first range lower boundary' => [0x80],
+            'first range upper boundary' => [0x9F],
+            'private-use lower boundary' => [0xE000],
+            'private-use upper boundary' => [0xF8FF],
         ];
     }
 

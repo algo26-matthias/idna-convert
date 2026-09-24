@@ -27,14 +27,15 @@ abstract class AbstractIdnaConvert
 
     public function convertUrl(string $url): string
     {
-        // PHP 8.5's parse_url() replaces bytes from unencoded Unicode characters.
-        // Percent-encode those bytes for validation, but modify the original URL below.
-        $parsed = parse_url($this->encodeNonAsciiBytes($url));
+        $parsed = parse_url($url);
         if ($parsed === false) {
             throw new InvalidArgumentException('The given string does not look like a URL', 206);
         }
 
         if (!isset($parsed['host'])) {
+            return $url;
+        }
+        if (str_starts_with($parsed['host'], '[')) {
             return $url;
         }
 
@@ -44,10 +45,6 @@ abstract class AbstractIdnaConvert
         }
 
         [$host, $hostOffset] = $hostRange;
-        if ($host[0] === '[') {
-            return $url;
-        }
-
         return substr_replace(
             $url,
             $this->convert($host),
@@ -77,40 +74,15 @@ abstract class AbstractIdnaConvert
         $hostOffset = $atPosition === false ? 0 : $atPosition + 1;
         $hostAndPort = substr($authority, $hostOffset);
 
-        if (str_starts_with($hostAndPort, '[')) {
-            $closingBracket = strpos($hostAndPort, ']');
-            $host = $closingBracket === false
-                ? ''
-                : substr($hostAndPort, 0, $closingBracket + 1);
-        } else {
-            $portSeparator = strrpos($hostAndPort, ':');
-            $host = $portSeparator === false
-                ? $hostAndPort
-                : substr($hostAndPort, 0, $portSeparator);
-        }
+        $portSeparator = strrpos($hostAndPort, ':');
+        $host = $portSeparator === false
+            ? $hostAndPort
+            : substr($hostAndPort, 0, $portSeparator);
 
         if ($host === '') {
             return null;
         }
 
         return [$host, $authorityOffset + $hostOffset];
-    }
-
-    private function encodeNonAsciiBytes(string $url): string
-    {
-        if (preg_match('~[\\x80-\\xFF]~', $url) !== 1) {
-            return $url;
-        }
-
-        $encoded = '';
-        $length = strlen($url);
-        for ($offset = 0; $offset < $length; ++$offset) {
-            $byte = ord($url[$offset]);
-            $encoded .= $byte > 0x7F
-                ? sprintf('%%%02X', $byte)
-                : $url[$offset];
-        }
-
-        return $encoded;
     }
 }

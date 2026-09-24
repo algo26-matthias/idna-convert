@@ -128,6 +128,15 @@ class ToIdnTest extends TestCase
         (new ToIdn())->convertUrl("https://invalid.\xFF.example/path");
     }
 
+    public function testConvertRejectsUrlSyntaxWithDedicatedErrorCode(): void
+    {
+        self::expectException(InvalidCharacterException::class);
+        self::expectExceptionCode(205);
+        self::expectExceptionMessage('Neither email addresses nor URLs are allowed');
+
+        (new ToIdn())->convert('example.com/path');
+    }
+
     /**
      * @dataProvider providerAlreadyPunycode
      */
@@ -367,7 +376,6 @@ class ToIdnTest extends TestCase
             ['-hyphenated'],
             ['-hyphenated-'],
             ['hyphenated-'],
-            ['negative-test-for-now'],
         ];
     }
 }

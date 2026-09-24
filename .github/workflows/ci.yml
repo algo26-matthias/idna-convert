@@ -45,7 +45,7 @@ jobs:
           run: composer install --no-interaction
 
         - name: Run mutation tests
-          run: infection --configuration=infection.json5.dist --only-covering-test-cases --min-msi=75 --min-covered-msi=75 --no-progress --no-interaction
+          run: infection --configuration=infection.json5.dist --only-covering-test-cases --min-msi=85 --min-covered-msi=85 --max-timeouts=20 --no-progress --no-interaction
 
     test:
         runs-on: ubuntu-latest

@@ -17,6 +17,11 @@ use PHPUnit\Framework\TestCase;
  */
 class ToUnicodeTest extends TestCase
 {
+    public function testDecodeTrimsSurroundingWhitespace(): void
+    {
+        self::assertSame('müller.example', (new ToUnicode())->convert(" \txn--mller-kva.example\n"));
+    }
+
     /**
      * @dataProvider providerUtf8
      * @throws InvalidIdnVersionException

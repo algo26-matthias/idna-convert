@@ -33,12 +33,10 @@ class TranscodeUnicode implements TranscodeUnicodeInterface
         string $fromEncoding,
         string $toEncoding,
         bool $safeMode = false,
-        ?int $safeCodepoint = null
+        int $safeCodepoint = 0xFFFC
     ) {
         $this->safeMode = $safeMode;
-        if ($safeCodepoint !== null) {
-            $this->safeCodepoint = $safeCodepoint;
-        }
+        $this->safeCodepoint = $safeCodepoint;
 
         $fromEncoding = strtolower($fromEncoding);
         $toEncoding   = strtolower($toEncoding);
@@ -107,13 +105,13 @@ class TranscodeUnicode implements TranscodeUnicodeInterface
                 $startByte = $v;
                 $mode = 'add';
                 $test = 'range';
-                if ($v >> 5 === 6) { // &110xxxxx 10xxxxx
+                if (0xC2 <= $v && $v <= 0xDF) { // &110xxxxx 10xxxxx
                     $nextByte = 0; // How many times subsequent bit masks must rotate 6bits to the left
                     $v = ($v - 192) << 6;
-                } elseif ($v >> 4 === 14) { // &1110xxxx 10xxxxxx 10xxxxxx
+                } elseif (0xE0 <= $v && $v <= 0xEF) { // &1110xxxx 10xxxxxx 10xxxxxx
                     $nextByte = 1;
                     $v = ($v - 224) << 12;
-                } elseif ($v >> 3 === 30) { // &11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
+                } elseif (0xF0 <= $v && $v <= 0xF4) { // &11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
                     $nextByte = 2;
                     $v = ($v - 240) << 18;
                 } elseif ($this->safeMode) {
@@ -128,9 +126,17 @@ class TranscodeUnicode implements TranscodeUnicodeInterface
                         303,
                     );
                 }
-                if (($inputLength - $k - $nextByte) < 2) {
+                if (($inputLength - $k - 1) < ($nextByte + 1)) {
+                    if (!$this->safeMode) {
+                        throw new InvalidCharacterException(
+                            sprintf('Conversion from UTF-8 to UCS-4 failed: malformed input at byte %d', $k),
+                            302,
+                        );
+                    }
+
                     $output[$outputLength] = $this->safeCodepoint;
-                    $mode = 'no';
+                    ++$outputLength;
+                    $mode = 'next';
 
                     continue;
                 }
@@ -140,41 +146,38 @@ class TranscodeUnicode implements TranscodeUnicodeInterface
 
                 continue;
             }
-            if ('add' == $mode) {
-                if (!$this->safeMode && $test === 'range') {
-                    $test = 'none';
-                    if (
-                        ($v < 0xA0 && $startByte === 0xE0)
-                        || ($v < 0x90 && $startByte === 0xF0)
-                        || ($v > 0x8F && $startByte === 0xF4)
-                    ) {
-                        throw new InvalidCharacterException(
-                            sprintf('Bogus UTF-8 character (out of legal range) at byte %d', $k),
-                            304,
-                        );
-                    }
+            if (!$this->safeMode && $test === 'range') {
+                $test = 'none';
+                if (
+                    ($v < 0xA0 && $startByte === 0xE0)
+                    || ($v > 0x9F && $startByte === 0xED)
+                    || ($v < 0x90 && $startByte === 0xF0)
+                    || ($v > 0x8F && $startByte === 0xF4)
+                ) {
+                    throw new InvalidCharacterException(
+                        sprintf('Bogus UTF-8 character (out of legal range) at byte %d', $k),
+                        304,
+                    );
                 }
-                if ($v >> 6 === 2) { // Bit mask must be 10xxxxxx
-                    $v = ($v - 128) << ($nextByte * 6);
-                    $output[($outputLength - 1)] += $v;
-                    --$nextByte;
-                } else {
-                    if ($this->safeMode) {
-                        $output[$outputLength - 1] = chr($this->safeCodepoint);
-                        $k--;
-                        $mode = 'next';
+            }
+            if ($v >> 6 === 2) { // Bit mask must be 10xxxxxx
+                $v = ($v - 128) << ($nextByte * 6);
+                $output[($outputLength - 1)] += $v;
+                --$nextByte;
+            } elseif ($this->safeMode) {
+                $output[$outputLength - 1] = $this->safeCodepoint;
+                $k--;
+                $mode = 'next';
 
-                        continue;
-                    } else {
-                        throw new InvalidCharacterException(
-                            sprintf('Conversion from UTF-8 to UCS-4 failed: malformed input at byte %d', $k),
-                            302,
-                        );
-                    }
-                }
-                if ($nextByte < 0) {
-                    $mode = 'next';
-                }
+                continue;
+            } else {
+                throw new InvalidCharacterException(
+                    sprintf('Conversion from UTF-8 to UCS-4 failed: malformed input at byte %d', $k),
+                    302,
+                );
+            }
+            if ($nextByte < 0) {
+                $mode = 'next';
             }
         }
 
@@ -212,7 +215,7 @@ class TranscodeUnicode implements TranscodeUnicodeInterface
                     chr(128 + ($v & 63))
                 );
             } elseif ($this->safeMode) {
-                $output .= $this->safeCodepoint;
+                $output .= $this->ucs4array_utf8([$this->safeCodepoint]);
             } else {
                 throw new InvalidCharacterException(
                     sprintf('Conversion from UCS-4 to UTF-8 failed: malformed input at byte %d', $k),

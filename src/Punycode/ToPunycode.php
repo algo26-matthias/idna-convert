@@ -136,6 +136,10 @@ class ToPunycode extends AbstractPunycode implements PunycodeInterface
      */
     private function checkConvertPreconditions(array $decoded): void
     {
+        if ($decoded === []) {
+            return;
+        }
+
         // We cannot encode a domain name containing the Punycode prefix
         $checkForPrefix = array_slice($decoded, 0, self::$prefixLength);
         if (self::$prefixAsArray === $checkForPrefix) {
@@ -147,14 +151,17 @@ class ToPunycode extends AbstractPunycode implements PunycodeInterface
         }
 
         if (
-            $decoded[0] === '-'
-            || $decoded[array_key_last($decoded)] === '-'
+            $decoded[0] === 0x2D
+            || $decoded[array_key_last($decoded)] === 0x2D
         ) {
             throw new Std3AsciiRulesViolationException('No trailing / leading hyphens allowed', 103);
         }
 
         foreach ($decoded as $index => $codePoint) {
-            if (!preg_match('[-a-zA-Z0-9]u', chr($codePoint))) {
+            $isDigit = 0x30 <= $codePoint && $codePoint <= 0x39;
+            $isUppercaseAscii = 0x41 <= $codePoint && $codePoint <= 0x5A;
+            $isLowercaseAscii = 0x61 <= $codePoint && $codePoint <= 0x7A;
+            if (!$isDigit && !$isUppercaseAscii && !$isLowercaseAscii && $codePoint !== 0x2D) {
                 throw new Std3AsciiRulesViolationException(
                     sprintf('Character at offset %d is outside the legal range', $index),
                     104,
