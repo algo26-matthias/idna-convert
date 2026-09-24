@@ -128,13 +128,16 @@ class ToIdnTest extends TestCase
         (new ToIdn())->convertUrl("https://invalid.\xFF.example/path");
     }
 
-    public function testConvertRejectsUrlSyntaxWithDedicatedErrorCode(): void
+    /**
+     * @dataProvider providerUrlSyntax
+     */
+    public function testConvertRejectsUrlSyntaxWithDedicatedErrorCode(string $host): void
     {
         self::expectException(InvalidCharacterException::class);
         self::expectExceptionCode(205);
         self::expectExceptionMessage('Neither email addresses nor URLs are allowed');
 
-        (new ToIdn())->convert('example.com/path');
+        (new ToIdn())->convert($host);
     }
 
     /**
@@ -275,6 +278,16 @@ class ToIdnTest extends TestCase
             ['tɛ̱̈st', 'xn--tst-ltb97f9g'],
             ['aကျွန်ုပ်d', 'xn--ad-fzj2ef9m0cceu'],
             ['ªa', 'aa'],
+        ];
+    }
+
+    public static function providerUrlSyntax(): array
+    {
+        return [
+            'path separator' => ['example.com/path'],
+            'port separator' => ['example.com:443'],
+            'query separator' => ['example.com?query'],
+            'email separator' => ['user@example.com'],
         ];
     }
 

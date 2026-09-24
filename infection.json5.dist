@@ -10,7 +10,9 @@
             "NamePrep/NamePrepData2008.php"
         ]
     },
-    timeout: 10,
+    // The complete test suite takes well below one second. Five seconds leaves
+    // ample CI headroom while terminating deliberately broken loop mutants early.
+    timeout: 5,
     threads: "max",
     testFramework: "phpunit",
     phpUnit: {

@@ -34,14 +34,12 @@ class ToPunycode extends AbstractPunycode implements PunycodeInterface
     {
         $decoded = $this->namePrep->do($decoded);
 
-        $this->checkConvertPreconditions($decoded);
-        // We will not try to encode strings consisting of basic code points only
-        $canEncode = $this->checkForNonBasicCodepoints($decoded);
-
         $decodedLength = count($decoded);
         if (!$decodedLength) {
             return null; // Empty array
         }
+
+        $this->checkConvertPreconditions($decoded);
 
         $codeCount = 0; // How many chars have been consumed
         $encoded = '';
@@ -52,10 +50,6 @@ class ToPunycode extends AbstractPunycode implements PunycodeInterface
                 $encoded .= chr($decoded[$i]);
                 $codeCount++;
             }
-        }
-
-        if (!$canEncode) {
-            return $encoded;
         }
 
         if ($codeCount === $decodedLength) {
@@ -136,10 +130,6 @@ class ToPunycode extends AbstractPunycode implements PunycodeInterface
      */
     private function checkConvertPreconditions(array $decoded): void
     {
-        if ($decoded === []) {
-            return;
-        }
-
         // We cannot encode a domain name containing the Punycode prefix
         $checkForPrefix = array_slice($decoded, 0, self::$prefixLength);
         if (self::$prefixAsArray === $checkForPrefix) {
@@ -159,25 +149,13 @@ class ToPunycode extends AbstractPunycode implements PunycodeInterface
 
         foreach ($decoded as $index => $codePoint) {
             $isDigit = 0x30 <= $codePoint && $codePoint <= 0x39;
-            $isUppercaseAscii = 0x41 <= $codePoint && $codePoint <= 0x5A;
             $isLowercaseAscii = 0x61 <= $codePoint && $codePoint <= 0x7A;
-            if (!$isDigit && !$isUppercaseAscii && !$isLowercaseAscii && $codePoint !== 0x2D) {
+            if (!$isDigit && !$isLowercaseAscii && $codePoint !== 0x2D) {
                 throw new Std3AsciiRulesViolationException(
                     sprintf('Character at offset %d is outside the legal range', $index),
                     104,
                 );
             }
         }
-    }
-
-    private function checkForNonBasicCodepoints(array $decoded): bool
-    {
-        foreach ($decoded as $codePoint) {
-            if ($codePoint > 0x7a) {
-                return true;
-            }
-        }
-
-        return false;
     }
 }

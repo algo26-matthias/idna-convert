@@ -46,6 +46,14 @@ class NamePrepTest extends TestCase
     }
 
     /**
+     * @dataProvider providerHangulComposition
+     */
+    public function testHangulCompositionHonoursUnicodeBoundaries(array $input, array $expected): void
+    {
+        self::assertSame($expected, $this->namePrep2003->do($input));
+    }
+
+    /**
      * @dataProvider providerProhibitedRangeBoundaries
      */
     public function testProhibitedRangeBoundariesReportTheirCategory(int $codePoint): void
@@ -227,6 +235,26 @@ class NamePrepTest extends TestCase
             'first range upper boundary' => [0x9F],
             'private-use lower boundary' => [0xE000],
             'private-use upper boundary' => [0xF8FF],
+        ];
+    }
+
+    public static function providerHangulComposition(): array
+    {
+        return [
+            'first leading and vowel Jamo' => [[0x1100, 0x1161], [0xAC00]],
+            'last leading and vowel Jamo' => [[0x1112, 0x1175], [0xD788]],
+            'first valid trailing Jamo' => [[0xAC00, 0x11A8], [0xAC01]],
+            'last valid trailing Jamo' => [[0xAC00, 0x11C2], [0xAC1B]],
+            'trailing Jamo lower boundary is not composed' => [[0xAC00, 0x11A7], [0xAC00, 0x11A7]],
+            'trailing Jamo upper boundary is not composed' => [[0xAC00, 0x11C3], [0xAC00, 0x11C3]],
+            'syllable lower boundary is not extended' => [[0xABE4, 0x11A8], [0xABE4, 0x11A8]],
+            'syllable upper boundary is not extended' => [[0xD7A4, 0x11A8], [0xD7A4, 0x11A8]],
+            'leading Jamo lower boundary is not composed' => [[0x10FF, 0x1161], [0x10FF, 0x1161]],
+            'leading Jamo upper boundary is not composed' => [[0x1113, 0x1161], [0x1113, 0x1161]],
+            'vowel Jamo lower boundary is not composed' => [[0x1100, 0x1160], [0x1100, 0x1160]],
+            'vowel Jamo upper boundary is not composed' => [[0x1100, 0x1176], [0x1100, 0x1176]],
+            'last precomposed Hangul syllable' => [[0xD7A3], [0xD7A3]],
+            'code point after Hangul syllables' => [[0xD7A4], [0xD7A4]],
         ];
     }
 

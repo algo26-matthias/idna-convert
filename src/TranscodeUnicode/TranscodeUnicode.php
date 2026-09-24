@@ -141,7 +141,7 @@ class TranscodeUnicode implements TranscodeUnicodeInterface
                     continue;
                 }
 
-                $output[$outputLength] = (int) $v;
+                $output[$outputLength] = $v;
                 ++$outputLength;
 
                 continue;

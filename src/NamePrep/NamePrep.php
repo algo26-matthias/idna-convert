@@ -81,13 +81,13 @@ class NamePrep implements NamePrepInterface
                 }
             }
 
-            if (0xAC00 <= $codePoint && $codePoint <= 0xD7AF) {
+            if (self::S_BASE <= $codePoint && $codePoint < self::S_BASE + self::S_COUNT) {
                 foreach ($this->hangulDecompose($codePoint) as $decomposed) {
-                    $outputArray[] = (int) $decomposed;
+                    $outputArray[] = $decomposed;
                 }
             } elseif (isset($this->namePrepData->replaceMaps[$codePoint])) {
                 foreach ($this->applyCanonicalOrdering($this->namePrepData->replaceMaps[$codePoint]) as $reordered) {
-                    $outputArray[] = (int) $reordered;
+                    $outputArray[] = $reordered;
                 }
             } else {
                 $outputArray[] = (int) $codePoint;
@@ -149,17 +149,13 @@ class NamePrep implements NamePrepInterface
     private function hangulDecompose(int $codePoint): array
     {
         $sIndex = $codePoint - self::S_BASE;
-        if ($sIndex < 0 || $sIndex >= self::S_COUNT) {
-            return [$codePoint];
-        }
-
         $result = [
-            (int) self::L_BASE + $sIndex / self::N_COUNT,
-            (int) self::V_BASE + ($sIndex % self::N_COUNT) / self::T_COUNT,
+            self::L_BASE + intdiv($sIndex, self::N_COUNT),
+            self::V_BASE + intdiv($sIndex % self::N_COUNT, self::T_COUNT),
         ];
-        $T = intval(self::T_BASE + $sIndex % self::T_COUNT);
-        if ($T != self::T_BASE) {
-            $result[] = $T;
+        $trailingJamo = self::T_BASE + $sIndex % self::T_COUNT;
+        if ($trailingJamo !== self::T_BASE) {
+            $result[] = $trailingJamo;
         }
 
         return $result;
@@ -192,8 +188,8 @@ class NamePrep implements NamePrepInterface
                 0 <= $sIndex
                 && $sIndex < self::S_COUNT
                 && ($sIndex % self::T_COUNT == 0)
-                && 0 <= $tIndex
-                && $tIndex <= self::T_COUNT
+                && 0 < $tIndex
+                && $tIndex < self::T_COUNT
             ) {
                 // Create syllable of form LVT
                 $previousCharCode += $tIndex;
@@ -210,7 +206,7 @@ class NamePrep implements NamePrepInterface
                 && $vIndex < self::V_COUNT
             ) {
                 // Create syllable of form LV
-                $previousCharCode = (int) self::S_BASE + ($lIndex * self::V_COUNT + $vIndex) * self::T_COUNT;
+                $previousCharCode = self::S_BASE + ($lIndex * self::V_COUNT + $vIndex) * self::T_COUNT;
                 $result[(count($result) - 1)] = $previousCharCode; // reset last
 
                 continue; // discard char

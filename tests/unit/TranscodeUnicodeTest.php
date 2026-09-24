@@ -32,6 +32,11 @@ final class TranscodeUnicodeTest extends TestCase
         self::assertSame('unchanged', $this->transcoder->convert('unchanged', 'UTF8', 'utf8'));
     }
 
+    public function testIdenticalEncodingDoesNotValidateOrTransformInput(): void
+    {
+        self::assertSame("\xFF", $this->transcoder->convert("\xFF", 'UTF8', 'utf8'));
+    }
+
     public function testInvalidInputEncodingIsRejected(): void
     {
         self::expectException(InvalidArgumentException::class);
@@ -113,6 +118,58 @@ final class TranscodeUnicodeTest extends TestCase
         );
     }
 
+    public function testSafeModeContinuesAfterAnUnexpectedContinuationByte(): void
+    {
+        self::assertSame(
+            [0xFFFD, 0x41],
+            $this->transcoder->convert(
+                "\x80A",
+                TranscodeUnicode::FORMAT_UTF8,
+                TranscodeUnicode::FORMAT_UCS4_ARRAY,
+                true,
+                0xFFFD,
+            ),
+        );
+    }
+
+    public function testTruncatedUtf8AfterAsciiIsRejected(): void
+    {
+        self::expectException(InvalidCharacterException::class);
+        self::expectExceptionCode(302);
+
+        $this->transcoder->convert(
+            "A\xE2\x82",
+            TranscodeUnicode::FORMAT_UTF8,
+            TranscodeUnicode::FORMAT_UCS4_ARRAY,
+        );
+    }
+
+    public function testFourByteEncodingAppendsToExistingOutput(): void
+    {
+        self::assertSame(
+            "A\xF0\x90\x90\x80",
+            $this->transcoder->convert(
+                [0x41, 0x10400],
+                TranscodeUnicode::FORMAT_UCS4_ARRAY,
+                TranscodeUnicode::FORMAT_UTF8,
+            ),
+        );
+    }
+
+    public function testSafeModeReplacementAppendsToExistingOutput(): void
+    {
+        self::assertSame(
+            "A\xEF\xBF\xBDB",
+            $this->transcoder->convert(
+                [0x41, 1 << 21, 0x42],
+                TranscodeUnicode::FORMAT_UCS4_ARRAY,
+                TranscodeUnicode::FORMAT_UTF8,
+                true,
+                0xFFFD,
+            ),
+        );
+    }
+
     public function testSafeModeEncodesItsReplacementCodePointAsUtf8(): void
     {
         self::assertSame(
@@ -157,8 +214,10 @@ final class TranscodeUnicodeTest extends TestCase
             'first three-byte code point' => [0x800, "\xE0\xA0\x80"],
             'last code point before surrogates' => [0xD7FF, "\xED\x9F\xBF"],
             'first code point after surrogates' => [0xE000, "\xEE\x80\x80"],
+            'valid three-byte sequence below four-byte boundary' => [0xF000, "\xEF\x80\x80"],
             'last three-byte code point' => [0xFFFF, "\xEF\xBF\xBF"],
             'first four-byte code point' => [0x10000, "\xF0\x90\x80\x80"],
+            'valid four-byte sequence above lower boundary' => [0x40000, "\xF1\x80\x80\x80"],
             'largest Unicode code point' => [0x10FFFF, "\xF4\x8F\xBF\xBF"],
         ];
     }
@@ -168,6 +227,7 @@ final class TranscodeUnicodeTest extends TestCase
         return [
             'continuation byte without start byte' => ["\x80", 303],
             'overlong two-byte sequence' => ["\xC0\x80", 303],
+            'overlong three-byte sequence' => ["\xE0\x9F\xBF", 304],
             'UTF-16 surrogate' => ["\xED\xA0\x80", 304],
             'above Unicode maximum' => ["\xF4\x90\x80\x80", 304],
             'truncated sequence' => ["\xE2\x82", 302],

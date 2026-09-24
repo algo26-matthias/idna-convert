@@ -16,7 +16,7 @@ services:
     command: >-
       ash -c "composer install
       && infection --configuration=infection.json5.dist
-      --only-covering-test-cases --min-msi=85 --min-covered-msi=85
-      --max-timeouts=20 --no-progress --no-interaction --show-mutations=max"
+      --only-covering-test-cases --min-msi=90 --min-covered-msi=90
+      --max-timeouts=30 --no-progress --no-interaction --show-mutations=max"
     volumes:
     - ./:/app

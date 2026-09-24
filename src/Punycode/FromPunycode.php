@@ -124,15 +124,15 @@ class FromPunycode extends AbstractPunycode implements PunycodeInterface
     {
         $codeAsInt = ord($codePoint);
 
-        if ($codeAsInt - 48 < 10) {
+        if (48 <= $codeAsInt && $codeAsInt <= 57) {
             return $codeAsInt - 22;
         }
 
-        if ($codeAsInt - 65 < 26) {
+        if (65 <= $codeAsInt && $codeAsInt <= 90) {
             return $codeAsInt - 65;
         }
 
-        if ($codeAsInt - 97 < 26) {
+        if (97 <= $codeAsInt && $codeAsInt <= 122) {
             return $codeAsInt - 97;
         }
 

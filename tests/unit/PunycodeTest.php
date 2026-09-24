@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Algo26\IdnaConvert\Test\unit;
 
 use Algo26\IdnaConvert\Exception\AlreadyPunycodeException;
+use Algo26\IdnaConvert\Exception\InvalidCharacterException;
 use Algo26\IdnaConvert\Exception\Std3AsciiRulesViolationException;
 use Algo26\IdnaConvert\Punycode\AbstractPunycode;
 use Algo26\IdnaConvert\Punycode\FromPunycode;
@@ -35,6 +36,9 @@ final class PunycodeTest extends TestCase
         self::assertSame(AbstractPunycode::PUNYCODE_PREFIX, (new FromPunycode())->getPunycodePrefix());
     }
 
+    /**
+     * @throws InvalidCharacterException
+     */
     public function testDecoderRejectsStringsWithoutPayload(): void
     {
         $decoder = new FromPunycode();
@@ -44,9 +48,44 @@ final class PunycodeTest extends TestCase
         self::assertFalse($decoder->convert("xn-- \t\n"));
     }
 
+    /**
+     * @dataProvider providerInvalidPunycodeDigits
+     */
+    public function testDecoderRejectsCharactersOutsidePunycodeDigitRanges(string $character): void
+    {
+        self::expectException(InvalidCharacterException::class);
+        self::expectExceptionMessage('encountered invalid digit at #4');
+
+        (new FromPunycode())->convert('xn--' . $character);
+    }
+
+    public function testPunycodeDigitsAreCaseInsensitiveAtBothLetterBoundaries(): void
+    {
+        $decoder = new FromPunycode();
+
+        self::assertSame($decoder->convert('xn--a'), $decoder->convert('xn--A'));
+        self::assertSame($decoder->convert('xn--za'), $decoder->convert('xn--ZA'));
+    }
+
     public function testEncoderHandlesAnEmptySequence(): void
     {
         self::assertNull((new ToPunycode())->convert([]));
+    }
+
+    public function testEncoderDoesNotEnableStd3RulesByDefault(): void
+    {
+        self::assertSame('xn--4ca', (new ToPunycode())->convert([0xE4]));
+    }
+
+    /**
+     * @dataProvider providerRoundTripLabels
+     */
+    public function testPunycodeReferenceEncodingAndRoundTrip(string $label, string $expected): void
+    {
+        $encoded = $this->encode($label);
+
+        self::assertSame($expected, $encoded);
+        self::assertSame($label, (new FromPunycode())->convert($encoded));
     }
 
     /**
@@ -89,7 +128,8 @@ final class PunycodeTest extends TestCase
     {
         return [
             'lowercase' => ['example'],
-            'digits' => ['123'],
+            'lowercase boundaries' => ['az'],
+            'digit boundaries' => ['09'],
             'internal hyphen' => ['valid-label'],
         ];
     }
@@ -100,6 +140,31 @@ final class PunycodeTest extends TestCase
             'leading' => ['-example'],
             'trailing' => ['example-'],
             'both' => ['-example-'],
+        ];
+    }
+
+    public static function providerInvalidPunycodeDigits(): array
+    {
+        return [
+            'before digits' => ['/'],
+            'after digits' => [':'],
+            'before uppercase letters' => ['@'],
+            'after uppercase letters' => ['['],
+            'before lowercase letters' => ['`'],
+            'after lowercase letters' => ['{'],
+        ];
+    }
+
+    public static function providerRoundTripLabels(): array
+    {
+        return [
+            'Latin with non-ASCII character at the start' => ['äaaa', 'xn--aaa-pla'],
+            'Latin with non-ASCII character in the middle' => ['mañana', 'xn--maana-pta'],
+            'Latin with non-ASCII character at the end' => ['bücher', 'xn--bcher-kva'],
+            'Greek' => ['παράδειγμα', 'xn--hxajbheg2az3al'],
+            'Cyrillic' => ['россия', 'xn--h1alffa9f'],
+            'CJK' => ['例え', 'xn--r8jz45g'],
+            'Hangul' => ['한국', 'xn--3e0b707e'],
         ];
     }
 
