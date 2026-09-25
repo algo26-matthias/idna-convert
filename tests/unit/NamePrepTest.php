@@ -61,6 +61,16 @@ class NamePrepTest extends TestCase
         (new NamePrep(2008))->do($input);
     }
 
+    /** @dataProvider providerMixedArabicDigitSets */
+    public function testMixedArabicDigitSetsFailTheirContextRule(array $input): void
+    {
+        self::expectException(InvalidCharacterException::class);
+        self::expectExceptionCode(101);
+        self::expectExceptionMessage('Arabic-Indic digit sets must not be mixed in an IDNA label');
+
+        (new NamePrep(2008))->do($input);
+    }
+
     public function testDirectlyProhibitedCharacterReportsItsCategory(): void
     {
         self::expectException(InvalidCharacterException::class);
@@ -209,6 +219,10 @@ class NamePrepTest extends TestCase
             'right-to-left label ending in European digits' => [[0x5D0, 0x31]],
             'right-to-left label ending in Arabic digits' => [[0x627, 0x660]],
             'right-to-left label ending in a non-spacing mark' => [[0x5D0, 0x5B0]],
+            'Arabic-Indic lower boundary without extended digits' => [[0x627, 0x660]],
+            'Arabic-Indic upper boundary without extended digits' => [[0x627, 0x669]],
+            'extended Arabic-Indic lower boundary without Arabic-Indic digits' => [[0x627, 0x6F0]],
+            'extended Arabic-Indic upper boundary without Arabic-Indic digits' => [[0x627, 0x6F9]],
         ];
     }
 
@@ -234,12 +248,22 @@ class NamePrepTest extends TestCase
             'non-joiner without joining context' => [[0x61, 0x200C, 0x62]],
             'non-joiner missing left joining character' => [[0x200C, 0x628]],
             'non-joiner missing right joining character' => [[0x628, 0x200C]],
-            'mixed Arabic digit sets' => [[0x627, 0x660, 0x6F0]],
             'mixed Arabic and European digits in RTL label' => [[0x627, 0x660, 0x31]],
             'RTL character in LTR label' => [[0x61, 0x5D0]],
             'RTL label ending in punctuation' => [[0x5D0, 0x2D]],
             'RTL label containing an LTR character' => [[0x5D0, 0x61, 0x5D0]],
             'RTL label starting with an Arabic digit' => [[0x660, 0x627]],
+            'hyphens in positions three and four by default' => [[0x61, 0x62, 0x2D, 0x2D, 0x63]],
+        ];
+    }
+
+    public static function providerMixedArabicDigitSets(): array
+    {
+        return [
+            'lower boundaries' => [[0x627, 0x660, 0x6F0]],
+            'upper boundaries' => [[0x627, 0x669, 0x6F9]],
+            'Arabic lower and extended upper boundaries' => [[0x627, 0x660, 0x6F9]],
+            'Arabic upper and extended lower boundaries' => [[0x627, 0x669, 0x6F0]],
         ];
     }
 

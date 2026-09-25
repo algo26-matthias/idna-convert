@@ -19,6 +19,7 @@ use PHPUnit\Framework\TestCase;
  * @covers \Algo26\IdnaConvert\NamePrep\UnicodeNormalizer
  * @covers \Algo26\IdnaConvert\NamePrep\UnicodeRange
  * @covers \Algo26\IdnaConvert\Punycode\AbstractPunycode
+ * @covers \Algo26\IdnaConvert\Punycode\FromPunycode
  * @covers \Algo26\IdnaConvert\Punycode\ToPunycode
  * @covers \Algo26\IdnaConvert\ToIdn
  * @covers \Algo26\IdnaConvert\TranscodeUnicode\ByteLengthTrait
@@ -294,6 +295,7 @@ class ToIdnTest extends TestCase
             ['ابة', 'xn--mgbcd'],
             ['אבג', 'xn--4dbcd'],
             ['ܐܑܒ', 'xn--9mbcd'],
+            ['abc.א', 'abc.xn--4db'],
             ['abcカガキ', 'xn--abc-mj4bfg'],
             ['åþçカガキ', 'xn--5cae2e328wfag'],
             ['¹1', '11'],

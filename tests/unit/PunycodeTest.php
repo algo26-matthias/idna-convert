@@ -136,6 +136,7 @@ final class PunycodeTest extends TestCase
             'lowercase boundaries' => ['az'],
             'digit boundaries' => ['09'],
             'internal hyphen' => ['valid-label'],
+            'hyphen in position three only' => ['ab-cd'],
         ];
     }
 

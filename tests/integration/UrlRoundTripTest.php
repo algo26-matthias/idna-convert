@@ -16,6 +16,7 @@ use PHPUnit\Framework\TestCase;
  * @covers \Algo26\IdnaConvert\NamePrep\NamePrepProcessor2003
  * @covers \Algo26\IdnaConvert\NamePrep\IdnaProcessor2008
  * @covers \Algo26\IdnaConvert\NamePrep\UnicodeNormalizer
+ * @covers \Algo26\IdnaConvert\NamePrep\UnicodeRange
  * @covers \Algo26\IdnaConvert\Punycode\AbstractPunycode
  * @covers \Algo26\IdnaConvert\Punycode\FromPunycode
  * @covers \Algo26\IdnaConvert\Punycode\ToPunycode

@@ -10,8 +10,8 @@ use Algo26\IdnaConvert\Exception\InvalidCharacterException;
 final class IdnaProcessor2008
 {
     public function __construct(
-        private readonly bool $checkHyphens = true,
-        private readonly ?bool $checkBidi = null,
+        private readonly bool $checkHyphens,
+        private readonly ?bool $checkBidi,
         private readonly UnicodeNormalizer $normalizer = new UnicodeNormalizer(2008),
     ) {
     }
@@ -200,7 +200,7 @@ final class IdnaProcessor2008
     private function joiningType(int $codePoint): ?string
     {
         foreach (IdnaData2008::JOINING_TYPES as $type => $ranges) {
-            if ($this->isInRanges($codePoint, $ranges)) {
+            if (UnicodeRange::contains($codePoint, $ranges)) {
                 return $type;
             }
         }
@@ -211,7 +211,7 @@ final class IdnaProcessor2008
     private function bidiClass(int $codePoint): ?string
     {
         foreach (IdnaData2008::BIDI_CLASSES as $class => $ranges) {
-            if ($this->isInRanges($codePoint, $ranges)) {
+            if (UnicodeRange::contains($codePoint, $ranges)) {
                 return $class;
             }
         }
@@ -222,12 +222,6 @@ final class IdnaProcessor2008
     private function hasScript(int $codePoint, string $script): bool
     {
         return UnicodeRange::contains($codePoint, IdnaData2008::SCRIPTS[$script]);
-    }
-
-    /** @param list<array{int, int}> $ranges */
-    private function isInRanges(int $codePoint, array $ranges): bool
-    {
-        return UnicodeRange::contains($codePoint, $ranges);
     }
 
     /** @param list<int> $label */
