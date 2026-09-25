@@ -11,7 +11,20 @@ use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 
 /**
+ * @covers \Algo26\IdnaConvert\AbstractIdnaConvert
+ * @covers \Algo26\IdnaConvert\NamePrep\CaseFolding
+ * @covers \Algo26\IdnaConvert\NamePrep\IdnaProcessor2008
+ * @covers \Algo26\IdnaConvert\NamePrep\NamePrep
+ * @covers \Algo26\IdnaConvert\NamePrep\NamePrepProcessor2003
+ * @covers \Algo26\IdnaConvert\NamePrep\UnicodeNormalizer
+ * @covers \Algo26\IdnaConvert\NamePrep\UnicodeRange
+ * @covers \Algo26\IdnaConvert\Punycode\AbstractPunycode
+ * @covers \Algo26\IdnaConvert\Punycode\FromPunycode
+ * @covers \Algo26\IdnaConvert\Punycode\ToPunycode
  * @covers \Algo26\IdnaConvert\ToIdn
+ * @covers \Algo26\IdnaConvert\TranscodeUnicode\ByteLengthTrait
+ * @covers \Algo26\IdnaConvert\TranscodeUnicode\TranscodeUnicode
+ * @covers \Algo26\IdnaConvert\TranscodeUnicode\Ucs4Codec
  */
 class ToIdnTest extends TestCase
 {
@@ -122,14 +135,52 @@ class ToIdnTest extends TestCase
     }
 
     /**
+     * @dataProvider providerUrlSyntax
+     */
+    public function testConvertRejectsUrlSyntaxWithDedicatedErrorCode(string $host): void
+    {
+        self::expectException(InvalidCharacterException::class);
+        self::expectExceptionCode(205);
+        self::expectExceptionMessage('Neither email addresses nor URLs are allowed');
+
+        (new ToIdn())->convert($host);
+    }
+
+    /**
      * @dataProvider providerAlreadyPunycode
      */
-    public function testThrowsAlreadyPunycodeException($decoded, $idnVersion): void
+    public function testRejectsInvalidExistingPunycode($decoded, $idnVersion): void
     {
-        self::expectException(AlreadyPunycodeException::class);
+        self::expectException(InvalidCharacterException::class);
 
         $idnaConvert = new ToIdn($idnVersion);
         $idnaConvert->convert($decoded);
+    }
+
+    public function testAcceptsCanonicalExistingPunycode(): void
+    {
+        self::assertSame('xn--mller-kva.example', (new ToIdn())->convert('XN--MLLER-KVA.example'));
+    }
+
+    /** @dataProvider providerInvalidDomainStructure */
+    public function testRejectsInvalidDomainStructure(string $domain): void
+    {
+        self::expectException(InvalidCharacterException::class);
+
+        (new ToIdn())->convert($domain);
+    }
+
+    public function testDnsLengthValidationCanBeDisabledExplicitly(): void
+    {
+        $label = str_repeat('a', 64);
+
+        self::assertSame($label, (new ToIdn(2008, false, true, false))->convert($label));
+        self::assertSame('example.', (new ToIdn(2008, false, true, false))->convert('example.'));
+    }
+
+    public function testHyphenValidationCanBeDisabledExplicitly(): void
+    {
+        self::assertSame('ab--cd', (new ToIdn(2008, false, false))->convert('ab--cd'));
     }
 
     /**
@@ -157,7 +208,6 @@ class ToIdnTest extends TestCase
     public static function providerUtf8(): array
     {
         return [
-            ['', ''],
             ['dass.example', 'dass.example'],
             ['müller', 'xn--mller-kva'],
             ['weißenbach', 'xn--weienbach-i1a'],
@@ -193,7 +243,7 @@ class ToIdnTest extends TestCase
             ['น้ำใสใจจริง.example', 'xn--72cba0e8bxb3cu4kb6d6b.example'],
             ['bären-mögen-füsse.example', 'xn--bren-mgen-fsse-5hb70axd.example'],
             ['daß.example', 'xn--da-hia.example'],
-            ['daẞ.example', 'dass.example'],
+            ['daẞ.example', 'xn--da-hia.example'],
             ['dömäin.example', 'xn--dmin-moa0i.example'],
             ['äaaa.example', 'xn--aaa-pla.example'],
             ['aäaa.example', 'xn--aaa-qla.example'],
@@ -207,8 +257,6 @@ class ToIdnTest extends TestCase
             ['fußball.example', 'xn--fuball-cta.example'],
             ['היפא18פאטאם', 'xn--18-uldcat6ad6bydd'],
             ['فرس18النهر', 'xn--18-dtd1bdi0h3ask'],
-            ["\u{33c7}", 'xn--czk'],
-            ["\u{37a}", 'xn--1va'],
             ['ídn', 'xn--dn-mja'],
             ['ëx.ídn', 'xn--x-ega.xn--dn-mja'],
             ['åþç', 'xn--5cae2e'],
@@ -216,7 +264,7 @@ class ToIdnTest extends TestCase
             ['ȧƀƈ', 'xn--lhaq98b'],
             ['ḁḃḉ', 'xn--2fges'],
             ['σ', 'xn--4xa'],
-            ['ς', 'xn--4xa'],
+            ['ς', 'xn--3xa'],
             ['丿人尸', 'xn--xiqplj17a'],
             ['かがき', 'xn--u8jcd'],
             ['カガキ', 'xn--lckcd'],
@@ -228,7 +276,6 @@ class ToIdnTest extends TestCase
             ['абв', 'xn--80acd'],
             ['աբգ', 'xn--y9acd'],
             ['აბგ', 'xn--lodcd'],
-            ['∡↺⊂', 'xn--b7gxomk'],
             ['कखग', 'xn--11bcd'],
             ['কখগ', 'xn--p5bcd'],
             ['ਕਖਗ', 'xn--d9bcd'],
@@ -248,6 +295,7 @@ class ToIdnTest extends TestCase
             ['ابة', 'xn--mgbcd'],
             ['אבג', 'xn--4dbcd'],
             ['ܐܑܒ', 'xn--9mbcd'],
+            ['abc.א', 'abc.xn--4db'],
             ['abcカガキ', 'xn--abc-mj4bfg'],
             ['åþçカガキ', 'xn--5cae2e328wfag'],
             ['¹1', '11'],
@@ -262,6 +310,16 @@ class ToIdnTest extends TestCase
         ];
     }
 
+    public static function providerUrlSyntax(): array
+    {
+        return [
+            'path separator' => ['example.com/path'],
+            'port separator' => ['example.com:443'],
+            'query separator' => ['example.com?query'],
+            'email separator' => ['user@example.com'],
+        ];
+    }
+
     public static function providerUtf8Idna2003(): array
     {
         return [
@@ -272,7 +330,25 @@ class ToIdnTest extends TestCase
             ['☃.example', 'xn--n3h.example'],
             ['fußball.example', 'fussball.example'],
             ["\u{33c7}", 'co.'],
-            ["\u{37a}", 'xn-- -gmb'],
+        ];
+    }
+
+    public static function providerInvalidDomainStructure(): array
+    {
+        return [
+            'empty domain' => [''],
+            'leading empty label' => ['.example'],
+            'interior empty label' => ['example..com'],
+            'trailing root label with DNS length checks enabled' => ['example.'],
+            'leading hyphen' => ['-example'],
+            'trailing hyphen' => ['example-'],
+            'hyphens in positions three and four' => ['ab--cd'],
+            'label longer than 63 bytes' => [str_repeat('a', 64)],
+            'domain longer than 253 bytes' => [implode('.', array_fill(0, 4, str_repeat('a', 63)))],
+            'leading spacing mark' => ["\u{0903}क"],
+            'leading combining mark with class zero' => ["\u{093E}क"],
+            'label maps to empty' => ["a.\u{00AD}.b"],
+            'LTR label violates Bidi rules in RTL domain' => ["0à.א"],
         ];
     }
 
@@ -351,6 +427,9 @@ class ToIdnTest extends TestCase
             ['abc+def'],
             ['do you copy?'],
             ['yes, minister!'],
+            ["\u{33c7}"],
+            ["\u{37a}"],
+            ['∡↺⊂'],
         ];
     }
 
@@ -360,7 +439,6 @@ class ToIdnTest extends TestCase
             ['-hyphenated'],
             ['-hyphenated-'],
             ['hyphenated-'],
-            ['negative-test-for-now'],
         ];
     }
 }

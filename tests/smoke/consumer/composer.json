@@ -8,7 +8,10 @@
             "type": "path",
             "url": "../../..",
             "options": {
-                "symlink": true
+                "symlink": true,
+                "versions": {
+                    "algo26-matthias/idna-convert": "dev-master"
+                }
             }
         }
     ],

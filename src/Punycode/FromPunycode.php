@@ -11,7 +11,9 @@ class FromPunycode extends AbstractPunycode implements PunycodeInterface
 {
     public function __construct(
         ?int $idnVersion = null,
-        ?bool $useStd3AsciiRules = false
+        ?bool $useStd3AsciiRules = false,
+        bool $checkHyphens = true,
+        ?bool $checkBidi = null,
     ) {
         parent::__construct();
     }
@@ -19,7 +21,7 @@ class FromPunycode extends AbstractPunycode implements PunycodeInterface
     /**
      * @throws InvalidCharacterException
      */
-    public function convert(string $encoded)
+    public function convert(string $encoded): string|false
     {
         if (!$this->isValidPunycodeString($encoded)) {
             return false;
@@ -89,23 +91,14 @@ class FromPunycode extends AbstractPunycode implements PunycodeInterface
             $isFirst = false;
             $char += (int) ($currentIndex / ($decodedLength + 1));
             $currentIndex %= ($decodedLength + 1);
-            if ($decodedLength > 0) {
-                // Make room for the decoded char
-                for ($i = $decodedLength; $i > $currentIndex; $i--) {
-                    $decoded[$i] = $decoded[($i - 1)];
-                }
-            }
-            $decoded[$currentIndex++] = $char;
+            array_splice($decoded, $currentIndex, 0, [$char]);
+            ++$currentIndex;
         }
 
-        return $this->unicodeTransCoder->convert(
-            $decoded,
-            $this->unicodeTransCoder::FORMAT_UCS4_ARRAY,
-            $this->unicodeTransCoder::FORMAT_UTF8
-        );
+        return $this->ucs4Codec->encode($decoded);
     }
 
-    private function isValidPunycodeString($encoded): bool
+    private function isValidPunycodeString(string $encoded): bool
     {
         // Check for existence of the prefix
         if (!str_starts_with($encoded, self::PUNYCODE_PREFIX)) {
@@ -124,15 +117,15 @@ class FromPunycode extends AbstractPunycode implements PunycodeInterface
     {
         $codeAsInt = ord($codePoint);
 
-        if ($codeAsInt - 48 < 10) {
+        if (48 <= $codeAsInt && $codeAsInt <= 57) {
             return $codeAsInt - 22;
         }
 
-        if ($codeAsInt - 65 < 26) {
+        if (65 <= $codeAsInt && $codeAsInt <= 90) {
             return $codeAsInt - 65;
         }
 
-        if ($codeAsInt - 97 < 26) {
+        if (97 <= $codeAsInt && $codeAsInt <= 122) {
             return $codeAsInt - 97;
         }
 
