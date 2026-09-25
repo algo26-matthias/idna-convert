@@ -37,17 +37,6 @@ final class TranscodeUnicodeTest extends TestCase
         self::assertSame("\xFF", $this->transcoder->convert("\xFF", 'UTF8', 'utf8'));
     }
 
-    public function testTypedUcs4ConversionMethodsRoundTrip(): void
-    {
-        $codePoints = $this->transcoder->toUcs4Array('Aä', TranscodeUnicode::FORMAT_UTF8);
-
-        self::assertSame([0x41, 0xE4], $codePoints);
-        self::assertSame(
-            'Aä',
-            $this->transcoder->fromUcs4Array($codePoints, TranscodeUnicode::FORMAT_UTF8),
-        );
-    }
-
     public function testInvalidInputEncodingIsRejected(): void
     {
         self::expectException(InvalidArgumentException::class);
@@ -115,20 +104,118 @@ final class TranscodeUnicodeTest extends TestCase
         );
     }
 
+    /** @dataProvider providerInvalidUnicodeScalarValues */
+    public function testInvalidUnicodeScalarValueIsRejected(int $codePoint): void
+    {
+        self::expectException(InvalidCharacterException::class);
+        self::expectExceptionCode(305);
+
+        $this->transcoder->convert(
+            [$codePoint],
+            TranscodeUnicode::FORMAT_UCS4_ARRAY,
+            TranscodeUnicode::FORMAT_UTF8,
+        );
+    }
+
+    /** @dataProvider providerInvalidUnicodeScalarValues */
+    public function testInvalidSafeReplacementIsRejectedBeforeConversion(int $safeCodePoint): void
+    {
+        self::expectException(InvalidArgumentException::class);
+        self::expectExceptionMessage('Safe replacement must be a valid Unicode scalar value');
+
+        $this->transcoder->convert(
+            "\x80",
+            TranscodeUnicode::FORMAT_UTF8,
+            TranscodeUnicode::FORMAT_UCS4_ARRAY,
+            true,
+            $safeCodePoint,
+        );
+    }
+
+    /** @dataProvider providerInvalidUnicodeScalarValues */
+    public function testInvalidUnicodeScalarValueIsRejectedForUtf7(int $codePoint): void
+    {
+        self::expectException(InvalidCharacterException::class);
+        self::expectExceptionCode(305);
+
+        $this->transcoder->convert(
+            [$codePoint],
+            TranscodeUnicode::FORMAT_UCS4_ARRAY,
+            TranscodeUnicode::FORMAT_UTF7,
+        );
+    }
+
+    public function testUtf7ImapSupplementaryCharacterRoundTrip(): void
+    {
+        $encoded = $this->transcoder->convert(
+            [0x1F600],
+            TranscodeUnicode::FORMAT_UCS4_ARRAY,
+            TranscodeUnicode::FORMAT_UTF7_IMAP,
+        );
+
+        self::assertSame('&2D3eAA-', $encoded);
+        self::assertSame(
+            [0x1F600],
+            $this->transcoder->convert(
+                $encoded,
+                TranscodeUnicode::FORMAT_UTF7_IMAP,
+                TranscodeUnicode::FORMAT_UCS4_ARRAY,
+            ),
+        );
+    }
+
+    /** @dataProvider providerUtf7RoundTrips */
+    public function testUtf7RoundTrip(array $codePoints, string $expected): void
+    {
+        $encoded = $this->transcoder->convert(
+            $codePoints,
+            TranscodeUnicode::FORMAT_UCS4_ARRAY,
+            TranscodeUnicode::FORMAT_UTF7,
+        );
+
+        self::assertSame($expected, $encoded);
+        self::assertSame(
+            $codePoints,
+            $this->transcoder->convert(
+                $encoded,
+                TranscodeUnicode::FORMAT_UTF7,
+                TranscodeUnicode::FORMAT_UCS4_ARRAY,
+            ),
+        );
+    }
+
+    /** @dataProvider providerMalformedUtf7 */
+    public function testMalformedUtf7IsRejected(string $input): void
+    {
+        self::expectException(InvalidCharacterException::class);
+        self::expectExceptionCode(307);
+
+        $this->transcoder->convert(
+            $input,
+            TranscodeUnicode::FORMAT_UTF7,
+            TranscodeUnicode::FORMAT_UCS4_ARRAY,
+        );
+    }
+
     public function testNegativeUcs4IsRejected(): void
     {
         self::expectException(InvalidCharacterException::class);
         self::expectExceptionCode(305);
 
-        $this->transcoder->fromUcs4Array([-1], TranscodeUnicode::FORMAT_UTF8);
+        $this->transcoder->convert(
+            [-1],
+            TranscodeUnicode::FORMAT_UCS4_ARRAY,
+            TranscodeUnicode::FORMAT_UTF8,
+        );
     }
 
     public function testSafeModeReplacesNegativeUcs4WithTheConfiguredCodePoint(): void
     {
         self::assertSame(
             "A\xEF\xBF\xBDB",
-            $this->transcoder->fromUcs4Array(
+            $this->transcoder->convert(
                 [0x41, -1, 0x42],
+                TranscodeUnicode::FORMAT_UCS4_ARRAY,
                 TranscodeUnicode::FORMAT_UTF8,
                 true,
                 0xFFFD,
@@ -264,6 +351,36 @@ final class TranscodeUnicodeTest extends TestCase
             'above Unicode maximum' => ["\xF4\x90\x80\x80", 304],
             'truncated sequence' => ["\xE2\x82", 302],
             'ASCII in continuation position' => ["\xE2A", 302],
+        ];
+    }
+
+    public static function providerInvalidUnicodeScalarValues(): array
+    {
+        return [
+            'high surrogate' => [0xD800],
+            'low surrogate' => [0xDFFF],
+            'above Unicode maximum' => [0x110000],
+            'negative value' => [-1],
+        ];
+    }
+
+    public static function providerUtf7RoundTrips(): array
+    {
+        return [
+            'ASCII and shift character' => [[0x41, 0x2B, 0x42], 'A+-B'],
+            'BMP character' => [[0xE4], '+AOQ-'],
+            'supplementary character' => [[0x1F600], '+2D3eAA-'],
+            'sequence followed by direct character' => [[0xE4, 0x41], '+AOQ-A'],
+        ];
+    }
+
+    public static function providerMalformedUtf7(): array
+    {
+        return [
+            'empty shift sequence' => ['+'],
+            'odd UTF-16 byte count' => ['+QQ-'],
+            'unpaired high surrogate' => ['+2AA-'],
+            'unpaired low surrogate' => ['+3AA-'],
         ];
     }
 }

@@ -14,6 +14,7 @@ use PHPUnit\Framework\TestCase;
  * @covers \Algo26\IdnaConvert\ToUnicode
  * @covers \Algo26\IdnaConvert\TranscodeUnicode\ByteLengthTrait
  * @covers \Algo26\IdnaConvert\TranscodeUnicode\TranscodeUnicode
+ * @covers \Algo26\IdnaConvert\TranscodeUnicode\Ucs4Codec
  */
 class ToUnicodeTest extends TestCase
 {

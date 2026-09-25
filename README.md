@@ -134,7 +134,7 @@ $input = 'meine-straße.example';
 // Encode it to its punycode representation  
 $output = $IDN->convert($input);  
 // Output what we got now  
-echo $output; // xn--meine-strae-46a.example
+echo $output; // meine-strasse.example
   
 // Switch back to IDNA 2008
 $IDN = new ToIdn(2008);
@@ -143,7 +143,7 @@ $input = 'meine-straße.example';
 // Encode it to its punycode representation  
 $output = $IDN->convert($input);
 // Output what we got now  
-echo $output; // meine-strasse.example
+echo $output; // xn--meine-strae-46a.example
 ```
 
 
@@ -192,10 +192,10 @@ echo $transcodeUnicode->convert($mystring, 'utf8', 'utf7imap');
 
 ## Running tests
 
-The library is supplied with a `docker-compose.yml`, that allows to run the supplied tests. This assumes, you have Docker installed and docker compose available as a command. Just issue
+The library is supplied with a `compose.yml`, that allows to run the supplied tests. This assumes, you have Docker installed and docker compose available as a command. Just issue
 
 ```
-docker compose run --rm idna-convert-tests # Unit tests
+docker compose run --rm idna-convert-test # Unit tests
 docker compose run --rm idna-convert-infection # Mutation tests
 ```
 in you local command line and see the output of PHPUnit / Infection.

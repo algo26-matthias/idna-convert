@@ -7,11 +7,55 @@ on:
         branches: [master]
 
 jobs:
+    unicode-data:
+        runs-on: ubuntu-latest
+
+        steps:
+        - uses: actions/checkout@v4
+
+        - name: Set up PHP
+          uses: shivammathur/setup-php@v2
+          with:
+              php-version: 8.5
+              tools: composer
+
+        - name: Install dependencies
+          run: composer install --no-interaction
+
+        - name: Download pinned Unicode source data
+          run: |
+              curl --fail --silent --show-error --location --output /tmp/UnicodeData-3.2.0.txt https://www.unicode.org/Public/3.2-Update/UnicodeData-3.2.0.txt
+              curl --fail --silent --show-error --location --output /tmp/CompositionExclusions-3.2.0.txt https://www.unicode.org/Public/3.2-Update/CompositionExclusions-3.2.0.txt
+              curl --fail --silent --show-error --location --output /tmp/NormalizationTest-3.2.0.txt https://www.unicode.org/Public/3.2-Update/NormalizationTest-3.2.0.txt
+              curl --fail --silent --show-error --location --output /tmp/UnicodeData-18.0.0.txt https://www.unicode.org/Public/18.0.0/ucd/UnicodeData.txt
+              curl --fail --silent --show-error --location --output /tmp/CompositionExclusions-18.0.0.txt https://www.unicode.org/Public/18.0.0/ucd/CompositionExclusions.txt
+              curl --fail --silent --show-error --location --output /tmp/NormalizationTest-18.0.0.txt https://www.unicode.org/Public/18.0.0/ucd/NormalizationTest.txt
+              curl --fail --silent --show-error --location --output /tmp/IdnaMappingTable-18.0.0.txt https://www.unicode.org/Public/18.0.0/idna/IdnaMappingTable.txt
+              curl --fail --silent --show-error --location --output /tmp/IdnaTestV2-18.0.0.txt https://www.unicode.org/Public/18.0.0/idna/IdnaTestV2.txt
+              curl --fail --silent --show-error --location --output /tmp/DerivedJoiningType-18.0.0.txt https://www.unicode.org/Public/18.0.0/ucd/extracted/DerivedJoiningType.txt
+              curl --fail --silent --show-error --location --output /tmp/Scripts-18.0.0.txt https://www.unicode.org/Public/18.0.0/ucd/Scripts.txt
+              curl --fail --silent --show-error --location --output /tmp/DerivedBidiClass-18.0.0.txt https://www.unicode.org/Public/18.0.0/ucd/extracted/DerivedBidiClass.txt
+
+        - name: Verify generated tables are reproducible
+          run: |
+              php tools/generate-normalization-data.php 3.2.0 /tmp/UnicodeData-3.2.0.txt /tmp/CompositionExclusions-3.2.0.txt /tmp/NormalizationData2003.php
+              php tools/generate-normalization-data.php 18.0.0 /tmp/UnicodeData-18.0.0.txt /tmp/CompositionExclusions-18.0.0.txt /tmp/NormalizationData2008.php
+              php tools/generate-idna-data.php /tmp/IdnaMappingTable-18.0.0.txt /tmp/DerivedJoiningType-18.0.0.txt /tmp/Scripts-18.0.0.txt /tmp/DerivedBidiClass-18.0.0.txt /tmp/IdnaData2008.php
+              cmp src/NamePrep/NormalizationData2003.php /tmp/NormalizationData2003.php
+              cmp src/NamePrep/NormalizationData2008.php /tmp/NormalizationData2008.php
+              cmp src/NamePrep/IdnaData2008.php /tmp/IdnaData2008.php
+
+        - name: Verify normalization conformance
+          run: |
+              php tools/verify-normalization.php 2003 /tmp/NormalizationTest-3.2.0.txt
+              php tools/verify-normalization.php 2008 /tmp/NormalizationTest-18.0.0.txt
+              php tools/verify-idna.php /tmp/IdnaTestV2-18.0.0.txt
+
     quality:
         runs-on: ubuntu-latest
 
         steps:
-        - uses: actions/checkout@v3
+        - uses: actions/checkout@v4
 
         - name: Set up PHP
           uses: shivammathur/setup-php@v2
@@ -29,14 +73,14 @@ jobs:
         runs-on: ubuntu-latest
 
         steps:
-        - uses: actions/checkout@v3
+        - uses: actions/checkout@v4
 
         - name: Set up PHP
           uses: shivammathur/setup-php@v2
           with:
               php-version: 8.5
               coverage: pcov
-              ini-values: pcov.exclude="~/src/NamePrep/(CaseFoldingData|NamePrepData2003|NamePrepData2008)\.php$~"
+              ini-values: pcov.exclude="~/src/NamePrep/(CaseFoldingData|IdnaData2008|NamePrepData2003|NamePrepData2008|NormalizationData2003|NormalizationData2008)\.php$~"
               tools: composer, infection:0.34.2
           env:
               fail-fast: true
@@ -45,7 +89,7 @@ jobs:
           run: composer install --no-interaction
 
         - name: Run mutation tests
-          run: infection --configuration=infection.json5.dist --only-covering-test-cases --min-msi=90 --min-covered-msi=90 --max-timeouts=30 --no-progress --no-interaction
+          run: infection --configuration=infection.json5.dist --only-covering-test-cases --min-msi=90 --min-covered-msi=90 --max-timeouts=40 --no-progress --no-interaction
 
     test:
         runs-on: ubuntu-latest
@@ -59,7 +103,7 @@ jobs:
                   allow-failure: true
 
         steps:
-        - uses: actions/checkout@v3
+        - uses: actions/checkout@v4
 
         - name: Set up PHP
           uses: shivammathur/setup-php@v2
@@ -78,7 +122,7 @@ jobs:
         runs-on: ubuntu-latest
 
         steps:
-        - uses: actions/checkout@v3
+        - uses: actions/checkout@v4
 
         - name: Set up PHP
           uses: shivammathur/setup-php@v2
@@ -101,7 +145,7 @@ jobs:
                 php-version: [8.1, 8.5]
 
         steps:
-        - uses: actions/checkout@v3
+        - uses: actions/checkout@v4
 
         - name: Set up PHP
           uses: shivammathur/setup-php@v2

@@ -15,12 +15,17 @@ use PHPUnit\Framework\TestCase;
 
 /**
  * @covers \Algo26\IdnaConvert\NamePrep\CaseFolding
+ * @covers \Algo26\IdnaConvert\NamePrep\IdnaProcessor2008
  * @covers \Algo26\IdnaConvert\NamePrep\NamePrep
+ * @covers \Algo26\IdnaConvert\NamePrep\NamePrepProcessor2003
+ * @covers \Algo26\IdnaConvert\NamePrep\UnicodeNormalizer
+ * @covers \Algo26\IdnaConvert\NamePrep\UnicodeRange
  * @covers \Algo26\IdnaConvert\Punycode\AbstractPunycode
  * @covers \Algo26\IdnaConvert\Punycode\FromPunycode
  * @covers \Algo26\IdnaConvert\Punycode\ToPunycode
  * @covers \Algo26\IdnaConvert\TranscodeUnicode\ByteLengthTrait
  * @covers \Algo26\IdnaConvert\TranscodeUnicode\TranscodeUnicode
+ * @covers \Algo26\IdnaConvert\TranscodeUnicode\Ucs4Codec
  */
 final class PunycodeTest extends TestCase
 {
@@ -113,7 +118,7 @@ final class PunycodeTest extends TestCase
         self::expectExceptionCode(104);
         self::expectExceptionMessage('Character at offset 3 is outside the legal range');
 
-        $this->encode('abcä', true);
+        $this->encode('abc:', true, 2003);
     }
 
     public function testEncoderRejectsAnExistingPunycodePrefix(): void
@@ -168,7 +173,7 @@ final class PunycodeTest extends TestCase
         ];
     }
 
-    private function encode(string $label, bool $useStd3AsciiRules = false): ?string
+    private function encode(string $label, bool $useStd3AsciiRules = false, int $idnVersion = 2008): ?string
     {
         $codePoints = $this->transcoder->convert(
             $label,
@@ -176,6 +181,6 @@ final class PunycodeTest extends TestCase
             TranscodeUnicode::FORMAT_UCS4_ARRAY,
         );
 
-        return (new ToPunycode(2008, $useStd3AsciiRules))->convert($codePoints);
+        return (new ToPunycode($idnVersion, $useStd3AsciiRules))->convert($codePoints);
     }
 }

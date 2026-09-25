@@ -11,8 +11,11 @@
     </include>
     <exclude>
       <file>src/NamePrep/CaseFoldingData.php</file>
+      <file>src/NamePrep/IdnaData2008.php</file>
       <file>src/NamePrep/NamePrepData2003.php</file>
       <file>src/NamePrep/NamePrepData2008.php</file>
+      <file>src/NamePrep/NormalizationData2003.php</file>
+      <file>src/NamePrep/NormalizationData2008.php</file>
     </exclude>
   </source>
 </phpunit>

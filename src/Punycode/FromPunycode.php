@@ -11,7 +11,9 @@ class FromPunycode extends AbstractPunycode implements PunycodeInterface
 {
     public function __construct(
         ?int $idnVersion = null,
-        ?bool $useStd3AsciiRules = false
+        ?bool $useStd3AsciiRules = false,
+        bool $checkHyphens = true,
+        ?bool $checkBidi = null,
     ) {
         parent::__construct();
     }
@@ -93,10 +95,7 @@ class FromPunycode extends AbstractPunycode implements PunycodeInterface
             ++$currentIndex;
         }
 
-        return $this->unicodeTransCoder->fromUcs4Array(
-            $decoded,
-            $this->unicodeTransCoder::FORMAT_UTF8,
-        );
+        return $this->ucs4Codec->encode($decoded);
     }
 
     private function isValidPunycodeString(string $encoded): bool
