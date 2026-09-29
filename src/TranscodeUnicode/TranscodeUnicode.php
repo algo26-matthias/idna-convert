@@ -187,7 +187,8 @@ class TranscodeUnicode implements TranscodeUnicodeInterface
             }
             if (!$this->safeMode && $test === 'range') {
                 $test = 'none';
-                if (($v < 0xA0 && $startByte === 0xE0)
+                if (
+                    ($v < 0xA0 && $startByte === 0xE0)
                     || ($v > 0x9F && $startByte === 0xED)
                     || ($v < 0x90 && $startByte === 0xF0)
                     || ($v > 0x8F && $startByte === 0xF4)
