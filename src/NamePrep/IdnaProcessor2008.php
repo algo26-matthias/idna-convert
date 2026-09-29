@@ -80,8 +80,12 @@ final class IdnaProcessor2008
         $hasExtendedArabicIndic = false;
 
         foreach ($label as $position => $codePoint) {
-            $hasArabicIndic = $hasArabicIndic || (0x0660 <= $codePoint && $codePoint <= 0x0669);
-            $hasExtendedArabicIndic = $hasExtendedArabicIndic || (0x06F0 <= $codePoint && $codePoint <= 0x06F9);
+            if (0x0660 <= $codePoint && $codePoint <= 0x0669) {
+                $hasArabicIndic = true;
+            }
+            if (0x06F0 <= $codePoint && $codePoint <= 0x06F9) {
+                $hasExtendedArabicIndic = true;
+            }
             $valid = match ($codePoint) {
                 0x200C => $this->isValidZeroWidthNonJoiner($label, $position),
                 0x200D => $this->isPrecededByVirama($label, $position),
@@ -185,11 +189,14 @@ final class IdnaProcessor2008
         }
 
         $last = count($classes) - 1;
-        while ($last >= 0 && $classes[$last] === 'NSM') {
+        while ($last !== -1 && $classes[$last] === 'NSM') {
             --$last;
         }
         $validEndClasses = $isRightToLeft ? ['R', 'AL', 'EN', 'AN'] : ['L', 'EN'];
-        if ($last < 0 || !in_array($classes[$last], $validEndClasses, true)) {
+        if ($last < 0) {
+            throw new InvalidCharacterException('The label violates the IDNA2008 bidirectional text rule', 101);
+        }
+        if (!in_array($classes[$last], $validEndClasses, true)) {
             throw new InvalidCharacterException('The label violates the IDNA2008 bidirectional text rule', 101);
         }
         if ($isRightToLeft && in_array('AN', $classes, true) && in_array('EN', $classes, true)) {

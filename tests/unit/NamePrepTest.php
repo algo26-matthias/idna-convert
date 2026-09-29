@@ -62,6 +62,20 @@ class NamePrepTest extends TestCase
         (new NamePrep(2008))->do($input);
     }
 
+    public function testEmptyIdna2008LabelsRemainEmpty(): void
+    {
+        self::assertSame([], (new NamePrep(2008, true, true))->do([]));
+    }
+
+    public function testHebrewContextRuleIsEvaluatedBeforeBidi(): void
+    {
+        self::expectException(InvalidCharacterException::class);
+        self::expectExceptionCode(101);
+        self::expectExceptionMessage('Context rule failed for U+000005F3');
+
+        (new NamePrep(2008, true, false))->do([0x61, 0x5F3]);
+    }
+
     /** @dataProvider providerMixedArabicDigitSets */
     public function testMixedArabicDigitSetsFailTheirContextRule(array $input): void
     {
@@ -79,6 +93,15 @@ class NamePrepTest extends TestCase
         self::expectExceptionMessage('Prohibited output U+00000020');
 
         $this->namePrep2003->do([0xA0]);
+    }
+
+    public function testLeadingCombiningMarkReportsIdna2003Category(): void
+    {
+        self::expectException(InvalidCharacterException::class);
+        self::expectExceptionCode(101);
+        self::expectExceptionMessage('An IDNA label must not start with a combining mark');
+
+        $this->namePrep2003->do([0x301, 0x61]);
     }
 
     /**
@@ -265,6 +288,7 @@ class NamePrepTest extends TestCase
             'upper boundaries' => [[0x627, 0x669, 0x6F9]],
             'Arabic lower and extended upper boundaries' => [[0x627, 0x660, 0x6F9]],
             'Arabic upper and extended lower boundaries' => [[0x627, 0x669, 0x6F0]],
+            'both sets before an Arabic-Indic digit' => [[0x6F0, 0x627, 0x660]],
         ];
     }
 
