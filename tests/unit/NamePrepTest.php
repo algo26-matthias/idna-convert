@@ -17,6 +17,7 @@ use PHPUnit\Framework\TestCase;
  * @covers \Algo26\IdnaConvert\NamePrep\UnicodeRange
  * @covers \Algo26\IdnaConvert\TranscodeUnicode\ByteLengthTrait
  * @covers \Algo26\IdnaConvert\TranscodeUnicode\TranscodeUnicode
+ * @covers \Algo26\IdnaConvert\Validation\Ucs4Validator
  */
 class NamePrepTest extends TestCase
 {

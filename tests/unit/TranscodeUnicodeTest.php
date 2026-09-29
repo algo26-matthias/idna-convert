@@ -12,6 +12,7 @@ use PHPUnit\Framework\TestCase;
 /**
  * @covers \Algo26\IdnaConvert\TranscodeUnicode\ByteLengthTrait
  * @covers \Algo26\IdnaConvert\TranscodeUnicode\TranscodeUnicode
+ * @covers \Algo26\IdnaConvert\Validation\Ucs4Validator
  */
 final class TranscodeUnicodeTest extends TestCase
 {
@@ -99,6 +100,18 @@ final class TranscodeUnicodeTest extends TestCase
 
         $this->transcoder->convert(
             [1 << 21],
+            TranscodeUnicode::FORMAT_UCS4_ARRAY,
+            TranscodeUnicode::FORMAT_UTF8,
+        );
+    }
+
+    public function testInvalidUcs4ArrayIsRejectedWhenNoConversionIsNeeded(): void
+    {
+        self::expectException(InvalidCharacterException::class);
+        self::expectExceptionCode(305);
+
+        $this->transcoder->convert(
+            [0xD800],
             TranscodeUnicode::FORMAT_UCS4_ARRAY,
             TranscodeUnicode::FORMAT_UTF8,
         );

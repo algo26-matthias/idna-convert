@@ -5,16 +5,20 @@ declare(strict_types=1);
 namespace Algo26\IdnaConvert\Punycode;
 
 use Algo26\IdnaConvert\Exception\InvalidCharacterException;
+use Algo26\IdnaConvert\Validation\PunycodeValidator;
 use OutOfBoundsException;
 
 class FromPunycode extends AbstractPunycode implements PunycodeInterface
 {
+    private PunycodeValidator $validator;
+
     public function __construct(
         ?int $idnVersion = null,
         ?bool $useStd3AsciiRules = false,
         bool $checkHyphens = true,
         ?bool $checkBidi = null,
     ) {
+        $this->validator = new PunycodeValidator();
         parent::__construct();
     }
 
@@ -23,7 +27,7 @@ class FromPunycode extends AbstractPunycode implements PunycodeInterface
      */
     public function convert(string $encoded): string|false
     {
-        if (!$this->isValidPunycodeString($encoded)) {
+        if (!$this->validator->hasPayload($encoded)) {
             return false;
         }
 
@@ -96,21 +100,6 @@ class FromPunycode extends AbstractPunycode implements PunycodeInterface
         }
 
         return $this->ucs4Codec->encode($decoded);
-    }
-
-    private function isValidPunycodeString(string $encoded): bool
-    {
-        // Check for existence of the prefix
-        if (!str_starts_with($encoded, self::PUNYCODE_PREFIX)) {
-            return false;
-        }
-
-        // If nothing is left after the prefix, it is hopeless
-        if (strlen(trim($encoded)) <= strlen(self::PUNYCODE_PREFIX)) {
-            return false;
-        }
-
-        return true;
     }
 
     private function decodeDigit(string $codePoint): int

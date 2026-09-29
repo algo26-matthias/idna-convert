@@ -21,6 +21,26 @@ Errors, incorrectly encoded or invalid strings will lead to various exceptions. 
 
 Unicode strings are expected to be UTF-8 strings. ACE strings (the Punycode form) are always 7bit ASCII strings.
 
+## Validating input
+
+When input is accepted from an external source, its representation can be checked before it is passed to a codec:
+
+```php
+use Algo26\IdnaConvert\Validation\InputValidator;
+use Algo26\IdnaConvert\Validation\IdnaValidator;
+
+$validator = new InputValidator();
+$validator->validateUtf8($input);
+$validator->validateUcs4($codePoints);
+$validator->validatePunycode($asciiLabel);
+
+$idnaValidator = new IdnaValidator(2008);
+$idnaValidator->validateLabel($label);
+$idnaValidator->validateDomain($domain);
+```
+
+The validator methods return `void` and throw the same exceptions and error codes as the conversion classes. `validatePunycode()` checks the Punycode label syntax. `IdnaValidator` applies the complete IDNA mapping, normalization, contextual rules and domain-name constraints used by `ToIdn`.
+
 ## Installation
 
 ### Via Composer

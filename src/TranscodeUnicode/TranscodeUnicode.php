@@ -5,11 +5,16 @@ declare(strict_types=1);
 namespace Algo26\IdnaConvert\TranscodeUnicode;
 
 use Algo26\IdnaConvert\Exception\InvalidCharacterException;
+use Algo26\IdnaConvert\Validation\Ucs4Validator;
 use InvalidArgumentException;
 
 class TranscodeUnicode implements TranscodeUnicodeInterface
 {
     use ByteLengthTrait;
+
+    public function __construct(private readonly Ucs4Validator $ucs4Validator = new Ucs4Validator())
+    {
+    }
 
     public const FORMAT_UCS4 = 'ucs4';
     public const FORMAT_UCS4_ARRAY = 'ucs4array';
@@ -78,6 +83,10 @@ class TranscodeUnicode implements TranscodeUnicodeInterface
                 self::FORMAT_UTF7 => $this->utf7ToUcs4Array($data),
                 self::FORMAT_UTF7_IMAP => $this->utf7ImapToUcs4Array($data),
             };
+        }
+
+        if (!$this->safeMode) {
+            $this->ucs4Validator->validate($codePoints);
         }
 
         if ($toEncoding === self::FORMAT_UCS4_ARRAY) {
@@ -178,8 +187,7 @@ class TranscodeUnicode implements TranscodeUnicodeInterface
             }
             if (!$this->safeMode && $test === 'range') {
                 $test = 'none';
-                if (
-                    ($v < 0xA0 && $startByte === 0xE0)
+                if (($v < 0xA0 && $startByte === 0xE0)
                     || ($v > 0x9F && $startByte === 0xED)
                     || ($v < 0x90 && $startByte === 0xF0)
                     || ($v > 0x8F && $startByte === 0xF4)

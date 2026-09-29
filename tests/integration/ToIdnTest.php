@@ -25,6 +25,8 @@ use PHPUnit\Framework\TestCase;
  * @covers \Algo26\IdnaConvert\TranscodeUnicode\ByteLengthTrait
  * @covers \Algo26\IdnaConvert\TranscodeUnicode\TranscodeUnicode
  * @covers \Algo26\IdnaConvert\TranscodeUnicode\Ucs4Codec
+ * @covers \Algo26\IdnaConvert\Validation\PunycodeValidator
+ * @covers \Algo26\IdnaConvert\Validation\Ucs4Validator
  */
 class ToIdnTest extends TestCase
 {

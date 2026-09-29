@@ -9,14 +9,16 @@ use Algo26\IdnaConvert\Exception\InvalidCharacterException;
 use Algo26\IdnaConvert\Exception\InvalidIdnVersionException;
 use Algo26\IdnaConvert\Exception\Std3AsciiRulesViolationException;
 use Algo26\IdnaConvert\NamePrep\NamePrep;
+use Algo26\IdnaConvert\Validation\Ucs4Validator;
 use OutOfBoundsException;
 
 class ToPunycode extends AbstractPunycode implements PunycodeInterface
 {
     private NamePrep $namePrep;
+    private Ucs4Validator $ucs4Validator;
 
     /**
-     * @throws InvalidIdnVersionException
+     * @throws InvalidIdnVersionException|InvalidCharacterException
      */
     public function __construct(
         ?int $idnVersion = null,
@@ -25,6 +27,7 @@ class ToPunycode extends AbstractPunycode implements PunycodeInterface
         ?bool $checkBidi = null,
     ) {
         $this->namePrep = new NamePrep($idnVersion, $checkHyphens, $checkBidi);
+        $this->ucs4Validator = new Ucs4Validator();
         parent::__construct();
     }
 
@@ -37,6 +40,7 @@ class ToPunycode extends AbstractPunycode implements PunycodeInterface
      */
     public function convert(array $decoded): ?string
     {
+        $this->ucs4Validator->validate($decoded);
         $this->checkForPunycodePrefix($decoded);
         if (
             $this->useStd3AsciiRules
