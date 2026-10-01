@@ -99,7 +99,7 @@ abstract class AbstractIdnaConvert
         $length = strlen($url);
         for ($offset = 0; $offset < $length; ++$offset) {
             $byte = ord($url[$offset]);
-            $encoded .= $byte > 0x7F
+            $encoded .= ($byte & 0x80) !== 0
                 ? sprintf('%%%02X', $byte)
                 : $url[$offset];
         }

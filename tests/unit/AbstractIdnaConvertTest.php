@@ -117,6 +117,10 @@ final class AbstractIdnaConvertTest extends TestCase
                 'https://[2001:db8::1]:8443/path',
                 'https://[2001:db8::1]:8443/path',
             ],
+            'ASCII DEL byte remains unencoded in the original URL' => [
+                "https://example\x7F.com/path",
+                "https://converted-example\x7F.com/path",
+            ],
         ];
     }
 

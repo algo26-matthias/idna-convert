@@ -104,6 +104,24 @@ class NamePrepTest extends TestCase
         $this->namePrep2003->do([0x301, 0x61]);
     }
 
+    public function testIdna2003RejectsMixedBidiLabel(): void
+    {
+        self::expectException(InvalidCharacterException::class);
+        self::expectExceptionCode(101);
+        self::expectExceptionMessage('The label violates the IDNA2003 bidirectional text rule');
+
+        $this->namePrep2003->do([0x5D0, 0x61]);
+    }
+
+    public function testIdna2003RtlLabelMustEndWithRtlCharacter(): void
+    {
+        self::expectException(InvalidCharacterException::class);
+        self::expectExceptionCode(101);
+        self::expectExceptionMessage('The label violates the IDNA2003 bidirectional text rule');
+
+        $this->namePrep2003->do([0x5D0, 0x31]);
+    }
+
     /**
      * @dataProvider providerHangulComposition
      */

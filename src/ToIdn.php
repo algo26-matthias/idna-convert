@@ -46,61 +46,85 @@ class ToIdn extends AbstractIdnaConvert implements IdnaConvertInterface
      */
     public function convert(string $host): string
     {
-        if (strlen($host) === 0) {
-            if ($this->verifyDnsLength) {
-                throw new InvalidCharacterException('A domain name must not be empty', 105);
-            }
+        $host = $this->validateAndNormalizeHost($host);
+        $labels = explode('.', $host);
+        $preparedLabels = $this->configureDomainBidiValidation($labels);
+        $encodedHost = implode('.', $this->encodeLabels($labels, $preparedLabels));
 
-            return $host;
+        $this->validateEncodedDomainLength($encodedHost);
+
+        return $encodedHost;
+    }
+
+    private function validateAndNormalizeHost(string $host): string
+    {
+        if ($host === '') {
+            return $this->normalizeEmptyHost($host);
         }
-
-        if (
-            str_contains($host, '/')
-            || str_contains($host, ':')
-            || str_contains($host, '?')
-            || str_contains($host, '@')
-        ) {
+        if (strpbrk($host, '/:?@') !== false) {
             throw new InvalidCharacterException('Neither email addresses nor URLs are allowed', 205);
         }
 
-        // These three punctuation characters are treated like the dot
         $host = str_replace(['。', '．', '｡'], '.', $host);
+        $this->validateLabels($host);
 
-        // Operate per label
-        $hostLabels = explode('.', $host);
-        foreach ($hostLabels as $index => $label) {
-            $isRootLabel = $label === '' && $index === array_key_last($hostLabels) && str_ends_with($host, '.');
+        return $host;
+    }
+
+    private function normalizeEmptyHost(string $host): string
+    {
+        if ($this->verifyDnsLength) {
+            throw new InvalidCharacterException('A domain name must not be empty', 105);
+        }
+
+        return $host;
+    }
+
+    private function validateLabels(string $host): void
+    {
+        $labels = explode('.', $host);
+        $lastIndex = array_key_last($labels);
+        foreach ($labels as $index => $label) {
+            $isRootLabel = $label === '' && $index === $lastIndex && str_ends_with($host, '.');
             if ($label === '' && (!$isRootLabel || $this->verifyDnsLength)) {
                 throw new InvalidCharacterException('A domain name must not contain empty labels', 105);
             }
-            if ($isRootLabel) {
-                continue;
-            }
         }
+    }
 
-        $preparedLabels = $this->configureDomainBidiValidation($hostLabels);
-        foreach ($hostLabels as $index => $label) {
+    /**
+     * @param list<string> $labels
+     * @param array<int, array{string, string|null}> $preparedLabels
+     * @return list<string>
+     */
+    private function encodeLabels(array $labels, array $preparedLabels): array
+    {
+        foreach ($labels as $index => $label) {
             if ($label === '') {
                 continue;
             }
-
             $encoded = $this->encodeLabel($label, $preparedLabels[$index] ?? null);
             if ($encoded === null || $encoded === '') {
                 throw new InvalidCharacterException('A domain name must not contain labels that map to empty', 105);
             }
-            $hostLabels[$index] = $encoded;
-            if ($this->verifyDnsLength && strlen($hostLabels[$index]) > 63) {
+            if ($this->verifyDnsLength && strlen($encoded) > 63) {
                 throw new InvalidCharacterException('An encoded domain label must not exceed 63 bytes', 106);
             }
+            $labels[$index] = $encoded;
         }
 
-        $encodedHost = implode('.', $hostLabels);
-        $dnsName = str_ends_with($encodedHost, '.') ? substr($encodedHost, 0, -1) : $encodedHost;
-        if ($this->verifyDnsLength && (strlen($dnsName) < 1 || strlen($dnsName) > 253)) {
+        return $labels;
+    }
+
+    private function validateEncodedDomainLength(string $encodedHost): void
+    {
+        if (!$this->verifyDnsLength) {
+            return;
+        }
+        $dnsName = rtrim($encodedHost, '.');
+        if (strlen($dnsName) < 1 || strlen($dnsName) > 253) {
             throw new InvalidCharacterException('An encoded domain name must contain between 1 and 253 bytes', 106);
         }
-
-        return $encodedHost;
     }
 
     /**

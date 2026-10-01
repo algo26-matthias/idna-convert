@@ -65,17 +65,7 @@ final class NamePrepProcessor2003
     /** @param list<int> $output */
     private function validateBidi(array $output): void
     {
-        $containsRightToLeft = false;
-        foreach ($output as $codePoint) {
-            if (
-                UnicodeRange::contains($codePoint, NormalizationData2003::BIDI_RANGES['R'])
-                || UnicodeRange::contains($codePoint, NormalizationData2003::BIDI_RANGES['AL'])
-            ) {
-                $containsRightToLeft = true;
-                break;
-            }
-        }
-        if (!$containsRightToLeft) {
+        if (!$this->containsRightToLeft($output)) {
             return;
         }
 
@@ -93,6 +83,21 @@ final class NamePrepProcessor2003
         if (!$this->isRightToLeft($output[0]) || !$this->isRightToLeft($last)) {
             throw new InvalidCharacterException('The label violates the IDNA2003 bidirectional text rule', 101);
         }
+    }
+
+    /** @param list<int> $output */
+    private function containsRightToLeft(array $output): bool
+    {
+        foreach ($output as $codePoint) {
+            if (
+                UnicodeRange::contains($codePoint, NormalizationData2003::BIDI_RANGES['R'])
+                || UnicodeRange::contains($codePoint, NormalizationData2003::BIDI_RANGES['AL'])
+            ) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function isRightToLeft(int $codePoint): bool
