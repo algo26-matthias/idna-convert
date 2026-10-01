@@ -14,7 +14,7 @@ class ToUtf8 implements EncodingHelperInterface
         string $sourceString,
         ?string $encoding = self::DEFAULT_ENCODING,
         ?bool $safeMode = false
-    ) {
+    ): string|false {
         $safe = ($safeMode) ? $sourceString : false;
 
         $this->encoding = 'ISO-8859-1';

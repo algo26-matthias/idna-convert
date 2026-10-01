@@ -21,6 +21,26 @@ Errors, incorrectly encoded or invalid strings will lead to various exceptions. 
 
 Unicode strings are expected to be UTF-8 strings. ACE strings (the Punycode form) are always 7bit ASCII strings.
 
+## Validating input
+
+When input is accepted from an external source, its representation can be checked before it is passed to a codec:
+
+```php
+use Algo26\IdnaConvert\Validation\InputValidator;
+use Algo26\IdnaConvert\Validation\IdnaValidator;
+
+$validator = new InputValidator();
+$validator->validateUtf8($input);
+$validator->validateUcs4($codePoints);
+$validator->validatePunycode($asciiLabel);
+
+$idnaValidator = new IdnaValidator(2008);
+$idnaValidator->validateLabel($label);
+$idnaValidator->validateDomain($domain);
+```
+
+The validator methods return `void` and throw the same exceptions and error codes as the conversion classes. `validatePunycode()` checks the Punycode label syntax. `IdnaValidator` applies the complete IDNA mapping, normalization, contextual rules and domain-name constraints used by `ToIdn`.
+
 ## Installation
 
 ### Via Composer
@@ -134,7 +154,7 @@ $input = 'meine-straße.example';
 // Encode it to its punycode representation  
 $output = $IDN->convert($input);  
 // Output what we got now  
-echo $output; // xn--meine-strae-46a.example
+echo $output; // meine-strasse.example
   
 // Switch back to IDNA 2008
 $IDN = new ToIdn(2008);
@@ -143,7 +163,7 @@ $input = 'meine-straße.example';
 // Encode it to its punycode representation  
 $output = $IDN->convert($input);
 // Output what we got now  
-echo $output; // meine-strasse.example
+echo $output; // xn--meine-strae-46a.example
 ```
 
 
@@ -190,14 +210,15 @@ $mystring = 'nörgler.com';
 echo $transcodeUnicode->convert($mystring, 'utf8', 'utf7imap');
 ```
 
-## Run PHPUnit tests
+## Running tests
 
-The library is supplied with a `docker-compose.yml`, that allows to run the supplied tests. This assumes, you have Docker installed and docker-compose available as a command. Just issue
+The library is supplied with a `compose.yml`, that allows to run the supplied tests. This assumes, you have Docker installed and docker compose available as a command. Just issue
 
 ```
-docker compose up
+docker compose run --rm idna-convert-test # Unit tests
+docker compose run --rm idna-convert-infection # Mutation tests
 ```
-in you local command line and see the output of PHPUnit.
+in you local command line and see the output of PHPUnit / Infection.
 
 ## Reporting bugs
 
