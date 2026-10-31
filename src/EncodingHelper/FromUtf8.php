@@ -77,14 +77,14 @@ class FromUtf8 implements EncodingHelperInterface
 
         if (function_exists('iconv')) {
             $converted = @iconv('UTF-8', $this->encoding, $string);
-            if (false !== $converted) {
+            if (is_string($converted)) {
                 return $converted;
             }
         }
 
         if (function_exists('libiconv')) {
             $converted = @libiconv('UTF-8', $this->encoding, $string);
-            if (false !== $converted) {
+            if (is_string($converted)) {
                 return $converted;
             }
         }

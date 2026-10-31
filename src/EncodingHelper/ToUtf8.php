@@ -74,21 +74,21 @@ class ToUtf8 implements EncodingHelperInterface
     {
         if (function_exists('mb_convert_encoding')) {
             $converted = @mb_convert_encoding($string, 'UTF-8', $this->encoding);
-            if (false !== $converted) {
+            if (is_string($converted)) {
                 return $converted;
             }
         }
 
         if (function_exists('iconv')) {
             $converted = @iconv($this->encoding, 'UTF-8', $string);
-            if (false !== $converted) {
+            if (is_string($converted)) {
                 return $converted;
             }
         }
 
         if (function_exists('libiconv')) {
             $converted = @libiconv($this->encoding, 'UTF-8', $string);
-            if (false !== $converted) {
+            if (is_string($converted)) {
                 return $converted;
             }
         }
