@@ -57,6 +57,28 @@ The official ZIP packages are discontinued. Stick to Composer or GitHub to acqui
 
 See [the upgrading notes](./UPGRADING.md) to learn about upgrading from a previous version.
 
+## Version support
+
+The project aims to maintain at most two major versions: the current version and its immediate
+predecessor. The transition to v5 includes a short final security-support period for v3.
+
+The following periods start with the first **stable v5.0 release**, not an alpha, beta, or release candidate:
+
+| Version | Maintenance scope | Support period |
+| --- | --- | --- |
+| v5 | Bug fixes, security fixes, new features, and compatibility with new PHP versions | While it is the current major version |
+| v4 | Security fixes and important backward-compatible bug fixes; no new features | 12 months after v5.0 stable |
+| v3 | Critical security fixes only, where a backport is feasible | 3 months after v5.0 stable, then end of life |
+
+New PHP compatibility updates for v3 stop with the announcement of this policy. Its support for
+PHP 7.2–8.0 is intended for legacy installations; those PHP versions are no longer supported upstream.
+The longer v4 transition allows applications to adapt to v5's stricter validation, changed normalization,
+and additional exceptions, including effects on stored domain names and comparisons.
+
+At end of life, releases and branches remain available, but further maintenance is not guaranteed.
+See the [maintenance and security policy](./SECURITY.md) for backport rules and the
+[upgrading notes](./UPGRADING.md) for migration guidance.
+
 
 ## Examples
 
