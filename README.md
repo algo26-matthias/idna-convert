@@ -242,6 +242,33 @@ docker compose run --rm idna-convert-infection # Mutation tests
 ```
 in you local command line and see the output of PHPUnit / Infection.
 
+### IDNA conformance checks
+
+CI runs the complete pinned Unicode 18.0.0 `IdnaTestV2.txt` corpus against `ToIdn`, with
+non-transitional UTS #46 mapping followed by strict IDNA2008 validation. STD3, hyphen, and DNS-length
+checks are enabled. To run this check locally after installing the development dependencies, download
+the [test corpus](https://www.unicode.org/Public/18.0.0/idna/IdnaTestV2.txt) and the
+[mapping reference](https://www.unicode.org/Public/18.0.0/idna/IdnaMappingTable.txt), then run:
+
+```sh
+php tools/verify-idna.php /path/to/IdnaTestV2.txt /path/to/IdnaMappingTable.txt
+```
+
+Both reference files are checksum-verified. Expected stricter rejections are determined from the
+upstream mapping reference, independently of the library's generated tables. The checker verifies
+all 6,396 cases without skipping any:
+
+- 398 cases require an exact ToASCII result.
+- 5,836 cases require rejection according to the corpus's non-transitional ToASCII error status.
+- 160 otherwise successful UTS #46 cases require rejection under the stricter IDNA2008 profile.
+- 2 cases containing isolated surrogates are supplied as illegal UTF-8 bytes and must be rejected.
+
+Only explicit input-validation exceptions count as expected rejection. Internal errors such as
+`TypeError`, unexpected exceptions, incorrect output, and unexpected acceptance fail the check.
+These results cover this ToASCII profile; they do not assert full UTS #46 conformance, transitional
+processing, or conformance of the separate `ToUnicode` decoder. ContextO rules, which the upstream
+corpus does not test, are covered by the library's unit tests.
+
 ## Reporting bugs
 
 Please use the [issues tab on GitHub](https://github.com/algo26-matthias/idna-convert/issues) to report any bugs or feature requests.

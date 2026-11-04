@@ -49,7 +49,7 @@ jobs:
           run: |
               php tools/verify-normalization.php 2003 /tmp/NormalizationTest-3.2.0.txt
               php tools/verify-normalization.php 2008 /tmp/NormalizationTest-18.0.0.txt
-              php tools/verify-idna.php /tmp/IdnaTestV2-18.0.0.txt
+              php tools/verify-idna.php /tmp/IdnaTestV2-18.0.0.txt /tmp/IdnaMappingTable-18.0.0.txt
 
     quality:
         runs-on: ubuntu-latest
