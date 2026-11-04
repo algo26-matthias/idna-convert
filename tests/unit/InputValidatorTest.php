@@ -107,12 +107,23 @@ final class InputValidatorTest extends TestCase
         (new IdnaValidator())->validateLabel('-invalid');
     }
 
-    public function testIdnaValidatorRejectsDotsInLabels(): void
+    /** @dataProvider providerLabelSeparators */
+    public function testIdnaValidatorRejectsDotsInLabels(string $separator): void
     {
         self::expectException(InvalidArgumentException::class);
         self::expectExceptionCode(105);
 
-        (new IdnaValidator())->validateLabel('one.two');
+        (new IdnaValidator())->validateLabel('one' . $separator . 'two');
+    }
+
+    public static function providerLabelSeparators(): array
+    {
+        return [
+            'ASCII dot' => ['.'],
+            'ideographic full stop' => ['。'],
+            'fullwidth full stop' => ['．'],
+            'halfwidth ideographic full stop' => ['｡'],
+        ];
     }
 
     public static function providerInvalidUcs4(): array

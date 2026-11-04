@@ -122,6 +122,25 @@ class NamePrepTest extends TestCase
         $this->namePrep2003->do([0x5D0, 0x31]);
     }
 
+    /** @dataProvider providerIdna2003LeftToRightRangeInteriors */
+    public function testIdna2003RejectsRtlMixedWithRangeInterior(int $codePoint): void
+    {
+        self::expectException(InvalidCharacterException::class);
+        self::expectExceptionMessage('The label violates the IDNA2003 bidirectional text rule');
+
+        $this->namePrep2003->do([0x5D0, $codePoint, 0x5D0]);
+    }
+
+    public static function providerIdna2003LeftToRightRangeInteriors(): array
+    {
+        return [
+            'CJK unified ideograph' => [0x4E2D],
+            'CJK extension A' => [0x3401],
+            'CJK extension B' => [0x20001],
+            'Hangul syllable' => [0xAC01],
+        ];
+    }
+
     /**
      * @dataProvider providerHangulComposition
      */

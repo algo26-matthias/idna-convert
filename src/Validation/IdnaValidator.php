@@ -29,7 +29,7 @@ final class IdnaValidator
 
     public function validateLabel(string $label): void
     {
-        if (str_contains($label, '.')) {
+        if (str_contains(str_replace(['。', '．', '｡'], '.', $label), '.')) {
             throw new InvalidArgumentException('An IDNA label must not contain a dot', 105);
         }
 

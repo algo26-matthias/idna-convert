@@ -31,6 +31,26 @@ Unicode-derived tables are reproducibly generated and covered by the Unicode Lic
 Native parameter and return types were added to public APIs. Custom implementations of the supplied
 interfaces and subclasses overriding these methods must update their signatures accordingly.
 
+**BC break — UCS-4 arrays:** When converting from `ucs4array` to another encoding with the default
+`safeMode: false`, `TranscodeUnicode::convert()` now requires a zero-based, consecutive list of integer
+Unicode scalar values. `ToPunycode::convert()` also enforces this requirement. For example, `[4 => 97]`
+previously converted to `"a"` through the transcoder but now throws `InvalidArgumentException` (code 308).
+Use `array_values($codePoints)` to reindex existing arrays without changing their order. Non-integer
+elements are rejected with code 308; surrogate code points and values outside U+0000–U+10FFFF are rejected
+with `InvalidCharacterException` (code 305). Converting between identical encodings still returns the
+input unchanged and is not a validation operation.
+
+**BC break — Punycode subclasses:** The protected `AbstractPunycode::$unicodeTransCoder` property has
+been removed. Subclasses using it must either own a `TranscodeUnicode` instance or migrate UTF-8/UCS-4
+conversion to the protected `$ucs4Codec`: use `$this->ucs4Codec->decode($utf8)` for a code-point list and
+`$this->ucs4Codec->encode($codePoints)` for UTF-8. Other encoding conversions still require
+`TranscodeUnicode`.
+
+**BC break — Punycode interface implementations:** `PunycodeInterface::__construct()` now declares
+`bool $checkHyphens = true` and `?bool $checkBidi = null` after `?bool $useStd3AsciiRules = false`.
+Custom implementations must add compatible parameters, even if they do not use these options; otherwise
+PHP rejects the class declaration. Existing calls with the original two arguments remain valid.
+
 The abandoned `jakeasmith/http_build_url` package is no longer required. URL conversion now replaces
 only the host in the original URL, preserving the spelling and encoding of all other components.
 

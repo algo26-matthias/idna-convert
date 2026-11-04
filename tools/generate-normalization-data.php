@@ -75,18 +75,35 @@ $compatibilityDecompositions = [];
 $markRanges = [];
 /** @var array<string, list<array{int, int}>> $bidiRanges */
 $bidiRanges = array_fill_keys(['L', 'R', 'AL'], []);
+$rangeStart = null;
 foreach ($unicodeData as $line) {
     $fields = explode(';', $line);
     $codePoint = intval($fields[0], 16);
+    // UnicodeData represents large ranges with paired First/Last records.
+    if (str_ends_with($fields[1], ', First>')) {
+        $rangeStart = $codePoint;
+
+        continue;
+    }
+    $start = $codePoint;
+    if (str_ends_with($fields[1], ', Last>')) {
+        if ($rangeStart === null || $rangeStart > $codePoint) {
+            throw new RuntimeException('Invalid UnicodeData range');
+        }
+        $start = $rangeStart;
+        $rangeStart = null;
+    }
     if (str_starts_with($fields[2], 'M')) {
-        $markRanges[] = [$codePoint, $codePoint];
+        $markRanges[] = [$start, $codePoint];
     }
     if (isset($bidiRanges[$fields[4]])) {
-        $bidiRanges[$fields[4]][] = [$codePoint, $codePoint];
+        $bidiRanges[$fields[4]][] = [$start, $codePoint];
     }
     $combiningClass = (int) $fields[3];
     if ($combiningClass !== 0) {
-        $combiningClasses[$codePoint] = $combiningClass;
+        for ($member = $start; $member <= $codePoint; ++$member) {
+            $combiningClasses[$member] = $combiningClass;
+        }
     }
 
     $decomposition = trim($fields[5]);
