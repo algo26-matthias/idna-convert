@@ -8,11 +8,14 @@
             "type": "path",
             "url": "../../..",
             "options": {
-                "symlink": true
+                "symlink": true,
+                "versions": {
+                    "algo26-matthias/idna-convert": "dev-main"
+                }
             }
         }
     ],
     "require": {
-        "algo26-matthias/idna-convert": "dev-master"
+        "algo26-matthias/idna-convert": "dev-main"
     }
 }
