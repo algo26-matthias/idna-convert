@@ -5,14 +5,15 @@
 The project aims to maintain the current major version and its immediate predecessor. For the
 transition to v5, v3 receives a final, limited security-support period.
 
-All deadlines below are measured from the first **stable v5.0 release**. Prereleases do not start
-these periods. Calendar end-of-life dates will be published when v5.0 stable is released.
+The first **stable v5.0 release was published on 24 November 2026**. The deadlines below provide
+12 months of maintenance for v4 and 3 months of limited security support for v3 from that date.
+Prereleases do not count toward these periods.
 
 | Version | Scope | End of support |
 | --- | --- | --- |
 | v5 | Active development, bug fixes, security fixes, and compatibility with new PHP versions | Active support while it is the current major version; a successor's transition policy will be announced separately |
-| v4 | Security fixes and important backward-compatible bug fixes; no new features | 12 months after v5.0 stable |
-| v3 | Critical security fixes only, where a backport is feasible | 3 months after v5.0 stable |
+| v4 | Security fixes and important backward-compatible bug fixes; no new features | 24 November 2027 |
+| v3 | Critical security fixes only, where a backport is feasible | 24 February 2027 |
 
 New PHP compatibility updates for v3 stop with the announcement of this policy. Existing releases
 may continue to work with newer PHP versions, but no further compatibility updates are promised.
